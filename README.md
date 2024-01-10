@@ -1,3 +1,3 @@
 ﻿# shell_update
-link source:: https://codepen.io/codetaolao/pen/WNyazLK
-idowload and update the code
+link source:: https://codepen.io/codetaolao/pen/WNyazLK 
+i download and update the code
