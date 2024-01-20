@@ -574,7 +574,7 @@ const crysanthemumShell = (size=1) => {
 	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
 	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
 	let starDensity = glitter ? 1.1 : 1.25;
-	if (isLowQuality) starDensity *= 0.8;
+	if (isLowQuality) starDensity *= 0.8;getRandomShellSize()
 	if (isHighQuality) starDensity = 1.2;
 	return {
 		shellSize: size,
@@ -666,13 +666,13 @@ const palmShell = (size=1) => {
 		spreadSize: 250 + size * 75,
 		starDensity: thick ? 0.15 : 0.4,
 		starLife: 1800 + size * 200,
-		glitter: thick ? 'thick' : 'heavy'
+		glitter: thick ? 'thick' : 'heavy',
 	};
 };
 
 const ringShell = (size=1) => {
 	const color = randomColor();
-	const pistil = Math.random() < 0.75;
+	const pistil = Math.random() < 0.85;
 	return {
 		shellSize: size,
 		ring: true,
@@ -1047,16 +1047,17 @@ function seqPyramid() {
 	return 3400 + barrageCountHalf * 250;
 }
 function vietNamV1Seq(){
-	const size = getRandomShellSize();
-	const shell = new Shell(shellTypes['Ghost'](size.size));
-	shell.launch(size.x, size.height);
+	const size=getRandomShellSize();
+	const bigsize=size*2;
+	const smallsize=size*0.5;
+	const shell1 = new Shell(shellTypes['Ring'](size.size));
+	// shell1.launchV2(0.5,0.1,-1)
+	// shell1.launchV2(0.5,0.2,0)
+
+	seqShellHeightLeftToRight(10,150)
+	seqShellHeightRightToLeft(10,150)
 	
-	let extraDelay = shell.starLife;
-	if (shell.fallingLeaves) {
-		extraDelay = 4600;
-	}
 	
-	return 900 + Math.random() * 600 + extraDelay;
 }
 
 function seqSmallBarrage() {
@@ -1105,26 +1106,157 @@ function seqSmallBarrage() {
 seqSmallBarrage.cooldown = 15000;
 seqSmallBarrage.lastCalled = Date.now();
 
-function seqTripleRingShell (){
+function seqTripleRingShell (x,y,size){
 	if (!seqTripleRingShell.hasRun) {
-        const size = getRandomShellSize();
-		const shell1 = new Shell(shellTypes['Ring'](size.size));
+		const shell1 = new Shell(shellTypes['Ring'](size));
         // Launch the first shel  
-        shell1.launch(size.x, size.height);
-
-        const shell2 = new Shell(shellTypes['Ring'](size.size*0.80));
-        shell2.launch(size.x, size.height);
-
-        const shell3 = new Shell(shellTypes['Ring'](size.size*1.12));
-        shell3.launch(size.x, size.height);
-    
-        seqTripleRingShell.hasRun = true;
+	
+        shell1.launch(x, y);
+        const shell2 = new Shell(shellTypes['Ring'](size*0.80));
+        shell2.launch(x, y);
+        const shell3 = new Shell(shellTypes['Ring'](size*1.12));
+        shell3.launch(x, y);
+        seqTripleRingShell.hasRun = true; 
         return 700; // Return the total duration for all shells
     }
     return 0; // Return 0 if the function has already run
 }
-
-function seqDoubleCrysanthemum(){
+async function seqShellHeightLeftToRight(count, time) {
+    const size = getRandomShellSize();
+    let sizeh = 0.1;
+    let timen =time*0.05;
+    let position = 0.1;
+    let heightl = -0.3;
+	let life=0.2;
+    while (position < 1-(18-count)*0.05) {
+       
+        const shell = new Shell({
+			...shellTypes['Crysanthemum'](size.size-0.24+sizeh)
+		});
+		shell.starLifeVariation=life;
+        await new Promise(resolve => setTimeout(resolve, timen));
+        shell.launch(position, heightl);
+        sizeh += 0.15;
+        position += 0.05;
+        heightl += 0.04	;
+        timen += 15;
+		life+=0.085;
+    }
+	setTimeout(() => {
+		const lastShell=new Shell(shellTypes['ring'](size.size*2));
+		lastShell.launch(0.5, 0.5)
+	}, timen-15);
+}
+async function seqShellShortLeftToRight(count,position,time) {
+    const size = getRandomShellSize();
+    let sizeh = 0.1;
+    let timen = time*0.05;
+    let heightl = 0.1;
+	let spreadposition=0.45/count;
+	let life=0.2;
+    while (position>0) {
+        const shell = new Shell({
+			...shellTypes['Crysanthemum'](size.size-0.24+sizeh)
+		});
+		shell.starLifeVariation=life;
+        await new Promise(resolve => setTimeout(resolve, timen));
+        shell.launch(position, heightl);
+        sizeh += 0.15;
+        position -= spreadposition;
+        heightl += 0.05	;
+        timen += 15;
+		life+=0.085;
+    }
+	setTimeout(() => {
+		const lastShell=new Shell(shellTypes['ring'](size.size*2));
+		lastShell.launch(0.5, 0.5)
+	}, timen-15);
+}
+async function seqShellHeightRightToLeft(count,time) {
+    const size = getRandomShellSize();
+    let sizeh = 0.1;
+    let timen = time*0.05;
+    let position = 0.9;
+    let heightl = -0.3;
+	let life=0.2;
+    while (position-(18-count)*0.05 > 0) {
+       
+        const shell = new Shell({
+			...shellTypes['Crysanthemum'](size.size-0.24+sizeh)
+		});
+		shell.starLifeVariation=life;
+        await new Promise(resolve => setTimeout(resolve, timen));
+        shell.launch(position, heightl);
+        sizeh += 0.15;
+        position -= 0.05;
+        heightl += 0.05	;
+        timen += 15;
+		life+=0.085;
+    }
+	setTimeout(() => {
+		const lastShell=new Shell(shellTypes['ring'](size.size*2));
+		lastShell.launch(0.5, 0.5)
+	}, timen-15);
+}
+async function seqShellShortRightToLeft(count,position,time) {
+    const size = getRandomShellSize();
+    let sizeh = 0.1;
+    let timen = time*0.05;
+    let heightl = 0.1;
+	let spreadposition=(1-position)/count;
+	let life=0.2;
+    while (position <= 1) {
+       
+        const shell = new Shell({
+			...shellTypes['Crysanthemum'](size.size-0.24+sizeh)
+		});
+		shell.starLifeVariation=life;
+        await new Promise(resolve => setTimeout(resolve, timen));
+        shell.launch(position, heightl);
+        sizeh += 0.15;
+        position += spreadposition;
+        heightl += 0.05	;
+        timen += 15;
+		life+=0.085;
+    }
+	setTimeout(() => {
+		const lastShell=new Shell(shellTypes['ring'](size.size*2));
+		lastShell.launch(0.5, 0.5)
+	}, timen-15);
+}
+function seqShellMidHeight(time){
+	seqShellHeightRightToLeft(5,0.66,time)
+	seqShellHeightLeftToRight(5,1-0.64,time)
+	setTimeout(() => {
+		const size=getRandomShellSize()
+		seqTripleRingShell(0.5,0.5,size.size*2.5)
+	}, time);
+	
+}
+function seqShellMidShort(time){
+	setTimeout(() => {
+		const size=getRandomShellSize()
+		seqTripleRingShell(0.5,0.5,size.size*2.4)
+	}, time);
+	seqShellShortRightToLeft(5,0.66,time*0.05)
+	seqShellShortLeftToRight(5,1-0.64,time*0.05)
+	
+}
+function seqShellLeft(time){
+	seqShellHeightLeftToRight(6,time*0.005)
+	setTimeout(() => {
+		const size=getRandomShellSize()
+		seqTripleRingShell(0.5,0.3,size.size*1.9)
+	}, time*0.005);
+}
+function seqShellRight(time){
+	seqShellHeightRightToLeft(6,time*0.005)
+	setTimeout(() => {
+		const size=getRandomShellSize()
+		seqTripleRingShell(0.5,0.3,size.size*1.9)
+	}, time*0.00005);
+}
+function seqDoubleCrysanthemum(x,y){
 	if (!seqDoubleCrysanthemum.hasRun) {
         const size = getRandomShellSize();
 		const shell1 = new Shell(shellTypes['Crysanthemum'](size.size));
@@ -1136,10 +1268,10 @@ function seqDoubleCrysanthemum(){
 		}
         // Launch the first shell
        
-        shell1.launch(size.x, size.height);
+        shell1.launch(x, y);
 
         // Launch the second shell with a delay
-        shell2.launch(size.x, size.height);
+        shell2.launch(x, y);
 
     
         seqDoubleCrysanthemum.hasRun = true;
@@ -1147,12 +1279,12 @@ function seqDoubleCrysanthemum(){
     }
     return 0; // Return 0 if the function has already run
 }
-function seqTripleV2(){
+function seqTripleV2(x,y){
 	if (!seqTripleV2.hasRun) {
         const size = getRandomShellSize();
 		const shell1 = new Shell(shellTypes['Horse Tail'](size.size*0.25));
         // Launch the first shell
-        shell1.launch(size.x, size.height-0.5);
+        shell1.launch(x, y-0.5);
 		const shell2 = new Shell(shellTypes['Horse Tail'](size.size*0.1));
         // Launch the second shell with a delay
         setTimeout(() => {
@@ -1170,11 +1302,11 @@ function seqTripleV2(){
 			}
         // Launch the first shell
        
-       		shell3.launch(size.x, size.height);
+       		shell3.launch(x,y);
 
         // Launch the second shell with a delay
 			setTimeout(() => {
-				shell4.launch(size.x, size.height);
+				shell4.launch(x, y);
 			}, 150);
         }, 650);
 
@@ -1227,15 +1359,125 @@ function seqQuarRandomShell(){
 			shell4.launch(size.x,size.height);
 		}, 550);
         // Launch the first shell
-      
-
-    
         seqQuarRandomShell.hasRun = true;
         return 700; // Return the total duration for all shells
     }
     return 0; // Return 0 if the function has already run
 }
+async function seqSparkHalfLeft(position,height1,count, time){
+	let height=-height1+0.58*position*2;
+	count = count;
+	let positionLast = -Math.floor(count);
+	const size = getRandomShellSize();
+	const shell1 = new Shell(shellTypes['Ring'](size.size));
+	let timen = time * 0.05;
+  
+	while(positionLast<=0){
+		await new Promise(resolve => setTimeout(resolve, timen));
+		shell1.launchV2(position,height,Math.floor(positionLast))
+		positionLast+=1;
+		height+=0.05;
+		timen+=80*0.05;
+	}
+	height+=0.53*position*2
+	while(positionLast<count+1){
+		await new Promise(resolve => setTimeout(resolve, timen));
+		shell1.launchV2(position,height,positionLast)
+		positionLast+=1;
+		height-=0.05;
+		timen+=80*0.05;
+	}
+}
 
+async function seqSparkHalfRight(position,height1, count, time) {
+	let height =-height1+0.58*position*2;
+	count = count;
+	let positionLast = Math.floor(count);
+	const size = getRandomShellSize();
+	const shell1 = new Shell(shellTypes['Ring'](size.size));
+	let timen = time * 0.05;
+  
+	while (positionLast > 0) {
+	  await new Promise(resolve => setTimeout(resolve, timen));
+	  shell1.launchV2(position, height, Math.floor(positionLast));
+	  positionLast -= 1;
+	  height += 0.05;
+	  timen += 80 * 0.05;
+	}
+  
+	height -= 0.58*position*2;
+	while (positionLast > -count - 1) {
+	  await new Promise(resolve => setTimeout(resolve, timen));
+	  shell1.launchV2(position, height, positionLast);
+	  console.log(height, ", ", positionLast);
+	  positionLast -= 1;
+	  height -= 0.05;
+	  timen += 80 * 0.05;
+	}
+  }
+  function seqSparkHalfMid(position,height,count, time){
+	seqSparkHalfLeft(position,height,count, time)
+	seqSparkHalfRight(position,height,count, time)
+  }
+  function seqSparkHalfTrip(position,time){
+	time*=0.05
+	const shell =new Shell(shellTypes['Crysanthemum'](5))
+	seqSparkHalfLeft(position,1+(position>0.5?position:-position),5,time)
+	setTimeout(() => {
+		seqSparkHalfRight(position,0.5+(position>0.5?position:-position),5,time)
+		shell.launch(position,0.3)
+	}, time+550);
+	setTimeout(() => {
+		seqSparkHalfLeft(position,1+(position>0.5?position:-position),5,time)
+		
+	}, time+550*2);
+  }
+  function seqSparkHalfTripTwo(time){
+	seqSparkHalfTrip(0.2,time)
+	seqSparkHalfTrip(0.8,time)
+  }
+  async function seqSparkWithShellLeft(time){
+	const size=getRandomShellSize();
+	let timen=time*0.05;
+	const shell=new Shell(shellTypes['Floral'](size.size))
+	let positionSh=0.1;
+	let heightSh=-0.2;
+	let goc=0;
+	while(positionSh<0.5){
+		await new Promise(resolve => setTimeout(resolve, timen));
+		const shell=new Shell(shellTypes['Ring'](size.size))
+		shell.launchV2(positionSh,heightSh,goc)
+		positionSh+=0.05;
+		heightSh+=0.05;
+		timen+=150*0.05
+		goc+=0.3;
+	}
+	setTimeout(() => {
+		shell.burst(1100,300);
+		soundManager.playSound('burst');
+	}, time+400);
+  }
+  async function seqSparkWithShellRight(time){
+	const size=getRandomShellSize();
+	let timen=time*0.05;
+	const shell=new Shell(shellTypes['Crackle'](size.size*2))
+	let positionSh=0.9;
+	let heightSh=-0.2;
+	let goc=0;
+	while(positionSh>0.5){
+		await new Promise(resolve => setTimeout(resolve, timen));
+		const shell1=new Shell(shellTypes['Ring'](size.size))
+		shell1.launchV2(positionSh,heightSh,goc)
+		positionSh-=0.05;
+		heightSh+=0.05;
+		timen+=150*0.05
+		goc-=0.3;
+	}
+	setTimeout(() => {
+		shell.burst(900,300);
+		soundManager.playSound('burst');
+	}, time+400);
+  }
 const sequences = [
 	seqRandomShell,//900+600*random+4600:0(fallingLeaves)
 	seqTwoRandom,
@@ -1245,10 +1487,17 @@ const sequences = [
 	seqTripleRingShell,//700
 	seqTripleV2,//1250
 	seqPalmAndStrobeShell,
-	vietNamV1Seq
+	seqQuarRandomShell,
+	vietNamV1Seq,
+
 ];
 
-
+function playMusic() {
+	// Lấy đối tượng audio
+	const audio = new Audio('y2mate.com - ABBA  Happy New Year.mp3'); // Thay đổi 'ten_bai_nhac.mp3' bằng đường dẫn tới tệp nhạc của bạn
+	// Phát nhạc
+	audio.play();
+}
 let isFirstSeq = true;
 const finaleCount = 32;
 let currentFinaleCount = 0;
@@ -1259,9 +1508,10 @@ function startSequence() {
 			return seqTwoRandom();
 		}
 		else {
-			const shell = new Shell(crysanthemumShellV2(shellSizeSelector()));
+			const shell = new Shell(crysanthemumShell(shellSizeSelector()));
 			shell.launch(0.5, 0.5);
 			return 2400;
+
 		}
 	}
 	
@@ -1306,6 +1556,7 @@ function startSequence2() {
 		else {
 			const shell = new Shell(shellTypes['Ghost'](shellSizeSelector()));
 			shell.launch(0.5, 0.5);
+			
 			return 2400;
 		}
 	}
@@ -1321,11 +1572,8 @@ function startSequence2() {
 			return 6000;
 		}
 	}
-	seqDoubleCrysanthemum();
-	seqPalmAndStrobeShell();
-	seqPyramid();
-	seqQuarRandomShell();
-	seqTriple();
+	vietNamV1Seq();
+	
 }
 
 let activePointerCount = 0;
@@ -1454,7 +1702,7 @@ function updateGlobals(timeStep, lag) {
 	if (store.state.config.autoLaunch) {
 		autoLaunchTime -= timeStep;
 		if (autoLaunchTime <= 0) {
-			autoLaunchTime = startSequence() * 1.25;
+			autoLaunchTime = startSequence2() * 1.25;
 		}
 	}
 }
@@ -2003,7 +2251,6 @@ class Shell {
 		const launchX = position * (width - hpad * 2) + hpad;
 		const launchY = height;
 		const burstY = minHeight - (launchHeight * (minHeight - vpad));
-		
 		const launchDistance = launchY - burstY;
 		// Using a custom power curve to approximate Vi needed to reach launchDistance under gravity and air drag.
 		// Magic numbers came from testing.
@@ -2047,7 +2294,62 @@ class Shell {
 		
 		soundManager.playSound('lift');
 	}
-	
+	launchV2(position, launchHeight,positionX) {
+		const width = stageW;
+		const height = stageH+50;
+		// Distance from sides of screen to keep shells.
+		const hpad = 60;
+		// Distance from top of screen to keep shell bursts.
+		const vpad = 50;
+		// Minimum burst height, as a percentage of stage height
+		const minHeightPercent = 0.45;
+		// Minimum burst height in px
+		const minHeight = height - height * minHeightPercent;
+		
+		const launchX = position * (width - hpad * 2) + hpad;
+		const launchY = height;
+		const burstY = minHeight - (launchHeight * (minHeight - vpad));
+		const launchDistance = launchY - burstY+250*(positionX>0?-position:position);
+		// Using a custom power curve to approximate Vi needed to reach launchDistance under gravity and air drag.
+		// Magic numbers came from testing.
+		const launchVelocity = Math.pow(launchDistance * 0.04, 0.64);
+		
+		const comet = this.comet = Star.addV2(
+			launchX,
+			launchY,
+			typeof this.color === 'string' && this.color !== 'random' ? this.color : COLOR.White,
+			Math.PI,
+			launchVelocity * (this.horsetail ? 1.2 : 1),
+			// Hang time is derived linearly from Vi; exact number came from testing
+			launchVelocity * (this.horsetail ? 100 : 400),
+			positionX,
+		);
+		
+		// making comet "heavy" limits air drag
+		comet.heavy = true;
+		// comet spark trail
+		comet.spinRadius = MyMath.random(0.32, 0.85);
+		comet.sparkFreq = 32 / quality;
+		if (isHighQuality) comet.sparkFreq = 8;
+		comet.sparkLife = 320;
+		comet.sparkLifeVariation = 3;
+		if (this.glitter === 'willow' || this.fallingLeaves) {
+			comet.sparkFreq = 20 / quality;
+			comet.sparkSpeed = 0.5;
+			comet.sparkLife = 500;
+		}
+		if (this.color === INVISIBLE) {
+			comet.sparkColor = COLOR.Gold;
+		}
+		
+		// Randomly make comet "burn out" a bit early.
+		// This is disabled for horsetail shells, due to their very short airtime.
+		if (Math.random() > 0.4 && !this.horsetail) {
+			comet.secondColor = INVISIBLE;
+			comet.transitionTime = Math.pow(Math.random(), 1.5) * 700 + 500;
+		}
+		soundManager.playSound('lift');
+	}
 	burst(x, y) {
 		// Set burst speed so overall burst grows to set size. This specific formula was derived from testing, and is affected by simulated air drag.
 		const speed = this.spreadSize / 96;
@@ -2072,7 +2374,7 @@ class Shell {
 			crackleEffect(star);
 		}
 		const number=Math.random();
-		if (this.floral) onDeath = floralEffectV2;
+		if (this.floral) onDeath = floralEffect;
 		if (this.fallingLeaves) onDeath = fallingLeavesEffect;
 		
 		if (this.glitter === 'light') {
@@ -2332,7 +2634,6 @@ const Star = {
 
 	add(x, y, color, angle, speed, life, speedOffX, speedOffY) {
 		const instance = this._pool.pop() || this._new();
-		
 		instance.visible = true;
 		instance.heavy = false;
 		instance.x = x;
@@ -2340,8 +2641,35 @@ const Star = {
 		instance.prevX = x;
 		instance.prevY = y;
 		instance.color = color;
-		instance.speedX = Math.sin(angle) * speed + (speedOffX || 0);
-		instance.speedY = Math.cos(angle) * speed + (speedOffY || 0);
+		instance.speedX = Math.sin(angle) * speed + (speedOffX || 0);;
+		instance.speedY = Math.cos(angle) * speed + (speedOffY || 0);//góc bay theo chiều y
+		instance.life = life;
+		instance.fullLife = life;
+		instance.spinAngle = Math.random() * PI_2;
+		instance.spinSpeed = 0.8;
+		instance.spinRadius = 0;
+		instance.sparkFreq = 0; // ms between spark emissions
+		instance.sparkSpeed = 1;
+		instance.sparkTimer = 0;
+		instance.sparkColor = color;
+		instance.sparkLife = 750;
+		instance.sparkLifeVariation = 0.25;
+		instance.strobe = false;
+		
+		this.active[color].push(instance);
+		return instance;
+	},
+	addV2(x, y, color, angle, speed, life, speedOffX,speedOffY) {
+		const instance = this._pool.pop() || this._new();
+		instance.visible = true;
+		instance.heavy = false;
+		instance.x = x;
+		instance.y = y;
+		instance.prevX = x;
+		instance.prevY = y;
+		instance.color = color;
+		instance.speedX = speedOffX||0;//góc bay theo chiều x
+		instance.speedY = Math.cos(angle) * speed + (speedOffY || 0);//góc bay theo chiều y
 		instance.life = life;
 		instance.fullLife = life;
 		instance.spinAngle = Math.random() * PI_2;
@@ -2377,7 +2705,7 @@ const Star = {
 const Spark = {
 	// Visual properties
 	drawWidth: 0, // set in `configDidUpdate()`
-	airDrag: 0.9,
+	airDrag: 0.8,
 	
 	// Star particles will be keyed by color
 	active: createParticleCollection(),
