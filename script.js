@@ -56,7 +56,9 @@ const COLOR = {
 	Blue: '#1e7fff',
 	Purple: '#e60aff',
 	Gold: '#ffbf36',
-	White: '#ffffff'
+	White: '#ffffff',
+	// Pink:'#FFC0CB'
+
 };
 
 // Special invisible color (not rendered, and therefore not in COLOR map)
@@ -1046,18 +1048,464 @@ function seqPyramid() {
 	
 	return 3400 + barrageCountHalf * 250;
 }
+function vietNamV3Seq(){
+	
+	seqDoubleFive()
+
+
+}
+async function seqDoubleFive(){
+	
+	let i=0;
+	let time=0;
+	let height=-0.3
+	seqSparkLeft(0,0.45,-0.3)
+	seqSparkRight(0.55,1,-0.7)
+	setTimeout(() => {
+		seqSparkRight(0,0.45,-0.7)
+		seqSparkLeft(0.55,1,-0.3)
+	}, 550);
+	while(i<5){
+		let shell=new Shell({
+			...shellTypes['Crysanthemum'](2),
+			strobe:true,
+			pistil:true,
+			pistilColor:COLOR.Red,
+			color: COLOR.Gold,
+		})
+		shell.launch(0.1,height)
+		shell.launch(0.9,height)
+		time+=100
+		height+=0.2
+		await new Promise(resolve => setTimeout(resolve, time));
+		i++
+		
+	}
+}
 function vietNamV1Seq(){
+	playMusic();
 	const size=getRandomShellSize();
 	const bigsize=size*2;
 	const smallsize=size*0.5;
-	const shell1 = new Shell(shellTypes['Ring'](size.size));
-	// shell1.launchV2(0.5,0.1,-1)
-	// shell1.launchV2(0.5,0.2,0)
+	VietNamFlag();
+	
+	setTimeout(() => {
+		let shell=new Shell(shellTypes['Ghost'](5))
+			let shell2=new Shell(shellTypes['Willow'](5))
+			shell.launch(0.4,0.3)
+			shell2.launch(0.4,0.3)
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Ghost'](5))
+			let shell2=new Shell(shellTypes['Willow'](5))
+			shell.launch(0.6,0.4)
+			shell2.launch(0.6,0.4)
+		}, 2000);
+		setTimeout(() => {
+			seqPalmAndStrobeShell(0.5,0.5)
+		}, 4000);
+		setTimeout(() => {
+			seqSparkWithShellLeft(150)
+		}, 7000);
+		setTimeout(() => {
+			seqSparkWithShellRight(150)
+		}, 9000);
+		setTimeout(() => {
+			seqPalmAndStrobeShell(0.5,0.5)
+		}, 10000);
+	}, 16000-3000);
+	setTimeout(() => {
+		seqSparkHalfMid(0.2,0.6,5,50)
+		seqSparkHalfRight(0.8,0.6,5,50)
+		seqSparkHalfLeft(0.2,0.8,10,50)
+		seqSparkHalfRight(0.8,0.8,10,50)
+		setTimeout(() => {
+			seqSparkHalfMid(0.2,0.9,10,50)
+			seqSparkHalfMid(0.8,1.5,10,50)
+		}, 3000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crysanthemum'](5))
+			shell.launch(0.2,0.4)
+			shell.launch(0.8,0.5)
+		}, 2000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crysanthemum'](5))
+			shell.launch(0.3,0.4)
+			shell.launch(0.7,0.5)
+		}, 5000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Strobe'](5))
+			shell.launch(0.35,0.4)
+			shell=new Shell(shellTypes['Strobe'](5))
+			shell.launch(0.65,0.5)
+		}, 7000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Strobe'](5))
+			let shell2=new Shell(shellTypes['Crackle'](5))
+			let shell3=new Shell(shellTypes['Willow'](5))
+			shell.launch(0.5,0.5)
+			shell2.launch(0.5,0.5)
+			shell3.starLifeVariation*=5
+			shell3.launch(0.5,0.5)
+		}, 9600);
+	}, 28000);
+	setTimeout(() => {
+		seqTripleV2(0.3,0.5)
+		seqTripleV2(0.7,0.6)
+		setTimeout(() => {
+			seqSparkHalfMid(0.5,0.8,10,50)
+		}, 2000);
+		setTimeout(() => {
+			seqShellHeightLeftToRight(4,50)
+		}, 2500);
+		setTimeout(() => {
+			seqShellHeightRightToLeft(4,50)
+		},3000);
+		setTimeout(()=>{
+			seqRandomSparkPosition(0.35,0.65)
+			setTimeout(() => {
+				seqRandomSparkPosition(0.36,0.641)
+			}, 1000);
+			setTimeout(() => {
+				seqRandomShellPosition(0.33,0.67)
+			}, 2000);
+		},3000)
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crackle'](7))
+			shell.launch(0.5,0.5)
+		}, 4000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crackle'](7))
+			shell.launch(0.6,0.5)
+		}, 7000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crackle'](7))
+			shell.launch(0.4,0.5)
+		}, 8000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crackle'](7))
+			shell.launch(0.3,0.5)
+		}, 9000);
+		setTimeout(() => {
+			seqQuarRandomShell(0.36,0.3)
+		}, 10000);
+		setTimeout(() => {
+			seqQuarRandomShell(0.74,0.7)
+		}, 12000);
+	}, 42000);
+	setTimeout(() => {
+		setTimeout(() => {
+			seqSparkHalfMid(0.5,0.8,10,50)
+		}, 2000-1000);
+		setTimeout(() => {
+			seqShellHeightLeftToRight(4,50)
+		}, 2500-1000);
+		setTimeout(() => {
+			seqShellHeightRightToLeft(4,50)
+		},3000-1000);
+		setTimeout(()=>{
+			seqRandomSparkPosition(0.35,0.65)
+			setTimeout(() => {
+				seqRandomSparkPosition(0.36,0.641)
+			}, 1000);
+			setTimeout(() => {
+				seqRandomShellPosition(0.33,0.67)
+			}, 2000);
+		},2000)
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crackle'](7))
+			shell.launch(0.5,0.5)
+		}, 3000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crackle'](7))
+			shell.launch(0.6,0.5)
+		}, 6000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crackle'](7))
+			shell.launch(0.4,0.5)
+		}, 7000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crackle'](7))
+			shell.launch(0.68,0.5)
+		}, 8000);
+		setTimeout(() => {
+			seqQuarRandomShell(0.31,0.3)
+		}, 10000);
+		setTimeout(() => {
+			seqQuarRandomShell(0.85,0.7)
+		}, 12000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Floral'](5))
+			shell.launch(0.3,0.3)
+			setTimeout(() => {
+				let shell=new Shell(shellTypes['Ring'](5))
+				let shell1=new Shell(shellTypes['Ring'](5))
+				let shell2=new Shell(shellTypes['Ring'](5))
+				shell.launch(0.4,0.4)
+				shell1.launch(0.6,0.5)
+				shell2.launch(0.55,0.6)
+				let shell3=new Shell(shellTypes['Falling Leaves'](7))
+				shell3.launch(0.5,0.5)
+			}, 1500);
+		}, 14000);
+	}, 60000);
+	setTimeout(() => {
+		seqDoubleCrysanthemum(0.3,0.6)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 900);
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.35,0.6)
+			setTimeout(() => {
+				seqDoubleCrysanthemum(0.65,0.5)
+			}, 700);
+		}, 3000);
+		setTimeout(() => {
+			seqSparkFull(0.1,0.9)
+		}, 8000);
+		setTimeout(() => {
+			let shell=new Shell(shellTypes['Crysanthemum'](6))
+			shell.launch(0.6,0.5)
+			setTimeout(() => {
+				let shell2=new Shell(shellTypes['Crysanthemum'](6))
+				shell2.launch(0.3,0.6)
+			}, 300);
+		}, 6000);
+		setTimeout(() => {
+			seqShellMidHeight(50);
+			setTimeout(() => {
+				let shell1=new Shell(shellTypes['Floral'](6))
+				let shell2=new Shell(shellTypes['Floral'](6))
+				shell1.launch(0.3,0.6)
+				shell2.launch(0.7,0.5)
+			}, 3000);
+			setTimeout(() => {
+				seqShellFastFull(0.5,-0.5)
+				setTimeout(() => {
+					seqShellFastFull(0.4,-0.1)
+					seqShellFastFull(0.6,-0.1)
+				}, 350);
+				setTimeout(() => {
+					seqShellFastFull(0.7,-0.2)
+					seqShellFastFull(0.3,-0.2)
+				}, 550);
+			}, 7000);
+		}, 12000);
+		setTimeout(() => {
+			let shell=new Shell({
+				...shellTypes['Crysanthemum'](6.6),
+				strobe:true,
+				strobeColor:COLOR.White,
+			})
+			shell.launch(0.5,0.5)
+		}, 22000);
+	}, 60000+22000);
+	setTimeout(() => {
+		seqShellHeightLeftToRight(8,15)
+		setTimeout(() => {
+			seqShellHeightRightToLeft(8,15)
+		}, 7000);
+		setTimeout(() => {
+			seqShellMidShort(50)
+		}, 12000);
+	}, 60000+44000);
+	setTimeout(() => {
+		seqShellMidHeight(50)
+		setTimeout(() => {
+			seqShellLeft(10)
+			setTimeout(() => {
+				seqShellRight(10)
+			}, 350);
+		}, 3000);
+		setTimeout(() => {
+			seqSparkLeft(0.1,0.4,-0.3)
+			seqSparkRight(0.6,0.9,-0.7)
+			setTimeout(() => {
+				seqSparkRight(0.1,0.4,-0.3)
+				seqSparkLeft(0.6,0.9,-0.7)
+			}, 450);
+			setTimeout(() => {
+				seqSparkHalfMid(0.25,0.9,10,50)
+				seqSparkHalfMid(0.75,0.9,10,50)
+			}, 750);
+			setTimeout(() => {
+				seqSparkHalfMid(0.25,0.9,10,50)
+				seqSparkHalfMid(0.75,0.9,10,50)
+			}, 1000);
+			setTimeout(() => {
+				seqSparkFull(0.1,1);
+			}, 3000);
+			setTimeout(() => {
+				seqShellShortLeftToRight(5,0.1,50)
+				seqShellHeightRightToLeft(5,50)
+			}, 4000);
+			setTimeout(() => {
+				seqShellShortRightToLeft(7,0.6,50)
+				seqShellHeightLeftToRight(9,50)
+			}, 5000);
+			setTimeout(() => {
+				seqShellMidHeight(50)
+				seqShellMidShort(50)
+			}, 7000);
+			setTimeout(() => {
+				seqSparkLeft(0.1,0.45,-0.7)
+				setTimeout(() => {
+					seqSparkRight(0.55,1,-0.3)
+				}, 350);
+			}, 9000);
+			setTimeout(() => {
+				seqSparkLeft(0.1,0.4,-0.4)
+			setTimeout(() => {
+					seqSparkRight(0.6,1,-0.7)
+				}, 450);
+				setTimeout(() => {
+					seqSparkRight(0.1,0.4,-0.4)
+					setTimeout(() => {
+						seqSparkLeft(0.6,1,-0.3)
+					}, 450)
+				}, 700);
+				setTimeout(() => {
+					let shell=new Shell({
+						...shellTypes['Crysanthemum'](5),
+						strobe:true
+					})
+					let shell2=new Shell(shellTypes['Floral'](5))
+					shell.launch(0.5,0.5)
+					shell2.launch(0.5,0.5)
+				}, 800);
+			}, 10000);
+		}, 8000);
+	}, 60000+55000);
+	setTimeout(() => {//happynew late
+		seqSparkLeft(0.1,0.4,-0.3)
+			seqSparkRight(0.6,0.9,-0.7)
+			setTimeout(() => {
+				seqSparkRight(0.1,0.4,-0.3)
+				seqSparkLeft(0.6,0.9,-0.7)
+			}, 450);
+			setTimeout(() => {
+				seqSparkHalfMid(0.25,0.9,10,50)
+				seqSparkHalfMid(0.75,0.9,10,50)
+			}, 750);
+			setTimeout(() => {
+				seqSparkHalfMid(0.25,0.9,10,50)
+				seqSparkHalfMid(0.75,0.9,10,50)
+			}, 1000);
+			setTimeout(() => {
+				seqSparkFull(0.1,1);
+			}, 3000);
+			setTimeout(() => {
+				seqShellShortLeftToRight(5,0.1,50)
+				seqShellHeightRightToLeft(5,50)
+			}, 4000);
+			setTimeout(() => {
+				seqShellShortRightToLeft(7,0.6,50)
+				seqShellHeightLeftToRight(7,50)
+			}, 5000);
+			setTimeout(() => {
+				seqShellMidHeight(50)
+				seqShellMidShort(50)
+			}, 7000);
+			setTimeout(() => {
+				seqSparkLeft(0.1,0.45,-0.7)
+				setTimeout(() => {
+					seqSparkRight(0.55,1,-0.3)
+				}, 350);
+			}, 9000);
+			setTimeout(() => {
+				seqSparkLeft(0.1,0.4,-0.4)
+			setTimeout(() => {
+					seqSparkRight(0.6,1,-0.7)
+				}, 450);
+				setTimeout(() => {
+					seqSparkRight(0.1,0.4,-0.4)
+					setTimeout(() => {
+						seqSparkLeft(0.6,1,-0.3)
+					}, 450)
+				}, 700);
+				setTimeout(() => {
+					let shell=new Shell({
+						...shellTypes['Crysanthemum'](5),
+						strobe:true
+					})
+					let shell2=new Shell(shellTypes['Floral'](5))
+					shell.launch(0.5,0.5)
+					shell2.launch(0.5,0.5)
+				}, 800);
+			}, 10000);
+	}, 120000+13000);
+	setTimeout(() => {
+		seqDoubleFive()
+		setTimeout(() => {
+			let shell=new Shell({
+				...shellTypes['Crysanthemum'](6),
+				floral:true,
+				pistil:true,
+				pistilColor:COLOR.Gold,
+				color: COLOR.Red,
+			})
+			let shell2=new Shell(shellTypes['Willow'](6))
+			shell.launch(0.5,0.4)
+			shell2.launch(0.5,0.4)
+		}, 450);
+		setTimeout(() => {
+					let shell=new Shell({
+				...shellTypes['Crysanthemum'](3),
+				color:COLOR.Gold,
+				pistil:true,
+				pistilColor:COLOR.Red,
+				strobe:true,
+				strobeColor:COLOR.White,
+				willow:true
+			})
+			let time=shell.starLifeVariation;
 
-	seqShellHeightLeftToRight(10,150)
-	seqShellHeightRightToLeft(10,150)
+			shell.starLifeVariation=time*3
+			shell.burst(1080,900)//cao5 1
+			soundManager.playSound('burst');
+			setTimeout(() => {
+				shell.burst(1080,737)//cao4	2
+				shell.starLifeVariation=time*2.5
+				soundManager.playSound('burst');
+				
+			}, 150);
+			setTimeout(() => {
+				shell.starLifeVariation=time*2.2
+				shell.burst(1080,443)//cao 2 3	
+				soundManager.playSound('burst');
+			}, 300);
+			setTimeout(() => {
+				shell.starLifeVariation=time*1.9
+				shell.burst(810,296)//cao nhât 4
+				shell.burst(1350,296)//cao nhât 4
+				soundManager.playSound('burst');
+				soundManager.playSound('burst');
+			}, 450);
+			setTimeout(() => {
+				shell.starLifeVariation=time*1.6
+				shell.burst(630,443)//cao 2 5
+				soundManager.playSound('burst');
+				soundManager.playSound('burst');
+			
+				shell.burst(1530,443)//cao 2 5
+			}, 600);
+			setTimeout(() => {
+				shell.starLifeVariation=time*1.3
+				shell.burst(810,590)//cao3 6
+				soundManager.playSound('burst');
+				shell.burst(1350,590)//cao3 6
+				soundManager.playSound('burst');
+			}, 750);
+			setTimeout(() => {
+				shell.starLifeVariation=time*1
+				shell.burst(890,737)//cao4 7
+				soundManager.playSound('burst');
+				soundManager.playSound('burst');
+				shell.burst(1270,730)//cao4 7
+			}, 900);
+		}, 850);
+	}, 120000+31000);
 	
-	
+
 }
 
 function seqSmallBarrage() {
@@ -1107,19 +1555,13 @@ seqSmallBarrage.cooldown = 15000;
 seqSmallBarrage.lastCalled = Date.now();
 
 function seqTripleRingShell (x,y,size){
-	if (!seqTripleRingShell.hasRun) {
 		const shell1 = new Shell(shellTypes['Ring'](size));
         // Launch the first shel  
-	
         shell1.launch(x, y);
         const shell2 = new Shell(shellTypes['Ring'](size*0.80));
         shell2.launch(x, y);
         const shell3 = new Shell(shellTypes['Ring'](size*1.12));
         shell3.launch(x, y);
-        seqTripleRingShell.hasRun = true; 
-        return 700; // Return the total duration for all shells
-    }
-    return 0; // Return 0 if the function has already run
 }
 async function seqShellHeightLeftToRight(count, time) {
     const size = getRandomShellSize();
@@ -1224,19 +1666,21 @@ async function seqShellShortRightToLeft(count,position,time) {
 		lastShell.launch(0.5, 0.5)
 	}, timen-15);
 }
+
 function seqShellMidHeight(time){
 	seqShellHeightRightToLeft(5,0.66,time)
 	seqShellHeightLeftToRight(5,1-0.64,time)
 	setTimeout(() => {
 		const size=getRandomShellSize()
-		seqTripleRingShell(0.5,0.5,size.size*2.5)
+		seqTripleRingShell(0.5,0.5,size.size*1.7)
 	}, time);
 	
 }
 function seqShellMidShort(time){
 	setTimeout(() => {
 		const size=getRandomShellSize()
-		seqTripleRingShell(0.5,0.5,size.size*2.4)
+		size.size=6;
+		seqTripleRingShell(0.5,0.5,size.size*1.3)
 	}, time);
 	seqShellShortRightToLeft(5,0.66,time*0.05)
 	seqShellShortLeftToRight(5,1-0.64,time*0.05)
@@ -1256,11 +1700,84 @@ function seqShellRight(time){
 		seqTripleRingShell(0.5,0.3,size.size*1.9)
 	}, time*0.00005);
 }
+async function seqSparkLeft(left, right,height){
+	const shell =new Shell(shellTypes['Crysanthemum'](6))
+	let spread=(right-left)/15;
+	let time=50;
+	while(left<=right){
+	 await new Promise(resolve => setTimeout(resolve, time));
+	 shell.launchV2(left,height,0.5);
+	 height+=0.05
+	 time+=5;
+	 left+=spread;
+	 }
+}
+
+async function seqSparkRight(left, right,height){
+	const shell =new Shell(shellTypes['Crysanthemum'](6))
+	let spread=(right-left)/15;
+	let time=50;
+	while(right>=left){
+	 await new Promise(resolve => setTimeout(resolve, time));
+	 shell.launchV2(right,height,-0.5);
+	 height+=0.05
+	 time+=5;
+	 right-=spread;
+	 }
+}
+async function seqSparkFull(left ,right){
+	let i=0
+	let time=0;
+	while(i<2){
+		await new Promise(resolve => setTimeout(resolve, time));
+		setTimeout(() => {
+			seqSparkLeft(left,right,-0.3)
+		}, time);
+		setTimeout(() => {
+			seqSparkRight(left,right,-0.7)
+		}, time+900);
+		time+=900;
+		i++;
+	}
+}
+function seqFiveShell(position,height){
+	let vt=position-0.1;
+	let i=0
+	while(i<5){
+		let size=getRandomShellSize();
+		size.size=3
+		let shelltype=randomFastShell();
+		let shell=new Shell(shelltype(size.size))
+		shell.starLifeVariation*=0.65
+		let mt=(Math.random() < 0.5) ? -1 : 1
+		let number=0.1+mt*Math.random()*0.1
+		shell.launch(vt,height+number);
+		vt+=0.05;
+		i++
+	}
+}
+async function seqShellFastFull(position,height){
+	let time=50;
+	for(let i=0;i<4;i++){
+		await new Promise(resolve => setTimeout(resolve, time));
+		seqFiveShell(position,height);
+		time+=300
+	}
+	
+	
+}
 function seqDoubleCrysanthemum(x,y){
-	if (!seqDoubleCrysanthemum.hasRun) {
         const size = getRandomShellSize();
-		const shell1 = new Shell(shellTypes['Crysanthemum'](size.size));
-		const shell2 = new Shell(shellTypes['Crysanthemum'](size.size*0.5));
+		const shell1 = new Shell({
+			...shellTypes['Crysanthemum'](6),
+			pistil:1
+
+		});
+		const shell2 = new Shell({
+			...shellTypes['Crysanthemum'](4),
+			pistil:1
+
+		});
 		shell2.starLifeVariation=0.75;
 		shell1.starLifeVariation=shell2.starLifeVariation+0.11;
 		if(shell1.color==shell2.color){
@@ -1274,13 +1791,9 @@ function seqDoubleCrysanthemum(x,y){
         shell2.launch(x, y);
 
     
-        seqDoubleCrysanthemum.hasRun = true;
-        return 200; // Return the total duration for all shells
-    }
-    return 0; // Return 0 if the function has already run
-}
+	}
+    
 function seqTripleV2(x,y){
-	if (!seqTripleV2.hasRun) {
         const size = getRandomShellSize();
 		const shell1 = new Shell(shellTypes['Horse Tail'](size.size*0.25));
         // Launch the first shell
@@ -1289,7 +1802,7 @@ function seqTripleV2(x,y){
         // Launch the second shell with a delay
         setTimeout(() => {
            
-            shell2.launch(size.x, size.height-0.1);
+            shell2.launch(x, y-0.1);
         }, 350);
 		setTimeout(() => {
             const shell3 = new Shell({...shellTypes['Crysanthemum'](size.size),
@@ -1311,58 +1824,42 @@ function seqTripleV2(x,y){
         }, 650);
 
     
-        seqTripleV2.hasRun = true;
-        return 1250; // Return the total duration for all shells
-    }
-    return 0; // Return 0 if the function has already run
+        
 }
-function seqPalmAndStrobeShell(){
-	if (!seqPalmAndStrobeShell.hasRun) {
-        const size = getRandomShellSize();
-		const shell1 = new Shell(shellTypes['Palm'](size.size));
-		const color=shell1.color;
+function seqPalmAndStrobeShell(x,y){
+      
+		const shell1 = new Shell(shellTypes['Palm'](4));
         // Launch the first shell
-       
-        shell1.launch(size.x, size.height);
+
+        shell1.launch(x, y);
 
         // Launch the second shell with a delay
         
-        const shell2 = new Shell(shellTypes['Strobe'](size.size));
+        const shell2 = new Shell(shellTypes['Strobe'](4));
 		shell2.color=shell1.color;
-        shell2.launch(size.x, size.height);
-
-        seqPalmAndStrobeShell.hasRun = true;
-        return 200; // Return the total duration for all shells
-    }
-    return 0; // Return 0 if the function has already run
+        shell2.launch(x, y);
 }
-function seqQuarRandomShell(){
-	if (!seqQuarRandomShell.hasRun) {
+function seqQuarRandomShell(x, height){
         const size = getRandomShellSize();
 		const shelltype=randomFastShell();
 		const shell1 = new Shell(shelltype(size.size));
-		shell1.launch(size.x,size.height);
+		shell1.launch(x,height);
 		setTimeout(() => {
-			
 			const shell2=new Shell(shelltype(size.size));
-			
-			shell2.launch(size.x,size.height);
+			shell2.launch(x,height);
 		}, 150);
 		setTimeout(() => {
-			
 			const shell3=new Shell(shelltype(size.size));
-			shell3.launch(size.x,size.height);
+			shell3.launch(x,height);
 		}, 350);
 		setTimeout(() => {
-			
-			const shell4=new Shell(shelltype(size.size));
-			shell4.launch(size.x,size.height);
+			const shell4=new Shell({
+				...shelltype(size.size),
+				strobe:true
+			});
+			shell4.launch(x,height);
 		}, 550);
         // Launch the first shell
-        seqQuarRandomShell.hasRun = true;
-        return 700; // Return the total duration for all shells
-    }
-    return 0; // Return 0 if the function has already run
 }
 async function seqSparkHalfLeft(position,height1,count, time){
 	let height=-height1+0.58*position*2;
@@ -1388,7 +1885,26 @@ async function seqSparkHalfLeft(position,height1,count, time){
 		timen+=80*0.05;
 	}
 }
-
+function creatFiveShell(left,right){
+	let spread=(right -left)/5;
+	while(left<=right){
+		let number=0.01+Math.random()*0.01
+		let shell=new Shell(shellTypes['Crysanthemum'](0.7))
+		shell.launch(left+number,-0.3+number)
+		left+=spread;
+	}
+}
+async function seqShellAllInOne(left, right){
+	let i=0;
+	let time=0;
+	while(i<5){
+		console.log(time)
+		await new Promise(resolve => setTimeout(resolve, time));
+		creatFiveShell(left,right)
+		time+=200
+		i++
+	}
+}
 async function seqSparkHalfRight(position,height1, count, time) {
 	let height =-height1+0.58*position*2;
 	count = count;
@@ -1431,6 +1947,24 @@ async function seqSparkHalfRight(position,height1, count, time) {
 		seqSparkHalfLeft(position,1+(position>0.5?position:-position),5,time)
 		
 	}, time+550*2);
+  }
+  function doubleShell(x,y){
+	let shell=new Shell(shellTypes['Crysanthemum'](5));
+	let shell2=new Shell(shellTypes['Strobe'](5));
+	shell.launch(x,y)
+	shell2.launch(x,y)
+	// size.size=5
+	// let shell=randomFastShell()
+	// let shell2=randomFastShell()
+	// let shell1=randomFastShell()
+	// let shell3=randomFastShell()
+	// shell.size=shell1.size=size
+	// size.size+=1;
+	// shell2.size=shell3.size=size
+	// shell.launch(x,y)
+	// shell2.launch(x,y)
+	// shell1.launch(x+number,y)
+	// shell3.launch(x+number,y)
   }
   function seqSparkHalfTripTwo(time){
 	seqSparkHalfTrip(0.2,time)
@@ -1478,6 +2012,160 @@ async function seqSparkHalfRight(position,height1, count, time) {
 		soundManager.playSound('burst');
 	}, time+400);
   }
+function VietNamFlagOneShell(x, y, lifeStar){
+	const shell= new Shell({
+		...shellTypes['Strobe'](2.5),
+		strobeColor:COLOR.Red,
+		pistilColor:COLOR.Red,
+	})
+	shell.color=COLOR.Red;
+	shell.starLife*=lifeStar;
+	shell.launch(x,y)
+}
+async function VietNamFlagFrame( left,right){
+	let count=(right-left)*10;
+	let spread=(right-left)/count;
+	let position=left;
+	let height=0.7	;
+	while(position<=right){
+		VietNamFlagOneShell(position,height,1.2);
+		position+=spread;
+		console.log("ngang cao:")
+		console.log(position)
+
+	}
+	while(height>-0.1){
+		VietNamFlagOneShell(right,height,1.2);
+		VietNamFlagOneShell(left,height,1.2);
+		height-=0.2
+	}
+	position=left
+	while(position<=right){
+		VietNamFlagOneShell(position,-0.6,2.5);
+		position+=spread;
+		console.log("ngang Thấp:")
+		console.log(position)
+	}
+	
+}
+async function VietNamFlagShell(left, right,time,count){
+	let timen=time;
+	let hehe=0
+	while(hehe<count){
+		await new Promise(resolve => setTimeout(resolve, timen));
+		let random=0.05+Math.random()*0.05;
+		VietNamFlagFrame(left+random,right-random);
+		hehe++;
+		timen+=900
+	}
+}
+function seqRandomShellPosition(left,right){
+	const spread=(right-left)/7;
+	let x=left;
+	
+	while(x<=right){
+		let shell=new Shell(shellTypes['Crysanthemum'](4));
+		let number=0.2+Math.random()*0.1;
+		shell.launch(x,0.2+number)
+		x+=spread;
+		console.log(x)
+	}
+}
+function seqRandomSparkPosition(left,right){
+	const spread=(right-left)/10;
+	let x=left;
+	let goc=-3
+	while(x<=right){
+		let shell=new Shell(shellTypes['Crysanthemum'](4));
+		let number=0.2+Math.random()*0.1;
+		shell.launchV2(x,-0.2+number,goc)
+		goc+=0.6,
+		x+=spread;
+		console.log(x)
+	}
+}
+async function seqRandomShellV2(left, right,time,count){
+	let timen=time;
+	let hehe=0
+	while(hehe<count){
+		await new Promise(resolve => setTimeout(resolve, timen));
+		let random=0.1+Math.random()*0.1;
+		seqRandomShellPosition(left+random,right-random);
+		let shell=new Shell(shellTypes('Crysanthemum')(16))
+		shell.launchV2(left+random,0.8,-1)
+		shell.launchV2(right-random,0.8,1)
+		hehe++;
+		timen+=30
+	}
+}
+function VietNamFlagSmallStar(time){
+	time*=0.05
+	const shell=new Shell({
+		...shellTypes['Strobe'](1),
+		strobeColor:COLOR.Gold,
+		pistil:false
+	})
+	shell.starLife*=1.5
+	let timeof=shell.starLife;
+	shell.color=COLOR.Gold
+	shell.launch(0.5,0.6)
+	setTimeout(() => {
+		shell.starLife=timeof*1.1
+		shell.launch(0.35,0.3)
+		shell.launch(0.65,0.3)
+	}, time+300);
+	setTimeout(() => {
+		shell.starLife=timeof*1.3
+		shell.launch(0.4,-0.4)
+		shell.launch(0.6,-0.4)
+	}, time+900);
+}
+function VietNamFlagBigStar(time){
+	time*=0.05
+	const shell=new Shell({
+		...shellTypes['Strobe'](1.5),
+		strobeColor:COLOR.Gold,
+		pistil:false
+	})
+	shell.starLife*=1.5
+	let timeof=shell.starLife;
+	shell.color=COLOR.Gold
+	shell.launch(0.5,0.2)
+	shell.launch(0.5,0.2)
+	setTimeout(() => {
+		shell.starLife=timeof*1.1
+		shell.launch(0.43,0)
+		shell.launch(0.57,0)
+		shell.launch(0.43,0)
+		shell.launch(0.57,0)
+	}, time+300);
+
+	setTimeout(() => {
+		shell.starLife=timeof*1.3
+		shell.launch(0.49,-0.2)
+		shell.launch(0.51,-0.2)
+		shell.launch(0.49,-0.2)
+		shell.launch(0.51,-0.2)
+	}, time+900);
+}
+async function VietNamFlagStar(count){
+	let timen=70;
+	let hehe=0
+	while(hehe<count){
+		await new Promise(resolve => setTimeout(resolve, timen));
+		let random=0.05+Math.random()*0.05;
+		VietNamFlagSmallStar(150);
+		VietNamFlagBigStar(150);
+		hehe++;
+		timen+=900
+	}
+}
+function VietNamFlag(){
+	VietNamFlagShell(0.1,0.9,350,5)
+	setTimeout(() => {
+		VietNamFlagStar(5)
+	},750);	
+}
 const sequences = [
 	seqRandomShell,//900+600*random+4600:0(fallingLeaves)
 	seqTwoRandom,
@@ -1494,7 +2182,7 @@ const sequences = [
 
 function playMusic() {
 	// Lấy đối tượng audio
-	const audio = new Audio('y2mate.com - ABBA  Happy New Year.mp3'); // Thay đổi 'ten_bai_nhac.mp3' bằng đường dẫn tới tệp nhạc của bạn
+	const audio = new Audio('Untitled video - Made with Clipchamp (3).mp4'); // Thay đổi 'ten_bai_nhac.mp3' bằng đường dẫn tới tệp nhạc của bạn
 	// Phát nhạc
 	audio.play();
 }
@@ -2200,8 +2888,8 @@ function crackleEffect(star) {
 			300 + Math.random() * 200
 		);
 	});
+	soundManager.playSound('burstSmall');
 }
-
 
 
 /**
@@ -2376,7 +3064,6 @@ class Shell {
 		const number=Math.random();
 		if (this.floral) onDeath = floralEffect;
 		if (this.fallingLeaves) onDeath = fallingLeavesEffect;
-		
 		if (this.glitter === 'light') {
 			sparkFreq = 400;
 			sparkSpeed = 0.3;
