@@ -1260,7 +1260,7 @@ function vietNamV1Seq(){
 			}, 700);
 		}, 3000);
 		setTimeout(() => {
-			seqSparkFull(0.1,0.9)
+			seqSparkFull(0.1,1)
 		}, 8000);
 		setTimeout(() => {
 			let shell=new Shell(shellTypes['Crysanthemum'](6))
@@ -1585,7 +1585,7 @@ async function seqShellHeightLeftToRight(count, time) {
 		life+=0.085;
     }
 	setTimeout(() => {
-		const lastShell=new Shell(shellTypes['ring'](size.size*2));
+		const lastShell=new Shell(shellTypes['ring'](size.size*1.7));
 		lastShell.launch(0.5, 0.5)
 	}, timen-15);
 }
@@ -1610,7 +1610,7 @@ async function seqShellShortLeftToRight(count,position,time) {
 		life+=0.085;
     }
 	setTimeout(() => {
-		const lastShell=new Shell(shellTypes['ring'](size.size*2));
+		const lastShell=new Shell(shellTypes['ring'](size.size*1.7));
 		lastShell.launch(0.5, 0.5)
 	}, timen-15);
 }
@@ -1636,7 +1636,7 @@ async function seqShellHeightRightToLeft(count,time) {
 		life+=0.085;
     }
 	setTimeout(() => {
-		const lastShell=new Shell(shellTypes['ring'](size.size*2));
+		const lastShell=new Shell(shellTypes['ring'](size.size*1.7));
 		lastShell.launch(0.5, 0.5)
 	}, timen-15);
 }
@@ -1662,7 +1662,7 @@ async function seqShellShortRightToLeft(count,position,time) {
 		life+=0.085;
     }
 	setTimeout(() => {
-		const lastShell=new Shell(shellTypes['ring'](size.size*2));
+		const lastShell=new Shell(shellTypes['ring'](size.size*1.7));
 		lastShell.launch(0.5, 0.5)
 	}, timen-15);
 }

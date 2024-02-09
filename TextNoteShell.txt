@@ -1,0 +1,98 @@
+
+	'Crackle': crackleShell,
+	'Crossette': crossetteShell,
+	'Crysanthemum': crysanthemumShell,
+	'Falling Leaves': fallingLeavesShell,
+	'Floral': floralShell,
+	'Ghost': ghostShell,
+	'Horse Tail': horsetailShell,
+	'Palm': palmShell,
+	'Ring': ringShell,
+	'Strobe': strobeShell,
+	'Willow': willowShell
+
+
+seq
+seqRandomShell,//900+600*random+4600:0(fallingLeaves)
+	seqTwoRandom,
+	seqDoubleCrysanthemum,
+	seqPyramid,//2 bên vào giữa
+	seqSmallBarrage,
+	
+	vietNamV1Seq,(main)
+-------------------------------------------------------
+ 	seqShellAllInOne(left, right) bắn 5 lần 5 pháo 1 lúc trong khoảng
+-------------------------------------------------------
+	seqTripleRingShell(position,height),//3 quả ring cùng 1 vị trí
+	seqTripleV2(position,height),//1250 //tạo 2 quả horsle sau đó là 2 quả crysantheum
+	seqPalmAndStrobeShell(position,height),
+-------------------------------------------------------
+	seqshellmidheight(time)//2 bên tăng dần vào giữa
+	seqshellmidshort(time)//2 bên giảm dần vào giữa
+-------------------------------------------------------
+	vị trí đầu mặc định là 0.1 và 0.9
+	seqShellHeightLeftToRight(count, time)//cao dàn từ trái sang phải và bắt đầu bên trái
+	seqShellHeightRightToLeft(count, time)//cao dần từ phải sang trái và bắt đầu từ bên phải
+-------------------------------------------------------
+	//>>position là vị trí bắt đầu 
+	seqShellShortLeftToRight(count,position, time)// thấp dần từ trái sang phải và bắt đầu bên trái //
+	seqShellShortRightToLeft(count,position, time)//Thấp dần từ phải sang trái và bắt đầu từ bên phải
+-------------------------------------------------------
+	///>>position càng cao thị vị trí bắn càng thấp
+	seqSparkHalfLeft(position,height,count, time)//tạo các tia lửa theo vòng cung từ trái qua phải ..//vị trí tâm,vị trí dừng, số 			lượng tia trong nửa hình tròn, tần suất bắn)
+	seqSparkHalfRightt(position,height,count, time)
+-------------------------------------------------------
+	seqSparkHalfMid(position,height,count, time)//mix halfleft và right và chọn vị trí Position, height khuyến khích 0.9
+-------------------------------------------------------
+	seqSparkHalfTrip(position,time)//bắn 3 tia xong 1 viên ở giữa 
+	seqSparkHalfTripTwo(time) //bắn 3tia 2 bên vị trí 0.2, 0.8  
+-------------------------------------------------------
+	seqSparkWithShellRight(time)//baắn các tia xong sẽ nổ 1 shell ở giữa (nghiêng sang phải_
+	seqSparkWithShellLeft(time)//baắn các tia xong sẽ nổ 1 shell ở giữa (nghiêng sang tráii_
+-------------------------------------------------------
+	seqSparkLeft(left, right,height)//bắn các tia từ trái sang phải và nghiêng sang phải//height -0.3
+	seqSparkRight(left, right,height)//bắn các tia từ phải sang trái và nghiêng sang trái //height -0.7
+-------------------------------------------------------
+	VietNamFlagRandom(a,b) //bắn liên tục từ vị trí a tới b
+	VietNamFlagFrame(right, left)// bắn 1 lần để tạo 1 hình chữ nhật màu đỏ
+	VietNamFlagShell(a,b,count)//bắn với khung chữ nhật và count lần
+	
+	VietNamFlag()//hoạt ảnh cờ việt nam
+
+
+/**
+
+ * Shell can be constructed with options:
+ *
+ * spreadSize:      Size of the burst. //kích thước phân tán
+ * starCount: Number of stars to create. This is optional, and will be set to a reasonable quantity for size if omitted.
+ * starLife: //thời gian sống của pháo chính
+ * starLifeVariation: //thời gian sống của các biến thể
+ * color:
+ * glitterColor:
+ * glitter: One of: 'light// các hạt ko rơi', 'medium //các hạt rơi tầm trung', 'heavy//các hạt khá nặngg', 'streamer//nặng hơn xíu', 'willow //nặng vcl tới khi pháo die'
+ * pistil: //pháo nhỏ bên trong
+ * pistilColor: //màu của nhị
+ * streamers: //tạo các tia với đường lấp lánh theo sau
+ * crossette: //hiệu ứng nổ 4 tia nhỏ
+ * floral: //hiệu ứng nổ các pháo nhỏ nhiều màu hoa
+ * crackle: //hiệu ứng nổ các pháo nhỏ lili 1 màu vàngg
+* strobe: //hiệu ứng lấp lánh
+ */
+
+
+size{ size//kích cỡ,
+ x//vi trí bắn,
+ height//chiều cao bắn
+}
+  
+shell.{
+busrt(x, y) //x>>min0->
+launch(position, launchHeight)
+launchV2(position, launchHeight,PitionX(góc nghiêng bắn)
+}
+
+star.{
+add(add(x, y, color, angle, speed, life, speedOffX, speedOffY)//thêm hạt theo hình tròn
+addV2(add(x, y, color, angle, speed, life, speedOffX, speedOffY)//thêm hạt theo dường chéo
+}
