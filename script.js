@@ -1083,7 +1083,7 @@ async function seqDoubleFive(){
 	}
 }
 function vietNamV1Seq(){
-	playMusic();
+	//playMusic();
 	const size=getRandomShellSize();
 	const bigsize=size*2;
 	const smallsize=size*0.5;
@@ -3429,7 +3429,9 @@ const Spark = {
 
 const soundManager = {
 	baseURL: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/329180/',
+
 	ctx: new (window.AudioContext || window.webkitAudioContext),
+
 	sources: {
 		lift: {
 			volume: 1,
