@@ -8,7 +8,7 @@
 	'Horse Tail': horsetailShell,
 	'Palm': palmShell,
 	'Ring': ringShell,
-	'Strobe': strobeShell,
+	'Strobe': strobeShell, hãy chỉnh starlife +2000 và starLife+0.4 nếu muốn nó nhấp nháy lâu hơn và có thể chỉnh strobe color	
 	'Willow': willowShell
 
 --------------------------------------------------
@@ -21,6 +21,7 @@
  * starCount: Number of stars to create. This is optional, and will be set to a reasonable quantity for size if omitted.
  * starLife: //thời gian sống của pháo chính
  * starLifeVariation: //thời gian sống của các biến thể
+* starDensity:1.1 ->mật độ và số lượng star hay sao ấy , để số càng cao nó càng nhiều viên
  * color:
  * glitterColor:
  * glitter: One of: 'light// các hạt ko rơi', 'medium //các hạt rơi tầm trung', 'heavy//các hạt khá nặngg', 'streamer//nặng hơn xíu', 'willow //nặng vcl tới khi pháo die'
@@ -52,7 +53,7 @@ seqRandomShell,//900+600*random+4600:0(fallingLeaves)
 	vietNamV1Seq,(main)
 -------------------------------------------------------
  	seqShellAllInOne(left, right) bắn 5 lần 5 pháo 1 lúc trong khoảng
- 	seqShellRandomForTime(time=50, count=10), banứ ngẫu nhiên vị trí 
+ 	seqShellRandomForTime(count=10), banứ ngẫu nhiên vị trí 
 -------------------------------------------------------
 	seqTripleRingShell(position,height),//3 quả ring cùng 1 vị trí
 	seqTripleV2(position,height),//1250 //tạo 2 quả horsle sau đó là 2 quả crysantheum
