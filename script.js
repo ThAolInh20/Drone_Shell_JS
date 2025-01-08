@@ -63,13 +63,33 @@ const COLOR = {
 	// Pink:'#FFC0CB'
 
 };
-/**
- * Chuyển mã màu thành ,màu tối hơn
- * @param {*} hex 
- * @param {*} amount 
- * @returns 
- */
+// 	/**
+// 	 * Chuyển mã màu thành ,màu tối hơn
+// 	 * @param {*} hex 
+// 	 * @param {*} amount 
+// 	 * @returns 
+// 	 */
+// 	function darkenColor(hex, amount) {
+//     // Chuyển mã HEX sang RGB
+//     let [r, g, b] = hex.match(/\w\w/g).map((c) => parseInt(c, 16));
+    
+//     // Giảm giá trị RGB
+//     r = Math.max(0, r - amount);
+//     g = Math.max(0, g - amount);
+//     b = Math.max(0, b - amount);
+
+	
+
+//     // Chuyển lại sang HEX
+//     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+// }
 function darkenColor(hex, amount) {
+    // Kiểm tra định dạng mã màu HEX hợp lệ
+    if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+        console.error(`Invalid HEX color: ${hex}`);
+        return hex; // Giữ nguyên màu gốc nếu không hợp lệ
+    }
+
     // Chuyển mã HEX sang RGB
     let [r, g, b] = hex.match(/\w\w/g).map((c) => parseInt(c, 16));
     
@@ -77,8 +97,6 @@ function darkenColor(hex, amount) {
     r = Math.max(0, r - amount);
     g = Math.max(0, g - amount);
     b = Math.max(0, b - amount);
-
-	
 
     // Chuyển lại sang HEX
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
@@ -114,7 +132,7 @@ const stages = [
  */
 class Drone {
 	
-    constructor(x, y, radius=2, speedX =0 , speedY=0, color, life) {
+    constructor(x, y, radius=2, speedX =0 , speedY=0, color=COLOR.Blue, life) {
         this.x = x *maxW;
         this.y = (1 - y)*maxH;
         this.radius = radius;
@@ -122,6 +140,8 @@ class Drone {
         this.speedX = speedX;
         this.speedY = speedY;
         this.color = color;
+		this.pistilColor = COLOR.White;
+		this.baseRadius = radius;
         this.life = life;
     }
 
@@ -172,69 +192,162 @@ class Drone {
 		this.speedX = speedX;
         this.speedY = speedY;
 	}
-
+	
     isAlive() {
         return this.life>0;
     }
 }
 class Formation {
+	
     constructor() {
         this.drones = []; // Mảng lưu danh sách các drone
     }
-
     addDrone(drone) {
         this.drones.push(drone);
     }
-
-    setCircleFormation(centerX, centerY, radius) {
-        const angleStep = (2 * Math.PI) / this.drones.length;
-        this.drones.forEach((drone, index) => {
-            const angle = angleStep * index;
-            drone.x = centerX + radius * Math.cos(angle);
-            drone.y = centerY + radius * Math.sin(angle);
-        });
-    }
-	setCircleFormationV2(centerX, centerY, radius, rotationAngle = 0.05) {
-		const angleStep = (2 * Math.PI) / this.drones.length;
-		this.drones.forEach((drone, index) => {
-			const angle = angleStep * index + rotationAngle; // Thêm góc xoay
-			drone.x = centerX + radius * Math.cos(angle);
-			drone.y = centerY + radius * Math.sin(angle);
-		});
+	setColor(color){
+		this.drones.forEach(drone=>{
+			drone.color=color
+		})
 	}
+    // setCircleFormation(centerX, centerY, radius) {
+    //     const angleStep = (2 * Math.PI) / this.drones.length;
+    //     this.drones.forEach((drone, index) => {
+    //         const angle = angleStep * index;
+    //         drone.x = centerX + radius * Math.cos(angle);
+    //         drone.y = centerY + radius * Math.sin(angle);
+    //     });
+    // }
+	// setCircleFormationV2(centerX, centerY, radius, angularSpeed = Math.PI / 120) {
+	// 	let rotationAngle = 0; // Góc bắt đầu
+
+	// 	// Hàm cập nhật vị trí các drone theo đội hình hình tròn
+	// 	const updateFormation = () => {
+	// 		const angleStep = (2 * Math.PI) / this.drones.length;
+	// 		this.drones.forEach((drone, index) => {
+	// 			const angle = angleStep * index + rotationAngle; // Thêm góc xoay
+	// 			drone.x = centerX 	+ radius * Math.cos(angle);
+	// 			drone.y = centerY + radius * Math.sin(angle);
+	// 		});
+
+	// 		rotationAngle += angularSpeed; // Cập nhật góc xoay
+	// 	};
+
+	// 	// Gọi định kỳ để cập nhật đội hình
+	// 	setInterval(updateFormation, 16); // 16ms ~ 60 FPS
+		
+	// }
 	/**
-	 * Xoay vongf tròn 3d
-	 * @param {X} centerX 
-	 * @param {Y} centerY 
-	 * @param {size} radius 
-	 * @param {speed} rotationAngle 
-	 * @param {angle} tiltAngle 
+	 * Xoay vòng tròn ngang
+	 * @param {*} centerX 
+	 * @param {*} centerY 
+	 * @param {*} radius 
+	 * @param {*} tiltAngle 
+	 * @param {*} speed 
 	 */
-	setCircleFormationV3(centerX, centerY,color, radius, rotationAngle = 0, tiltAngle = Math.PI / 6) {
+	setCircleFormationV2(centerX, centerY, radius, tiltAngle = Math.PI / 2.15, speed = Math.PI / 600, formationLifetime = 2000) {
+		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
 		const cosTilt = Math.cos(tiltAngle); // Tính cos của góc nghiêng
 		const sinTilt = Math.sin(tiltAngle); // Tính sin của góc nghiêng
 	
-		this.drones.forEach((drone, index) => {
-			const angle = angleStep * index + rotationAngle; // Góc quay
-			const x = radius * Math.cos(angle); // Tọa độ X trên vòng tròn
-			const y = radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
+		let elapsedTime = 0; // Biến để theo dõi thời gian đã trôi qua
+		const startTime = Date.now(); // Thời điểm bắt đầu
 	
-			// Biến đổi 3D với góc nghiêng tiltAngle
-			const transformedX = x; // Trục X giữ nguyên
-			const transformedY = y * cosTilt; // Trục Y bị thu nhỏ theo cos(tiltAngle)
-			const depth = y * sinTilt; // Tọa độ chiều sâu để làm hiệu ứng z-index
+		// Hàm cập nhật đội hình theo thời gian
+		const update = () => {
+			const currentTime = Date.now();
+			elapsedTime = currentTime - startTime;
+
 	
-			// Đặt lại vị trí drone
-			drone.x = centerX + transformedX;
-			drone.y = centerY + transformedY;
-			
-			let size = drone.radius + depth * 0.00001;
-			// Tạo hiệu ứng "độ sâu" bằng cách thay đổi kích thước hoặc màu sắc dựa trên `depth`
-			// drone.radius = (size>0)?size:drone.minRadius; // Tăng giảm kích thước theo độ sâu
-			// drone.color = depth > 0 ? drone.color : d; // Màu sắc thay đổi theo chiều sâu
-			// drone.color = depth > 0 ? color : "rgba(26, 26, 47, 0.8)"; // Màu sắc thay đổi theo chiều sâu
-		});
+			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			if (elapsedTime >= formationLifetime) {
+				this.drones.forEach(drone => {
+					drone.x = null; // Hoặc giá trị mặc định khi drone "biến mất"
+					drone.y = null;
+				});
+				console.log("Đội hình đã biến mất.");
+				return;
+						
+			}
+	
+			time += speed; // Tăng thời gian để thay đổi góc quay
+			const rotationAngle = time; // Góc quay hiện tại
+	
+			this.drones.forEach((drone, index) => {
+				const angle = angleStep * index + rotationAngle; // Góc quay cho mỗi drone
+				const x = radius * Math.cos(angle); // Tọa độ X trên vòng tròn
+				const y = radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
+	
+				// Biến đổi 3D với góc nghiêng tiltAngle
+				const transformedX = x; // Trục X giữ nguyên
+				const transformedY = y * cosTilt; // Trục Y bị thu nhỏ theo cos(tiltAngle)
+				const depth = y * sinTilt; // Chiều sâu để tạo hiệu ứng 3D
+	
+				// Đặt lại vị trí drone
+				drone.x = centerX + transformedX;
+				drone.y = centerY + transformedY;
+	
+				// Tạo hiệu ứng "độ sâu" bằng cách thay đổi kích thước hoặc màu sắc dựa trên `depth`
+				// drone.radius = drone.baseRadius + depth * 0.005; // Kích thước thay đổi theo độ sâu
+				// drone.pistilColor = depth > 0 ? COLOR.White : "rgba(185, 185, 224, 0.8)"; // Màu sắc thay đổi theo độ sâu
+			});
+	
+			// Gọi lại hàm cập nhật liên tục
+			requestAnimationFrame(update);
+		};
+	
+		// Bắt đầu cập nhật đội hình
+		update();
+	}
+
+	/**
+	 * Xoay vòng tròn với khả năng điều chỉnh độ nghiêng theo cả 2 trục (X và Y)
+	 * @param {*} centerX - Tọa độ tâm X
+	 * @param {*} centerY - Tọa độ tâm Y
+	 * @param {*} radius - Bán kính vòng tròn
+	 * @param {*} tiltAngleX - Độ nghiêng theo trục X  math.pi/1->vv
+	 * @param {*} tiltAngleY - Độ nghiêng theo trục Y math.pi/1->vv
+	 * @param {*} speed - Tốc độ xoay math.pi/600 
+	 */
+	setCircleFormationV3(centerX, centerY, radius, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/2, speed = Math.PI / 900) {
+		let time = 0; // Biến thời gian để tính góc xoay
+		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
+		const cosTiltX = Math.cos(tiltAngleX); // Tính cos của góc nghiêng X
+		const sinTiltX = Math.sin(tiltAngleX); // Tính sin của góc nghiêng X
+		const cosTiltY = Math.cos(tiltAngleY); // Tính cos của góc nghiêng Y
+		const sinTiltY = Math.sin(tiltAngleY); // Tính sin của góc nghiêng Y
+
+		// Hàm cập nhật đội hình theo thời gian
+		const update = () => {
+			time += speed; // Tăng thời gian để thay đổi góc quay
+			const rotationAngle = time; // Góc quay hiện tại
+
+			this.drones.forEach((drone, index) => {
+				const angle = angleStep * index + rotationAngle; // Góc quay cho mỗi drone
+				const x = radius * Math.cos(angle); // Tọa độ X trên vòng tròn
+				const y = radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
+
+				// Biến đổi 3D với góc nghiêng trên cả hai trục
+				const transformedX = x * cosTiltY - y * sinTiltX; // Trục X biến đổi theo nghiêng Y và X
+				const transformedY = y * cosTiltX - x * sinTiltY; // Trục Y biến đổi theo nghiêng X và Y
+				const depth = x * sinTiltX + y * sinTiltY; // Chiều sâu để tạo hiệu ứng 3D
+
+				// Đặt lại vị trí drone
+				drone.x = centerX + transformedX;
+				drone.y = centerY + transformedY;
+
+				// Tạo hiệu ứng "độ sâu" bằng cách thay đổi kích thước hoặc màu sắc dựa trên `depth`
+				// drone.radius = drone.baseRadius + depth * 0.05; // Kích thước thay đổi theo độ sâu
+				// drone.color = depth > 0 ? "rgba(255, 0, 0, 1)" : "rgba(0, 0, 255, 0.8)"; // Màu sắc thay đổi theo độ sâu
+			});
+
+			// Gọi lại hàm cập nhật liên tục
+			requestAnimationFrame(update);
+		};
+
+		// Bắt đầu cập nhật đội hình
+		update();
 	}
 	/**
 	 * Tạo đội hình drone theo hình cầu 3D có thể xoay
@@ -294,6 +407,44 @@ class Formation {
 			drone.color = z > 0 ? color : `rgba(26, 26, 47, 0.8)`; // Màu thay đổi theo chiều sâu
 		});
 	}
+
+	// /**
+	//  * Chuyển đổi mượt mà giữa các đội hình
+	//  * @param {*} newFormation - Hàm để tính toán đội hình mới (callback)
+	//  * @param {*} duration - Thời gian chuyển đổi (ms)
+	//  */
+	// transitionToFormation(newFormation, duration = 2000) {
+	// 	const startTime = Date.now();
+	// 	const initialPositions = this.drones.map(drone => ({ x: drone.x, y: drone.y })); // Lưu trạng thái ban đầu
+
+	// 	const update = () => {
+	// 		const currentTime = Date.now();
+	// 		const elapsedTime = currentTime - startTime;
+	// 		const t = Math.min(elapsedTime / duration, 1); // Tính tỷ lệ thời gian (0 -> 1)
+
+	// 		// Lấy đội hình mới từ hàm callback
+	// 		const targetPositions = newFormation();
+
+	// 		// Cập nhật vị trí drone với nội suy tuyến tính
+	// 		this.drones.forEach((drone, index) => {
+	// 			const start = initialPositions[index];
+	// 			const target = targetPositions[index];
+
+	// 			drone.x = start.x + (target.x - start.x) * t;
+	// 			drone.y = start.y + (target.y - start.y) * t;
+	// 		});
+
+	// 		// Nếu chưa hoàn thành, tiếp tục cập nhật
+	// 		if (t < 1) {
+	// 			requestAnimationFrame(update);
+	// 		} else {
+	// 			console.log("Hoàn thành chuyển đổi đội hình!");
+	// 		}
+	// 	};
+
+	// 	// Bắt đầu cập nhật
+	// 	update();
+	// }
     setLineFormation(startX, startY, spacing, horizontal = true) {
         this.drones.forEach((drone, index) => {
             if (horizontal) {
@@ -310,73 +461,73 @@ class Formation {
         this.drones.forEach(drone => drone.update(timeStep, speed, gAcc));
     }
 }
-class ShowController {
-    constructor() {
-        this.drones = []; // Mảng lưu các drone
-        this.activeFormations = []; // Các đội hình hiện tại
-        this.time = 0; // Thời gian điều phối
-    }
+// class ShowController {
+//     constructor() {
+//         this.drones = []; // Mảng lưu các drone
+//         this.activeFormations = []; // Các đội hình hiện tại
+//         this.time = 0; // Thời gian điều phối
+//     }
 
-    addDrone(drone) {
-        this.drones.push(drone);
-    }
+//     addDrone(drone) {
+//         this.drones.push(drone);
+//     }
 
-    addFormation(formation) {
-        this.activeFormations.push(formation);
-    }
+//     addFormation(formation) {
+//         this.activeFormations.push(formation);
+//     }
 
-    startShow() {
-        console.log("Bắt đầu màn trình diễn drone!");
-    }
+//     startShow() {
+//         console.log("Bắt đầu màn trình diễn drone!");
+//     }
 
-    updateAll(timeStep, speed, gAcc) {
-        // Cập nhật tất cả các drone
-        this.drones.forEach((drone, index) => {
-            drone.update(timeStep, speed, gAcc);
-            if (!drone.isAlive()) this.drones.splice(index, 1);
-        });
+//     updateAll(timeStep, speed, gAcc) {
+//         // Cập nhật tất cả các drone
+//         this.drones.forEach((drone, index) => {
+//             drone.update(timeStep, speed, gAcc);
+//             if (!drone.isAlive()) this.drones.splice(index, 1);
+//         });
 
-        // Cập nhật tất cả các đội hình
-        this.activeFormations.forEach(formation => {
-            formation.updateFormation(timeStep, speed, gAcc);
-        });
+//         // Cập nhật tất cả các đội hình
+//         this.activeFormations.forEach(formation => {
+//             formation.updateFormation(timeStep, speed, gAcc);
+//         });
 
-        this.time += timeStep;
-    }
+//         this.time += timeStep;
+//     }
 
-    endShow() {
-        console.log("Kết thúc màn trình diễn drone!");
-    }
-}
-class Path {
-    constructor(points) {
-        this.points = points; // Mảng các điểm (x, y) trên lộ trình
-        this.currentIndex = 0;
-    }
+//     endShow() {
+//         console.log("Kết thúc màn trình diễn drone!");
+//     }
+// }
+// class Path {
+//     constructor(points) {
+//         this.points = points; // Mảng các điểm (x, y) trên lộ trình
+//         this.currentIndex = 0;
+//     }
 
-    getNextPoint() {
-        if (this.currentIndex < this.points.length) {
-            return this.points[this.currentIndex++];
-        } else {
-            return null; // Hết lộ trình
-        }
-    }
-}
-class PathFollowerDrone extends Drone {
-    constructor(x, y, radius, speedX, speedY, color, life, path) {
-        super(x, y, radius, speedX, speedY, color, life);
-        this.path = path; // Lộ trình
-    }
+//     getNextPoint() {
+//         if (this.currentIndex < this.points.length) {
+//             return this.points[this.currentIndex++];
+//         } else {
+//             return null; // Hết lộ trình
+//         }
+//     }
+// }
+// class PathFollowerDrone extends Drone {
+//     constructor(x, y, radius, speedX, speedY, color, life, path) {
+//         super(x, y, radius, speedX, speedY, color, life);
+//         this.path = path; // Lộ trình
+//     }
 
-    update(timeStep, speed, gAcc) {
-        const nextPoint = this.path.getNextPoint();
-        if (nextPoint) {
-            this.x += (nextPoint.x - this.x) * speed * timeStep;
-            this.y += (nextPoint.y - this.y) * speed * timeStep;
-        }
-        super.update(timeStep, speed, gAcc);
-    }
-}
+//     update(timeStep, speed, gAcc) {
+//         const nextPoint = this.path.getNextPoint();
+//         if (nextPoint) {
+//             this.x += (nextPoint.x - this.x) * speed * timeStep;
+//             this.y += (nextPoint.y - this.y) * speed * timeStep;
+//         }
+//         super.update(timeStep, speed, gAcc);
+//     }
+// }
 let maxW = window.innerWidth - 2;
 let maxH = window.innerHeight;
 
@@ -2855,7 +3006,7 @@ const sequences = [
 
 ];
 
-function playMusic( path) {
+function playMusic(path) {
 	// Lấy đối tượng audio
 	const audio = new Audio(path); // Thay đổi 'ten_bai_nhac.mp3' bằng đường dẫn tới tệp nhạc của bạn
 	// Phát nhạc
@@ -3184,16 +3335,12 @@ function update(frameTime, lag) {
 		}
 	});
 
-	//Cập nhật drone
+	// //Cập nhật drone
     for (let i = drones.length - 1; i >= 0; i--) {
         const drone = drones[i];
         drone.update(timeStep, speed, 0);
-		// if(drone.life<2000){
-		// 	drone.update(timeStep,speed,undefined,0.3,0.2)
-		// }
         // Hiệu ứng nếu drone chết
         if (!drone.isAlive()) {
-			
             drones.splice(i,1)
         }
     }
@@ -3288,7 +3435,7 @@ function render(speed) {
 	 drones.forEach(drone => {
 		// Tạo gradient radial cho hiệu ứng bóng bóng
 		const gradient = mainCtx.createRadialGradient(drone.x, drone.y, drone.radius * 0.3, drone.x, drone.y, drone.radius);
-		gradient.addColorStop(0, "white"); // Màu sáng ở trung tâm
+		gradient.addColorStop(0, drone.pistilColor); // Màu sáng ở trung tâm
 
 		gradient.addColorStop(0.4, drone.color); // Màu chính của drone
 		gradient.addColorStop(0.8,'rgba(55, 52, 50, 0)' );
@@ -4155,323 +4302,291 @@ const Spark = {
 
 
 
-// const soundManager = {
-// 	baseURL: '/Music/',
+const soundManager = {
+	baseURL: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/329180/',
 
 
-// 	ctx: new (window.AudioContext || window.webkitAudioContext),
+	ctx: new (window.AudioContext || window.webkitAudioContext),
 
-// 	sources: {
-// 		lift: {
-// 			volume: Math.random()+0.5,
-// 			playbackRateMin: 0.85,
-// 			playbackRateMax: 0.95,
-// 			fileNames: [
-// 				'lift1.mp3',
-// 				'lift2.mp3',
-// 				'lift3.mp3',
-// 				'lift4.mp3'
+	sources: {
+		lift: {
+			volume: Math.random()+0.5,
+			playbackRateMin: 0.85,
+			playbackRateMax: 0.95,
+			fileNames: [
+				'lift1.mp3',
+				'lift2.mp3',
+				'lift3.mp3'
+				// 'lift4.mp3'
 	
-// 			]
-// 		},
-// 		burst: {
-// 			volume: Math.random()+0.5,
-// 			playbackRateMin: 0.8,
-// 			playbackRateMax: 0.9,
-// 			fileNames: [
-// 				'burst1.mp3',
-// 				'burst2.mp3'
+			]
+		},
+		burst: {
+			volume: Math.random()+0.5,
+			playbackRateMin: 0.8,
+			playbackRateMax: 0.9,
+			fileNames: [
+				'burst1.mp3',
+				'burst2.mp3'
 				
-// 			]
-// 		},
-// 		burstSmall: {
-// 			volume: 0.25,
-// 			playbackRateMin: 0.8,
-// 			playbackRateMax: 1,
-// 			fileNames: [
-// 				'burst-sm-1.mp3',
-// 				'burst-sm-2.mp3'
-// 			]
-// 		},
-// 		crackle: {
-// 			volume: 0.2,
-// 			playbackRateMin: 1,
-// 			playbackRateMax: 1,
-// 			fileNames: ['crackle1.mp3']
-// 		},
-// 		crackleSmall: {
-// 			volume: 0.3,
-// 			playbackRateMin: 1,
-// 			playbackRateMax: 1,
-// 			fileNames: ['crackle-sm-1.mp3']
-// 		}
-// 	},
+			]
+		},
+		burstSmall: {
+			volume: 0.25,
+			playbackRateMin: 0.8,
+			playbackRateMax: 1,
+			fileNames: [
+				'burst-sm-1.mp3',
+				'burst-sm-2.mp3'
+			]
+		},
+		crackle: {
+			volume: 0.2,
+			playbackRateMin: 1,
+			playbackRateMax: 1,
+			fileNames: ['crackle1.mp3']
+		},
+		crackleSmall: {
+			volume: 0.3,
+			playbackRateMin: 1,
+			playbackRateMax: 1,
+			fileNames: ['crackle-sm-1.mp3']
+		}
+	},
 
-// 	preload() {
-// 		const allFilePromises = [];
+	preload() {
+		const allFilePromises = [];
 
-// 		function checkStatus(response) {
-// 			if (response.status >= 200 && response.status < 300) {
-// 				return response;
-// 			}
-// 			const customError = new Error(response.statusText);
-// 			customError.response = response;
-// 			throw customError;
-// 		}
+		function checkStatus(response) {
+			if (response.status >= 200 && response.status < 300) {
+				return response;
+			}
+			const customError = new Error(response.statusText);
+			customError.response = response;
+			throw customError;
+		}
 
-// 		const types = Object.keys(this.sources);
-// 		types.forEach(type => {
-// 			const source = this.sources[type];
-// 			const { fileNames } = source;
-// 			const filePromises = [];
-// 			fileNames.forEach(fileName => {
-// 				const fileURL = this.baseURL + fileName;
-// 				// Promise will resolve with decoded audio buffer.
-// 				const promise = fetch(fileURL)
-// 					.then(checkStatus)
-// 					.then(response => response.arrayBuffer())
-// 					.then(data => new Promise(resolve => {
-// 						this.ctx.decodeAudioData(data, resolve);
-// 					}));
+		const types = Object.keys(this.sources);
+		types.forEach(type => {
+			const source = this.sources[type];
+			const { fileNames } = source;
+			const filePromises = [];
+			fileNames.forEach(fileName => {
+				const fileURL = this.baseURL + fileName;
+				// Promise will resolve with decoded audio buffer.
+				const promise = fetch(fileURL)
+					.then(checkStatus)
+					.then(response => response.arrayBuffer())
+					.then(data => new Promise(resolve => {
+						this.ctx.decodeAudioData(data, resolve);
+					}));
 
-// 				filePromises.push(promise);
-// 				allFilePromises.push(promise);
-// 			});
+				filePromises.push(promise);
+				allFilePromises.push(promise);
+			});
 
-// 			Promise.all(filePromises)
-// 				.then(buffers => {
-// 					source.buffers = buffers;
-// 				});
-// 		});
+			Promise.all(filePromises)
+				.then(buffers => {
+					source.buffers = buffers;
+				});
+		});
 
-// 		return Promise.all(allFilePromises);
-// 	},
+		return Promise.all(allFilePromises);
+	},
 
-// 	pauseAll() {
-// 		this.ctx.suspend();
-// 	},
+	pauseAll() {
+		this.ctx.suspend();
+	},
 
-// 	resumeAll() {
-// 		// Play a sound with no volume for iOS. This 'unlocks' the audio context when the user first enables sound.
-// 		this.playSound('lift', 0);
-// 		// Chrome mobile requires interaction before starting audio context.
-// 		// The sound toggle button is triggered on 'touchstart', which doesn't seem to count as a full
-// 		// interaction to Chrome. I guess it needs a click? At any rate if the first thing the user does
-// 		// is enable audio, it doesn't work. Using a setTimeout allows the first interaction to be registered.
-// 		// Perhaps a better solution is to track whether the user has interacted, and if not but they try enabling
-// 		// sound, show a tooltip that they should tap again to enable sound.
-// 		setTimeout(() => {
-// 			this.ctx.resume();
-// 		}, 250);
-// 	},
+	resumeAll() {
+		// Play a sound with no volume for iOS. This 'unlocks' the audio context when the user first enables sound.
+		this.playSound('lift', 0);
+		// Chrome mobile requires interaction before starting audio context.
+		// The sound toggle button is triggered on 'touchstart', which doesn't seem to count as a full
+		// interaction to Chrome. I guess it needs a click? At any rate if the first thing the user does
+		// is enable audio, it doesn't work. Using a setTimeout allows the first interaction to be registered.
+		// Perhaps a better solution is to track whether the user has interacted, and if not but they try enabling
+		// sound, show a tooltip that they should tap again to enable sound.
+		setTimeout(() => {
+			this.ctx.resume();
+		}, 250);
+	},
 
-// 	// Private property used to throttle small burst sounds.
-// 	_lastSmallBurstTime: 0,
+	// Private property used to throttle small burst sounds.
+	_lastSmallBurstTime: 0,
 
-// 	/**
-// 	 * Play a sound of `type`. Will randomly pick a file associated with type, and play it at the specified volume
-// 	 * and play speed, with a bit of random variance in play speed. This is all based on `sources` config.
-// 	 *
-// 	 * @param  {string} type - The type of sound to play.
-// 	 * @param  {?number} scale=1 - Value between 0 and 1 (values outside range will be clamped). Scales less than one
-// 	 *                             descrease volume and increase playback speed. This is because large explosions are
-// 	 *                             louder, deeper, and reverberate longer than small explosions.
-// 	 *                             Note that a scale of 0 will mute the sound.
-// 	 */
-// 	playSound(type, scale = 1) {
-// 		// Ensure `scale` is within valid range.
-// 		scale = MyMath.clamp(scale, 0, 1);
+	/**
+	 * Play a sound of `type`. Will randomly pick a file associated with type, and play it at the specified volume
+	 * and play speed, with a bit of random variance in play speed. This is all based on `sources` config.
+	 *
+	 * @param  {string} type - The type of sound to play.
+	 * @param  {?number} scale=1 - Value between 0 and 1 (values outside range will be clamped). Scales less than one
+	 *                             descrease volume and increase playback speed. This is because large explosions are
+	 *                             louder, deeper, and reverberate longer than small explosions.
+	 *                             Note that a scale of 0 will mute the sound.
+	 */
+	playSound(type, scale = 1) {
+		// Ensure `scale` is within valid range.
+		scale = MyMath.clamp(scale, 0, 1);
 
-// 		// Disallow starting new sounds if sound is disabled, app is running in slow motion, or paused.
-// 		// Slow motion check has some wiggle room in case user doesn't finish dragging the speed bar
-// 		// *all* the way back.
-// 		if (!canPlaySoundSelector() || simSpeed < 0.95) {
-// 			return;
-// 		}
+		// Disallow starting new sounds if sound is disabled, app is running in slow motion, or paused.
+		// Slow motion check has some wiggle room in case user doesn't finish dragging the speed bar
+		// *all* the way back.
+		if (!canPlaySoundSelector() || simSpeed < 0.95) {
+			return;
+		}
 
-// 		// Throttle small bursts, since floral/falling leaves shells have a lot of them.
-// 		if (type === 'burstSmall') {
-// 			const now = Date.now();
-// 			if (now - this._lastSmallBurstTime < 20) {
-// 				return;
-// 			}
-// 			this._lastSmallBurstTime = now;
-// 		}
+		// Throttle small bursts, since floral/falling leaves shells have a lot of them.
+		if (type === 'burstSmall') {
+			const now = Date.now();
+			if (now - this._lastSmallBurstTime < 20) {
+				return;
+			}
+			this._lastSmallBurstTime = now;
+		}
 
-// 		const source = this.sources[type];
+		const source = this.sources[type];
 
-// 		if (!source) {
-// 			throw new Error(`Sound of type "${type}" doesn't exist.`);
-// 		}
+		if (!source) {
+			throw new Error(`Sound of type "${type}" doesn't exist.`);
+		}
 
-// 		const initialVolume = source.volume;
-// 		const initialPlaybackRate = MyMath.random(
-// 			source.playbackRateMin,
-// 			source.playbackRateMax
-// 		);
+		const initialVolume = source.volume;
+		const initialPlaybackRate = MyMath.random(
+			source.playbackRateMin,
+			source.playbackRateMax
+		);
 
-// 		// Volume descreases with scale.
-// 		const scaledVolume = initialVolume * scale;
-// 		// Playback rate increases with scale. For this, we map the scale of 0-1 to a scale of 2-1.
-// 		// So at a scale of 1, sound plays normally, but as scale approaches 0 speed approaches double.
-// 		const scaledPlaybackRate = initialPlaybackRate * (2 - scale);
+		// Volume descreases with scale.
+		const scaledVolume = initialVolume * scale;
+		// Playback rate increases with scale. For this, we map the scale of 0-1 to a scale of 2-1.
+		// So at a scale of 1, sound plays normally, but as scale approaches 0 speed approaches double.
+		const scaledPlaybackRate = initialPlaybackRate * (2 - scale);
 
-// 		const gainNode = this.ctx.createGain();
-// 		gainNode.gain.value = scaledVolume;
+		const gainNode = this.ctx.createGain();
+		gainNode.gain.value = scaledVolume;
 
-// 		const buffer = MyMath.randomChoice(source.buffers);
-// 		const bufferSource = this.ctx.createBufferSource();
-// 		bufferSource.playbackRate.value = scaledPlaybackRate;
-// 		bufferSource.buffer = buffer;
-// 		bufferSource.connect(gainNode);
-// 		gainNode.connect(this.ctx.destination);
-// 		bufferSource.start(0);
-// 	}
+		const buffer = MyMath.randomChoice(source.buffers);
+		const bufferSource = this.ctx.createBufferSource();
+		bufferSource.playbackRate.value = scaledPlaybackRate;
+		bufferSource.buffer = buffer;
+		bufferSource.connect(gainNode);
+		gainNode.connect(this.ctx.destination);
+		bufferSource.start(0);
+	}
+};
+
+// const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+// const soundManager = {
+//     baseURL: 'file:///C:/path/to/Music/',  // Đường dẫn tuyệt đối tới thư mục Music trên máy của bạn
+
+//     sources: {
+//         lift: {
+//             volume: Math.random() + 0.5,
+//             playbackRateMin: 0.85,
+//             playbackRateMax: 0.95,
+//             fileNames: [
+//                 'lift1.mp3',
+//                 'lift2.mp3',
+//                 'lift3.mp3',
+//                 'lift4.mp3'
+//             ]
+//         },
+//         burst: {
+//             volume: Math.random() + 0.5,
+//             playbackRateMin: 0.8,
+//             playbackRateMax: 0.9,
+//             fileNames: [
+//                 'burst1.mp3',
+//                 'burst2.mp3'
+//             ]
+//         },
+//         burstSmall: {
+//             volume: 0.25,
+//             playbackRateMin: 0.8,
+//             playbackRateMax: 1,
+//             fileNames: [
+//                 'burst-sm-1.mp3',
+//                 'burst-sm-2.mp3'
+//             ]
+//         },
+//         crackle: {
+//             volume: 0.2,
+//             playbackRateMin: 1,
+//             playbackRateMax: 1,
+//             fileNames: ['crackle1.mp3']
+//         },
+//         crackleSmall: {
+//             volume: 0.3,
+//             playbackRateMin: 1,
+//             playbackRateMax: 1,
+//             fileNames: ['crackle-sm-1.mp3']
+//         }
+//     },
+
+//     _lastSmallBurstTime: 0,
+
+//     async loadBuffer(fileName) {
+//         // Sử dụng đường dẫn từ thư mục Music với file MP3
+//         const response = await fetch(this.baseURL + fileName);
+//         const arrayBuffer = await response.arrayBuffer();
+//         return audioContext.decodeAudioData(arrayBuffer);
+//     },
+
+//     async loadSounds() {
+//         // Tải tất cả các âm thanh vào bộ đệm
+//         for (let sourceType in this.sources) {
+//             const source = this.sources[sourceType];
+//             source.buffers = await Promise.all(
+//                 source.fileNames.map(fileName => this.loadBuffer(fileName))
+//             );
+//         }
+//     },
+
+//     async playSound(type, scale = 1) {
+//         scale = Math.min(Math.max(scale, 0), 1);
+
+//         // Throttle small bursts
+//         if (type === 'burstSmall') {
+//             const now = Date.now();
+//             if (now - this._lastSmallBurstTime < 20) {
+//                 return;
+//             }
+//             this._lastSmallBurstTime = now;
+//         }
+
+//         const source = this.sources[type];
+//         if (!source) {
+//             throw new Error(`Sound of type "${type}" doesn't exist.`);
+//         }
+
+//         // Chọn một bộ đệm ngẫu nhiên từ danh sách file đã tải
+//         const buffer = MyMath.randomChoice(source.buffers);
+//         const bufferSource = audioContext.createBufferSource();
+
+//         const initialVolume = source.volume;
+//         const initialPlaybackRate = MyMath.random(source.playbackRateMin, source.playbackRateMax);
+
+//         const scaledVolume = initialVolume * scale;
+//         const scaledPlaybackRate = initialPlaybackRate * (2 - scale);
+
+//         const gainNode = audioContext.createGain();
+//         gainNode.gain.value = scaledVolume;
+
+//         bufferSource.buffer = buffer;
+//         bufferSource.playbackRate.value = scaledPlaybackRate;
+//         bufferSource.connect(gainNode);
+//         gainNode.connect(audioContext.destination);
+
+//         bufferSource.start(0);
+//     }
 // };
 
-const soundManager = {
-    baseURL: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/329180/',  // Đảm bảo rằng thư mục Music là thư mục chứa các file MP3 trên máy của bạn
-
-    ctx: new (window.AudioContext || window.webkitAudioContext),
-
-    sources: {
-        lift: {
-            volume: Math.random() + 0.5,
-            playbackRateMin: 0.85,
-            playbackRateMax: 0.95,
-            fileNames: [
-                'lift1.mp3',
-                'lift2.mp3',
-                'lift3.mp3',
-                'lift4.mp3'
-            ]
-        },
-        burst: {
-            volume: Math.random() + 0.5,
-            playbackRateMin: 0.8,
-            playbackRateMax: 0.9,
-            fileNames: [
-                'burst1.mp3',
-                'burst2.mp3'
-            ]
-        },
-        burstSmall: {
-            volume: 0.25,
-            playbackRateMin: 0.8,
-            playbackRateMax: 1,
-            fileNames: [
-                'burst-sm-1.mp3',
-                'burst-sm-2.mp3'
-            ]
-        },
-        crackle: {
-            volume: 0.2,
-            playbackRateMin: 1,
-            playbackRateMax: 1,
-            fileNames: ['crackle1.mp3']
-        },
-        crackleSmall: {
-            volume: 0.3,
-            playbackRateMin: 1,
-            playbackRateMax: 1,
-            fileNames: ['crackle-sm-1.mp3']
-        }
-    },
-
-    preload() {
-        const allFilePromises = [];
-
-        function checkStatus(response) {
-            if (response.status >= 200 && response.status < 300) {
-                return response;
-            }
-            const customError = new Error(response.statusText);
-            customError.response = response;
-            throw customError;
-        }
-
-        const types = Object.keys(this.sources);
-        types.forEach(type => {
-            const source = this.sources[type];
-            const { fileNames } = source;
-            const filePromises = [];
-            fileNames.forEach(fileName => {
-                const fileURL = this.baseURL + fileName;
-                // Promise will resolve with decoded audio buffer.
-                const promise = fetch(fileURL)
-                    .then(checkStatus)
-                    .then(response => response.arrayBuffer())
-                    .then(data => new Promise(resolve => {
-                        this.ctx.decodeAudioData(data, resolve);
-                    }));
-
-                filePromises.push(promise);
-                allFilePromises.push(promise);
-            });
-
-            Promise.all(filePromises)
-                .then(buffers => {
-                    source.buffers = buffers;
-                });
-        });
-
-        return Promise.all(allFilePromises);
-    },
-
-    pauseAll() {
-        this.ctx.suspend();
-    },
-
-    resumeAll() {
-        // Play a sound with no volume for iOS. This 'unlocks' the audio context when the user first enables sound.
-        this.playSound('lift', 0);
-        // Chrome mobile requires interaction before starting audio context.
-        setTimeout(() => {
-            this.ctx.resume();
-        }, 250);
-    },
-
-    _lastSmallBurstTime: 0,
-
-    playSound(type, scale = 1) {
-        scale = MyMath.clamp(scale, 0, 1);
-
-        // Throttle small bursts
-        if (type === 'burstSmall') {
-            const now = Date.now();
-            if (now - this._lastSmallBurstTime < 20) {
-                return;
-            }
-            this._lastSmallBurstTime = now;
-        }
-
-        const source = this.sources[type];
-
-        if (!source) {
-            throw new Error(`Sound of type "${type}" doesn't exist.`);
-        }
-
-        const initialVolume = source.volume;
-        const initialPlaybackRate = MyMath.random(
-            source.playbackRateMin,
-            source.playbackRateMax
-        );
-
-        const scaledVolume = initialVolume * scale;
-        const scaledPlaybackRate = initialPlaybackRate * (2 - scale);
-
-        const gainNode = this.ctx.createGain();
-        gainNode.gain.value = scaledVolume;
-
-        const buffer = MyMath.randomChoice(source.buffers);
-        const bufferSource = this.ctx.createBufferSource();
-        bufferSource.playbackRate.value = scaledPlaybackRate;
-        bufferSource.buffer = buffer;
-        bufferSource.connect(gainNode);
-        gainNode.connect(this.ctx.destination);
-        bufferSource.start(0);
-    }
-};
+// // Tải tất cả âm thanh khi bắt đầu
+// soundManager.loadSounds().then(() => {
+//     console.log('All sounds are loaded');
+// });
 
 
 
@@ -4785,7 +4900,6 @@ function seqDroneSquare(timeLife = 5000,speed = 0.002,color=COLOR.Blue){
         drones.push(new Drone(0.5 + i / 100, 0.5, 6, 0, 0, color, timeLife));
     }
 	let time = 0; // Biến thời gian
-
 	// Tạo 3 đội hình khác nhau
 	const formation1 = new Formation();
 	const formation2 = new Formation();
@@ -4801,8 +4915,6 @@ function seqDroneSquare(timeLife = 5000,speed = 0.002,color=COLOR.Blue){
 			formation3.addDrone(drone); // Đội hình 3: Drone còn lại
 		}
 	});
-  
-
 		// Thiết lập đội hình cho mỗi nhóm
 	// formation1.setCircleFormation(300, 200, 100); // Đội hình 1: Hình tròn
 	// formation2.setLineFormation(100, 300, 20);   // Đội hình 2: Đường thẳng ngang
@@ -4877,11 +4989,40 @@ function seqDroneSphere(time=5000){
 }
 
 	
+function testSeqDrone(){
+
+	for (let i = 0; i < 90; i++) {
+        drones.push(new Drone(0.5 + i / 100, 0.5, 5, 0, 0,COLOR.Red,20000000));
+    }
+	let d_count = drones.length;
 	
+	let formation = new Formation();
+	let formation2 =new Formation();
+	let formation3 =new Formation();
+	drones.forEach((drone, index) => {
+		if (index < 30) {
+			formation.addDrone(drone); // Đội hình 1: Drone đầu tiên
+		} else if (index < 60) {
+			formation2.addDrone(drone); // Đội hình 2: Drone tiếp theo
+		} else {
+			formation3.addDrone(drone); // Đội hình 3: Drone còn lại
+		}
+	});
+	formation.setCircleFormationV2(maxW/2, 150, 100); // Đội hình 1: Xoay với góc nghiêng 30 độ
+    formation2.setCircleFormationV2(maxW/2, 165, 115); // Đội hình 2: Đường thẳng không thay đổi
+    formation3.setCircleFormationV2(maxW/2,	180, 100); // Đội hình 3: Xoay với góc nghiêng 45 độ
+	
+	setTimeout(() => {
+		formation.setCircleFormationV2(300, 150, 100);
+	}, 5000);
+	
+}	
 
 
 
-seqDroneSquare(1000000)
+
+
+testSeqDrone()
 
 
 

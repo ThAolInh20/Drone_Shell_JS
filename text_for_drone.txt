@@ -1,0 +1,8 @@
+maxw =767 *2=1534
+maxh = 860
+drones.push(new Drone(0.5, 0.5, 5, 0, 0, COLOR.Gold, 3000000));
+---------------------------------------
+class  Formation(){}
+
+thiết lập đội hình hình tròn 
+=>>>>>>setCircleFormationV3(centerX, centerY, radius, tiltAngleX = Math.PI /15, tiltAngleY = Math.PI / 3, speed = Math.PI / 600) vòng tròn xoay	
