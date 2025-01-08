@@ -1,0 +1,18 @@
+# Bỏ qua file video lớn
+*.mp4
+*.txt
+
+# Bỏ qua thư mục build hoặc node_modules
+build/
+node_modules/
+
+# Bỏ qua file cấu hình cá nhân
+.env
+config.json
+
+# Bỏ qua tệp tạm của hệ điều hành
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
