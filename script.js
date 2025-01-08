@@ -208,7 +208,73 @@ class Formation {
 	setColor(color){
 		this.drones.forEach(drone=>{
 			drone.color=color
+			
 		})
+	}
+	/**
+	 * tạo size 3d 
+	 * @param {*} check - =1 thì lớn giảm dần
+	 * @returns 
+	 */
+	setReduceSize(check= 1) {
+		if(this.drones.length<0) return
+
+		let maxRadius = this.drones[1].radius*1.2;
+		let minRadius = 0.4;
+		let total = (maxRadius-minRadius)/this.drones.length
+		
+		if(check == 1){
+			let i = 0;
+			while(maxRadius>minRadius){
+				
+					this.drones[i].radius = maxRadius
+					i++;
+					maxRadius-=total
+				
+			}
+			while(i<drones.length){
+				this.drones[i].radius = 0.4
+				i++
+			}
+		}else{ 
+			let i = this.drones.length-1;
+			while(maxRadius>minRadius){
+				
+					this.drones[i].radius = maxRadius
+					i--;
+					maxRadius-=total
+				
+			}
+			while(i>=0){
+				this.drones[i].radius = 0.4
+				i--
+			}
+		}
+		
+	}
+	/**
+	 * Đổi màu liên tucj
+	 */
+	setRandomColor(interval = 64){
+		const updateColors = () => {
+			// Chia drone thành 2 nhóm: 50% thành màu đen, 50% thành màu ngẫu nhiên
+			const blackCount = Math.floor(this.drones.length * 0.8); // Số lượng drone thành màu đen
+			const shuffledDrones = [...this.drones].sort(() => Math.random() - 0.7); // Trộn ngẫu nhiên mảng drones
+	
+			// Đổi màu
+			shuffledDrones.forEach((drone, index) => {
+				if (index < blackCount) {
+					drone.color = "black"; // Màu đen
+					drone.pistilColor = "rgba(55, 52, 50, 0)";
+				} else {
+					drone.color = getRandomColor(); // Màu ngẫu nhiên
+					drone.pistilColor = COLOR.White;
+				}
+			});
+		};
+	
+		// Đặt khoảng thời gian thay đổi màu
+		setInterval(updateColors, interval);
 	}
     // setCircleFormation(centerX, centerY, radius) {
     //     const angleStep = (2 * Math.PI) / this.drones.length;
@@ -237,15 +303,17 @@ class Formation {
 	// 	setInterval(updateFormation, 16); // 16ms ~ 60 FPS
 		
 	// }
+	
 	/**
 	 * Xoay vòng tròn ngang
 	 * @param {*} centerX 
 	 * @param {*} centerY 
 	 * @param {*} radius 
+	 * @param {*} check -- if =1 thì quay cùng chiều, -1 thì ngược chiều
 	 * @param {*} tiltAngle 
 	 * @param {*} speed 
 	 */
-	setCircleFormationV2(centerX, centerY, radius, tiltAngle = Math.PI / 2.15, speed = Math.PI / 600, formationLifetime = 2000) {
+	setCircleFormationV2(centerX, centerY, radius,check=1, tiltAngle = Math.PI / 2.15, speed = Math.PI / 600, formationLifetime = 2000) {
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
 		const cosTilt = Math.cos(tiltAngle); // Tính cos của góc nghiêng
@@ -256,26 +324,33 @@ class Formation {
 	
 		// Hàm cập nhật đội hình theo thời gian
 		const update = () => {
-			const currentTime = Date.now();
-			elapsedTime = currentTime - startTime;
-
+			// const currentTime = Date.now();
+			// elapsedTime = currentTime - startTime;
+			// if (elapsedTime >= formationLifetime) {
+			// 	//  // Chia drone thành 2 nhóm: 50% thành màu đen, 50% thành màu ngẫu nhiên
+			// 	//  const blackCount = Math.floor(this.drones.length * 0.5); // Số lượng drone thành màu đen
+			// 	//  const shuffledDrones = [...this.drones].sort(() => Math.random() - 0.5); // Trộn ngẫu nhiên mảng drones
+	 
+			// 	//  // Đổi màu
+			// 	//  shuffledDrones.forEach((drone, index) => {
+			// 	// 	 if (index < blackCount) {
+			// 	// 		 drone.color = "black";
+			// 	// 		 drone.pistilColor="black" // Màu đen
+			// 	// 	 } else {
+			// 	// 		 drone.color = getRandomColor(); // Màu ngẫu nhiên
+			// 	// 	 }
+				
+			// 	// })
+			// }
 	
 			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
-			if (elapsedTime >= formationLifetime) {
-				this.drones.forEach(drone => {
-					drone.x = null; // Hoặc giá trị mặc định khi drone "biến mất"
-					drone.y = null;
-				});
-				console.log("Đội hình đã biến mất.");
-				return;
-						
-			}
+			
 	
 			time += speed; // Tăng thời gian để thay đổi góc quay
 			const rotationAngle = time; // Góc quay hiện tại
 	
 			this.drones.forEach((drone, index) => {
-				const angle = angleStep * index + rotationAngle; // Góc quay cho mỗi drone
+				const angle = angleStep * index + rotationAngle*check; // Góc quay cho mỗi drone
 				const x = radius * Math.cos(angle); // Tọa độ X trên vòng tròn
 				const y = radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
 	
@@ -5011,6 +5086,13 @@ function testSeqDrone(){
 	formation.setCircleFormationV2(maxW/2, 150, 100); // Đội hình 1: Xoay với góc nghiêng 30 độ
     formation2.setCircleFormationV2(maxW/2, 165, 115); // Đội hình 2: Đường thẳng không thay đổi
     formation3.setCircleFormationV2(maxW/2,	180, 100); // Đội hình 3: Xoay với góc nghiêng 45 độ
+	
+		formation2.setRandomColor()
+	
+	formation.setReduceSize()
+	
+	
+	
 	
 	setTimeout(() => {
 		formation.setCircleFormationV2(300, 150, 100);

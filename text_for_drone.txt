@@ -1,8 +1,24 @@
 maxw =767 *2=1534
 maxh = 860
 drones.push(new Drone(0.5, 0.5, 5, 0, 0, COLOR.Gold, 3000000));
+--------------------------------------------------------------
+/**
+ * Chuyển mã màu thành ,màu tối hơn
+ * @param {*} hex 
+ * @param {*} amount 
+ * @returns 
+ */	
+function darkenColor(hex, amount)
 ---------------------------------------
 class  Formation(){}
+hình tròn ngang check =1 thì cùng chiều đồng hồ, =-1<>
+=>>>>>> setCircleFormationV2(centerX, centerY, radius,check=1, tiltAngle=Math.PI / 2.15, speed=Math.PI / 600)
 
 thiết lập đội hình hình tròn 
-=>>>>>>setCircleFormationV3(centerX, centerY, radius, tiltAngleX = Math.PI /15, tiltAngleY = Math.PI / 3, speed = Math.PI / 600) vòng tròn xoay	
+=>>>>>> setCircleFormationV3(centerX, centerY, radius, tiltAngleX = Math.PI /15, tiltAngleY = Math.PI / 3, speed = Math.PI / 600) 	
+
+Thay đổi kích cỡ fỏmat
+=>>>>>setReduceSize(check= 1)
+
+tạo hiệu ứng nhấp nháy liên tục
+=>>>>>setRandomColor(){
