@@ -3839,6 +3839,7 @@ function crackleEffect(star) {
 		);
 	});
 	soundManager.playSound('burstSmall');
+	soundManager.playSound('burstSmall');
 }
 
 
