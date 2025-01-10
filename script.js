@@ -171,11 +171,11 @@ class Drone {
 			}
 		}
 	
-		// Thêm hiệu ứng lắc lư theo gió
-		let kk = Math.random() < 0.51 ? -1 : 1;
-		let hh = Math.random() * kk / 7;
-		this.x += this.speedX * timeStep + hh; // Cập nhật vị trí X
-		this.y += this.speedY * timeStep + hh; // Cập nhật vị trí Y
+		// // Thêm hiệu ứng lắc lư theo gió
+		// let kk = Math.random() < 0.51 ? -1 : 1;
+		// let hh = Math.random() * kk / 7;
+		// this.x += this.speedX * timeStep + hh; // Cập nhật vị trí X
+		// this.y += this.speedY * timeStep + hh; // Cập nhật vị trí Y
 	
 		// Ảnh hưởng bởi trọng lực
 		this.speedY += gAcc;
@@ -305,20 +305,21 @@ class Formation {
 	// }
 	
 	/**
-	 * Xoay vòng tròn ngang
-	 * @param {*} centerX 
-	 * @param {*} centerY 
-	 * @param {*} radius 
-	 * @param {*} check -- if =1 thì quay cùng chiều, -1 thì ngược chiều
-	 * @param {*} tiltAngle 
-	 * @param {*} speed 
+	 * Tạo đội hình vòng xoay ngang
+	 * @param {*} centerX -x
+	 * @param {*} centerY -y
+	 * @param {*} radius - bán kính 
+	 * @param {*} formationLifetime - thời gian tồn tại 
+	 * @param {*} check -chiều xoay =1 cùng chiều|| =-1 ngược chiều
+	 * @param {*} speed - góc xoay = Math.PI / 600
+	 * @param {*} tiltAngle -góc nghiêng Math.PI / 2.15
 	 */
-	setCircleFormationV2(centerX, centerY, radius,check=1, tiltAngle = Math.PI / 2.15, speed = Math.PI / 600, formationLifetime = 2000) {
+	setCircleFormationV2(centerX, centerY, radius,  formationLifetime = 2000,check=1,speed = Math.PI / 600, tiltAngle = Math.PI / 2.15) {
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
 		const cosTilt = Math.cos(tiltAngle); // Tính cos của góc nghiêng
 		const sinTilt = Math.sin(tiltAngle); // Tính sin của góc nghiêng
-	
+		// const color = this.drones[0].color; // Màu sắc mặc định của drone
 		let elapsedTime = 0; // Biến để theo dõi thời gian đã trôi qua
 		const startTime = Date.now(); // Thời điểm bắt đầu
 	
@@ -344,12 +345,21 @@ class Formation {
 			// }
 	
 			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			const currentTime = Date.now(); // Lấy thời gian hiện tại
+			const elapsedTime = currentTime - startTime; // Tính thời gian đã trôi qua
+
+			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			if (elapsedTime >= formationLifetime) {
+				//trả về vị trí ban đầu
+				this.setReset()
+				return; // Dừng quy trình
+			}
 			
-	
 			time += speed; // Tăng thời gian để thay đổi góc quay
 			const rotationAngle = time; // Góc quay hiện tại
 	
 			this.drones.forEach((drone, index) => {
+				 // Màu sắc mặc định
 				const angle = angleStep * index + rotationAngle*check; // Góc quay cho mỗi drone
 				const x = radius * Math.cos(angle); // Tọa độ X trên vòng tròn
 				const y = radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
@@ -381,11 +391,12 @@ class Formation {
 	 * @param {*} centerX - Tọa độ tâm X
 	 * @param {*} centerY - Tọa độ tâm Y
 	 * @param {*} radius - Bán kính vòng tròn
+	 * @param {*} formationLifetime - Thời gian tồn tại đội hình
 	 * @param {*} tiltAngleX - Độ nghiêng theo trục X  math.pi/1->vv
 	 * @param {*} tiltAngleY - Độ nghiêng theo trục Y math.pi/1->vv
 	 * @param {*} speed - Tốc độ xoay math.pi/600 
 	 */
-	setCircleFormationV3(centerX, centerY, radius, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/2, speed = Math.PI / 900) {
+	setCircleFormationV3(centerX, centerY, radius,formationLifetime, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/2, speed = Math.PI / 900) {
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
 		const cosTiltX = Math.cos(tiltAngleX); // Tính cos của góc nghiêng X
@@ -395,6 +406,14 @@ class Formation {
 
 		// Hàm cập nhật đội hình theo thời gian
 		const update = () => {
+			const currentTime = Date.now(); // Lấy thời gian hiện tại
+			const elapsedTime = currentTime - startTime; // Tính thời gian đã trôi qua
+
+			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			if (elapsedTime >= formationLifetime) {
+				console.log("Đội hình đã hết thời gian tồn tại!");
+				return; // Dừng quy trình
+			}
 			time += speed; // Tăng thời gian để thay đổi góc quay
 			const rotationAngle = time; // Góc quay hiện tại
 
@@ -435,7 +454,9 @@ class Formation {
 	 * @param {*} rotationAngleY - Góc xoay quanh trục Y
 	 * @param {*} rotationAngleZ - Góc xoay quanh trục Z
 	 */
-	setSphereFormation(centerX, centerY, centerZ, color, radius, rotationAngleX = 0, rotationAngleY = 0, rotationAngleZ = 0) {
+	setSphereFormation(centerX, centerY, radius, rotationAngleX = 0, rotationAngleY = 0, rotationAngleZ = 0) {
+		
+		
 		const totalDrones = this.drones.length;
 		const angleStepPhi = Math.PI / Math.sqrt(totalDrones); // Chia góc φ (từ 0 đến π) đều
 		const angleStepTheta = (2 * Math.PI) / Math.sqrt(totalDrones); // Chia góc θ (từ 0 đến 2π) đều
@@ -475,51 +496,45 @@ class Formation {
 			// Đặt lại vị trí drone với tâm hình cầu (centerX, centerY, centerZ)
 			drone.x = centerX + x;
 			drone.y = centerY + y;
-			drone.z = centerZ + z;
-
+			// drone.z = centerZ + z;
+			
 			// Tạo hiệu ứng "độ sâu" (như kích thước hoặc độ sáng thay đổi dựa trên tọa độ z)
 			// drone.size = Math.max(1, 3 + z / radius * 2); // Kích thước thay đổi dựa trên độ sâu
-			drone.color = z > 0 ? color : `rgba(26, 26, 47, 0.8)`; // Màu thay đổi theo chiều sâu
+			// drone.color = z > 0 ? color : `rgba(26, 26, 47, 0.8)`; // Màu thay đổi theo chiều sâu
 		});
 	}
 
-	// /**
-	//  * Chuyển đổi mượt mà giữa các đội hình
-	//  * @param {*} newFormation - Hàm để tính toán đội hình mới (callback)
-	//  * @param {*} duration - Thời gian chuyển đổi (ms)
-	//  */
-	// transitionToFormation(newFormation, duration = 2000) {
-	// 	const startTime = Date.now();
-	// 	const initialPositions = this.drones.map(drone => ({ x: drone.x, y: drone.y })); // Lưu trạng thái ban đầu
+	
+	seqSpherev2(centerX, centerY, attractionForce, rotationSpeed, timeStep) {
+        this.drones.forEach(drone => {
+            // Di chuyển drone theo lực hút vào trung tâm
+            const dx = centerX - drone.x;
+            const dy = centerY - drone.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const force = attractionForce / (distance * distance); // Lực hút tỷ lệ nghịch với bình phương khoảng cách
 
-	// 	const update = () => {
-	// 		const currentTime = Date.now();
-	// 		const elapsedTime = currentTime - startTime;
-	// 		const t = Math.min(elapsedTime / duration, 1); // Tính tỷ lệ thời gian (0 -> 1)
+            // Tính toán hướng và tốc độ di chuyển
+            const angleToCenter = Math.atan2(dy, dx);
+            const moveX = force * Math.cos(angleToCenter) * timeStep;
+            const moveY = force * Math.sin(angleToCenter) * timeStep;
 
-	// 		// Lấy đội hình mới từ hàm callback
-	// 		const targetPositions = newFormation();
+            // Cập nhật vị trí của drone
+            drone.x += moveX;
+            drone.y += moveY;
 
-	// 		// Cập nhật vị trí drone với nội suy tuyến tính
-	// 		this.drones.forEach((drone, index) => {
-	// 			const start = initialPositions[index];
-	// 			const target = targetPositions[index];
+            // Giảm bán kính theo thời gian để drone di chuyển vào trong
+            if (drone.radius > 20) {
+                drone.radius -= 0.1;  // Điều chỉnh tốc độ giảm bán kính
+            }
 
-	// 			drone.x = start.x + (target.x - start.x) * t;
-	// 			drone.y = start.y + (target.y - start.y) * t;
-	// 		});
+            // Quay drone xung quanh trung tâm
+            drone.angle += rotationSpeed * timeStep;  // Cập nhật góc quay
+            drone.x = centerX + drone.radius * Math.cos(drone.angle);
+            drone.y = centerY + drone.radius * Math.sin(drone.angle);
+        });
+    }
 
-	// 		// Nếu chưa hoàn thành, tiếp tục cập nhật
-	// 		if (t < 1) {
-	// 			requestAnimationFrame(update);
-	// 		} else {
-	// 			console.log("Hoàn thành chuyển đổi đội hình!");
-	// 		}
-	// 	};
 
-	// 	// Bắt đầu cập nhật
-	// 	update();
-	// }
     setLineFormation(startX, startY, spacing, horizontal = true) {
         this.drones.forEach((drone, index) => {
             if (horizontal) {
@@ -532,82 +547,35 @@ class Formation {
         });
     }
 
+	setReset(){
+		this.drones.forEach(drone=>{
+			drone.x=-1;
+			drone.y=-1;
+		})
+	}
     updateFormation(timeStep, speed, gAcc) {
         this.drones.forEach(drone => drone.update(timeStep, speed, gAcc));
     }
+
+	stopSet(){
+		this.drones.forEach(drone=>{
+			drone.x=0;
+			drone.y=0
+			console.log(drone.x)
+		})
+	}
+	
 }
-// class ShowController {
-//     constructor() {
-//         this.drones = []; // Mảng lưu các drone
-//         this.activeFormations = []; // Các đội hình hiện tại
-//         this.time = 0; // Thời gian điều phối
-//     }
 
-//     addDrone(drone) {
-//         this.drones.push(drone);
-//     }
-
-//     addFormation(formation) {
-//         this.activeFormations.push(formation);
-//     }
-
-//     startShow() {
-//         console.log("Bắt đầu màn trình diễn drone!");
-//     }
-
-//     updateAll(timeStep, speed, gAcc) {
-//         // Cập nhật tất cả các drone
-//         this.drones.forEach((drone, index) => {
-//             drone.update(timeStep, speed, gAcc);
-//             if (!drone.isAlive()) this.drones.splice(index, 1);
-//         });
-
-//         // Cập nhật tất cả các đội hình
-//         this.activeFormations.forEach(formation => {
-//             formation.updateFormation(timeStep, speed, gAcc);
-//         });
-
-//         this.time += timeStep;
-//     }
-
-//     endShow() {
-//         console.log("Kết thúc màn trình diễn drone!");
-//     }
-// }
-// class Path {
-//     constructor(points) {
-//         this.points = points; // Mảng các điểm (x, y) trên lộ trình
-//         this.currentIndex = 0;
-//     }
-
-//     getNextPoint() {
-//         if (this.currentIndex < this.points.length) {
-//             return this.points[this.currentIndex++];
-//         } else {
-//             return null; // Hết lộ trình
-//         }
-//     }
-// }
-// class PathFollowerDrone extends Drone {
-//     constructor(x, y, radius, speedX, speedY, color, life, path) {
-//         super(x, y, radius, speedX, speedY, color, life);
-//         this.path = path; // Lộ trình
-//     }
-
-//     update(timeStep, speed, gAcc) {
-//         const nextPoint = this.path.getNextPoint();
-//         if (nextPoint) {
-//             this.x += (nextPoint.x - this.x) * speed * timeStep;
-//             this.y += (nextPoint.y - this.y) * speed * timeStep;
-//         }
-//         super.update(timeStep, speed, gAcc);
-//     }
-// }
 let maxW = window.innerWidth - 2;
 let maxH = window.innerHeight;
 
 // Khởi tạo các drone
+// create drone
 const drones = [];
+for (let i = 0; i < 1000; i++) {
+	drones.push(new Drone(0, 0, 5, 0, 0,COLOR.Red,200000000));
+}
 
 
 // function seqDrone(){
@@ -2555,7 +2523,7 @@ async function seqShellAllInOne(left, right, count=3) {
 	while (i < count) {
 		await new Promise(resolve => setTimeout(resolve, time));
 		creatFiveShell(left, right)
-		time += 300
+		time += 30
 		i++
 	}
 }
@@ -2579,7 +2547,6 @@ async function seqSparkHalfRight(position, height1, count, time) {
 	while (positionLast > -count - 1) {
 		await new Promise(resolve => setTimeout(resolve, timen));
 		shell1.launchV2(position, height, positionLast);
-		console.log(height, ", ", positionLast);
 		positionLast -= 1;
 		height -= 0.05;
 		timen += 80 * 0.05;
@@ -2745,7 +2712,7 @@ async function seqRandomShellV2(left, right, time, count) {
 		await new Promise(resolve => setTimeout(resolve, timen));
 		let random = 0.1 + Math.random() * 0.1;
 		seqRandomShellPosition(left + random, right - random);
-		let shell = new Shell({...shellTypes('Crysanthemum')(6)})
+		let shell = new Shell(shellTypes('Crysanthemum')(6))
 		shell.launchV2(left + random, 0.8, -1)
 		shell.launchV2(right - random, 0.8, 1)
 		hehe++;
@@ -3162,8 +3129,8 @@ function startSequence2() {
 		}
 	}
 	// vietNamV1Seq();
-	 testShell(0.5, 0.5);
-	// monodySeq();
+	//testShell(0.5, 0.5);
+	monodySeq();
 	// seqDrone();
 	
 
@@ -3989,6 +3956,72 @@ class Shell {
 		}
 		// soundManager.playSound('lift');
 	}
+	launchV3(startX, startY, launchHeight, speedMultiplier = 1, isFalling = false) {
+		const width = stageW;
+		const height = stageH;
+		// Distance from sides of screen to keep shells.
+		const hpad = 60;
+		// Distance from top of screen to keep shell bursts.
+		const vpad = 50;
+		// Minimum burst height, as a percentage of stage height
+		const minHeightPercent = 0.45;
+		// Minimum burst height in px
+		const minHeight = height - height * minHeightPercent;
+	
+		// Initial launch position
+		const launchX = startX;
+		const launchY = startY;
+	
+		// Calculate `burstY` based on whether the comet is falling or rising
+		const burstY = isFalling 
+			? startY + (launchHeight * (height - vpad - startY)) // Rơi xuống
+			: startY - (launchHeight * (startY - (minHeight - vpad))); // Bắn lên
+	
+		// Adjust launch distance based on `isFalling` and `direction`
+		const launchDistance = isFalling 
+			? burstY - launchY // Rơi xuống
+			: launchY - burstY; // Bắn lên
+	
+		// Compute launch velocity
+		const launchVelocity = Math.pow(Math.abs(launchDistance) * 0.04, 0.64) * speedMultiplier;
+	
+		// Add the comet (firework projectile)
+		const comet = this.comet = Star.add(
+			launchX,
+			launchY,
+			typeof this.color === 'string' && this.color !== 'random' ? this.color : COLOR.White,
+			isFalling ? 0 : Math.PI, // Adjusted direction
+			launchVelocity * (this.horsetail ? 1.2 : 1),
+			launchVelocity * (this.horsetail ? 100 : 400)
+		);
+	
+		// Adjust properties for air drag and visual effects
+		comet.heavy = true;
+		comet.spinRadius = MyMath.random(0.32, 0.85);
+		comet.sparkFreq = 32 / quality;
+		if (isHighQuality) comet.sparkFreq = 8;
+		comet.sparkLife = 320*5;
+		comet.sparkLifeVariation = 3;
+		if (this.glitter === 'willow' || this.fallingLeaves) {
+			comet.sparkFreq = 20 / quality;
+			comet.sparkSpeed = 0.5;
+			comet.sparkLife = 500;
+		}
+		if (this.color === INVISIBLE) {
+			comet.sparkColor = COLOR.Gold;
+		}
+	
+		// // Randomly make comet burn out early
+		// if (Math.random() > 0.4 && !this.horsetail) {
+		// 	comet.secondColor = INVISIBLE;
+		// 	comet.transitionTime = Math.pow(Math.random(), 1.5) * 700 + 500;
+		// }
+	
+		// // Handle burst at the end of the comet's life
+		// comet.onDeath = comet => this.burst(comet.x, comet.y);
+	
+		// soundManager.playSound('lift');
+	}
 	burst(x, y) {
 		// Set burst speed so overall burst grows to set size. This specific formula was derived from testing, and is affected by simulated air drag.
 		const speed = this.spreadSize / 96;
@@ -4552,119 +4585,6 @@ const soundManager = {
 	}
 };
 
-// const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-// const soundManager = {
-//     baseURL: 'file:///C:/path/to/Music/',  // Đường dẫn tuyệt đối tới thư mục Music trên máy của bạn
-
-//     sources: {
-//         lift: {
-//             volume: Math.random() + 0.5,
-//             playbackRateMin: 0.85,
-//             playbackRateMax: 0.95,
-//             fileNames: [
-//                 'lift1.mp3',
-//                 'lift2.mp3',
-//                 'lift3.mp3',
-//                 'lift4.mp3'
-//             ]
-//         },
-//         burst: {
-//             volume: Math.random() + 0.5,
-//             playbackRateMin: 0.8,
-//             playbackRateMax: 0.9,
-//             fileNames: [
-//                 'burst1.mp3',
-//                 'burst2.mp3'
-//             ]
-//         },
-//         burstSmall: {
-//             volume: 0.25,
-//             playbackRateMin: 0.8,
-//             playbackRateMax: 1,
-//             fileNames: [
-//                 'burst-sm-1.mp3',
-//                 'burst-sm-2.mp3'
-//             ]
-//         },
-//         crackle: {
-//             volume: 0.2,
-//             playbackRateMin: 1,
-//             playbackRateMax: 1,
-//             fileNames: ['crackle1.mp3']
-//         },
-//         crackleSmall: {
-//             volume: 0.3,
-//             playbackRateMin: 1,
-//             playbackRateMax: 1,
-//             fileNames: ['crackle-sm-1.mp3']
-//         }
-//     },
-
-//     _lastSmallBurstTime: 0,
-
-//     async loadBuffer(fileName) {
-//         // Sử dụng đường dẫn từ thư mục Music với file MP3
-//         const response = await fetch(this.baseURL + fileName);
-//         const arrayBuffer = await response.arrayBuffer();
-//         return audioContext.decodeAudioData(arrayBuffer);
-//     },
-
-//     async loadSounds() {
-//         // Tải tất cả các âm thanh vào bộ đệm
-//         for (let sourceType in this.sources) {
-//             const source = this.sources[sourceType];
-//             source.buffers = await Promise.all(
-//                 source.fileNames.map(fileName => this.loadBuffer(fileName))
-//             );
-//         }
-//     },
-
-//     async playSound(type, scale = 1) {
-//         scale = Math.min(Math.max(scale, 0), 1);
-
-//         // Throttle small bursts
-//         if (type === 'burstSmall') {
-//             const now = Date.now();
-//             if (now - this._lastSmallBurstTime < 20) {
-//                 return;
-//             }
-//             this._lastSmallBurstTime = now;
-//         }
-
-//         const source = this.sources[type];
-//         if (!source) {
-//             throw new Error(`Sound of type "${type}" doesn't exist.`);
-//         }
-
-//         // Chọn một bộ đệm ngẫu nhiên từ danh sách file đã tải
-//         const buffer = MyMath.randomChoice(source.buffers);
-//         const bufferSource = audioContext.createBufferSource();
-
-//         const initialVolume = source.volume;
-//         const initialPlaybackRate = MyMath.random(source.playbackRateMin, source.playbackRateMax);
-
-//         const scaledVolume = initialVolume * scale;
-//         const scaledPlaybackRate = initialPlaybackRate * (2 - scale);
-
-//         const gainNode = audioContext.createGain();
-//         gainNode.gain.value = scaledVolume;
-
-//         bufferSource.buffer = buffer;
-//         bufferSource.playbackRate.value = scaledPlaybackRate;
-//         bufferSource.connect(gainNode);
-//         gainNode.connect(audioContext.destination);
-
-//         bufferSource.start(0);
-//     }
-// };
-
-// // Tải tất cả âm thanh khi bắt đầu
-// soundManager.loadSounds().then(() => {
-//     console.log('All sounds are loaded');
-// });
-
-
 
 // Kick things off.
 
@@ -4932,122 +4852,8 @@ class ShellV2 extends Shell{
 	
 }
 
-// function seqDrone(){
-// 	for(let i=0;i<20;i++){
-// 		drones.push(new Drone(0.5+i/100, 0.5, 3, 0, 0, COLOR.Gold, 3000000));
-// 	}
-// 	const formation = new Formation();
-// 	drones.forEach(drone => formation.addDrone(drone));
-// 	formation.setCircleFormationV2(300, 300, 100);
-// 	// Tạo điều phối viên
-// 	const showController = new ShowController();
-// 	drones.forEach(drone => showController.addDrone(drone));
-// 	showController.addFormation(formation);
-	
-	
-	
-	
-	
-	
 
-// 	// Chạy màn trình diễn
-// 	showController.startShow();
-// 	setInterval(() => {
-// 		showController.updateAll(0.016, 1, 0);
-// 	}, 16);
-
-// 	console.log(showController.activeFormations
-// 	)
-
-
-// 	console.log(drones);
-// }
-function seqDrone() {
-    
-}
-/**
- * Hàm sinh ra vòng tròn
- * @param {Time} timeLife 
- * @param {Color} color 
- * @param {speed} speed 0,001->0,01 
- */
-function seqDroneSquare(timeLife = 5000,speed = 0.002,color=COLOR.Blue){
-	for (let i = 0; i < 120; i++) {
-        drones.push(new Drone(0.5 + i / 100, 0.5, 6, 0, 0, color, timeLife));
-    }
-	let time = 0; // Biến thời gian
-	// Tạo 3 đội hình khác nhau
-	const formation1 = new Formation();
-	const formation2 = new Formation();
-	const formation3 = new Formation();
-
-	// Phân chia drone vào từng đội hình
-	drones.forEach((drone, index) => {
-		if (index < 40) {
-			formation1.addDrone(drone); // Đội hình 1: Drone đầu tiên
-		} else if (index < 80) {
-			formation2.addDrone(drone); // Đội hình 2: Drone tiếp theo
-		} else {
-			formation3.addDrone(drone); // Đội hình 3: Drone còn lại
-		}
-	});
-		// Thiết lập đội hình cho mỗi nhóm
-	// formation1.setCircleFormation(300, 200, 100); // Đội hình 1: Hình tròn
-	// formation2.setLineFormation(100, 300, 20);   // Đội hình 2: Đường thẳng ngang
-	// formation3.setCircleFormationV2(500, 400, 150, Math.PI / 4); // Đội hình 3: Hình tròn xoay
-
-	// Tạo điều phối viên
-	const showController = new ShowController();
-	drones.forEach(drone => showController.addDrone(drone));
-
-	// // Thêm từng đội hình vào điều phối viên
-	// showController.addFormation(formation1);
-	// showController.addFormation(formation2);
-	// showController.addFormation(formation3);
-
-    // // Thêm vòng lặp để xoay đội hình
-    // let rotationAngle = 0;
-    // const angularSpeed = Math.PI / 120; // 1 vòng trong 2 giây
-
-    // function updateFormation() {
-    //     rotationAngle += angularSpeed;
-    //     formation.setCircleFormationV2(300, 300, 100, rotationAngle);
-    // }
-	// function updateFormation() {
-	// 	time += 1; // Cập nhật thời gian (bạn có thể tăng nhanh hơn nếu muốn quay nhanh)
-	// 	const rotationAngle = time * 0.05; // Tốc độ xoay của đội hình
-	// 	formation.setCircleFormationV3(300, 300, 100, rotationAngle, 150, 0.02, time);
-	// }
-	// Hàm cập nhật để xoay vòng tròn
-	 // Hàm cập nhật để xoay đội hình 3D
-	 function updateFormation3D() {
-        time += speed; // Tăng thời gian để thay đổi góc quay
-        const rotationAngle = time; // Góc quay thay đổi liên tục
-        // Cập nhật đội hình xoay 3D cho các đội hình
-		let cao = 10
-		let pp = 2.15
-        formation1.setCircleFormationV3(maxW/2, 150,color, 100*5, rotationAngle, Math.PI/ pp); // Đội hình 1: Xoay với góc nghiêng 30 độ
-        formation2.setCircleFormationV3(maxW/2, 165+cao,color, 115*5, -rotationAngle, Math.PI/ pp); // Đội hình 2: Đường thẳng không thay đổi
-        formation3.setCircleFormationV3(maxW/2,	180+cao*2,color, 100*5, rotationAngle, Math.PI/ pp); // Đội hình 3: Xoay với góc nghiêng 45 độ
-    }
-	
-		setInterval(updateFormation3D, 16);
-	
-    // Gọi hàm cập nhật mỗi 16ms (60 FPS)
-    
-
-	// Gọi hàm mỗi 16ms (60 FPS)
-	
-
-    // setInterval(updateFormation, 16); // Cập nhật mỗi 16ms
-}
-function seqDroneSphere(time=5000){
-	for (let i = 0; i < 600; i++) {
-        drones.push(new Drone(0.5, 0.5, 3, 0, 0, COLOR.Gold, time));
-    }
-
-    const formation = new Formation();
-    drones.forEach(drone => formation.addDrone(drone));
+function seqDroneSphere(formation,w=maxW/2,h=maxH/2,radius=150){
 
     let rotationAngleX = 0;
     let rotationAngleY = 0;
@@ -5058,46 +4864,53 @@ function seqDroneSphere(time=5000){
         rotationAngleY += 0.001; // Tăng góc xoay Y
         rotationAngleZ += 0.001; // Tăng góc xoay Z
 
-        formation.setSphereFormation(maxW/2, maxH/2, 120, COLOR.Gold, 200, rotationAngleX, rotationAngleY, rotationAngleZ);
+        formation.setSphereFormation(w, h,radius, rotationAngleX, rotationAngleY, rotationAngleZ);
     }
 
     setInterval(updateFormation3D, 16);
 }
 
-	
-function testSeqDrone(){
+async function seqCircle(formation){
+	formation.setCircleFormationV2(maxW/2, 150, 100); // Đội hình 1: Xoay với góc nghiêng 30 độ
+    // formation2.setCircleFormationV2(maxW/2, 165, 115); // Đội hình 2: Đường thẳng không thay đổi
+    // formation3.setCircleFormationV2(maxW/2,	180, 100); // Đội hình 3: Xoay với góc nghiêng 45 độ
+	let x = 150;
+	let ye = 16.67; // Thời gian trễ cho mỗi khung hình tại 60fps (khoảng 16.67ms)
+	while(x < 500){
+		await new Promise(resolve => setTimeout(resolve, ye));
+		formation.setCircleFormationV2(maxW / 2, x, 100); 
+		x += 1;
+	}	
+}	
 
-	for (let i = 0; i < 90; i++) {
-        drones.push(new Drone(0.5 + i / 100, 0.5, 5, 0, 0,COLOR.Red,20000000));
-    }
-	let d_count = drones.length;
+
+function testSeqDrone(){
+	
+
 	
 	let formation = new Formation();
 	let formation2 =new Formation();
-	let formation3 =new Formation();
+	// let formation3 =new Formation();
 	drones.forEach((drone, index) => {
-		if (index < 30) {
+		if (index < 100) {
 			formation.addDrone(drone); // Đội hình 1: Drone đầu tiên
-		} else if (index < 60) {
-			formation2.addDrone(drone); // Đội hình 2: Drone tiếp theo
-		} else {
-			formation3.addDrone(drone); // Đội hình 3: Drone còn lại
+		} else if(index<120) {
+			formation2.addDrone(drone)
 		}
 	});
-	formation.setCircleFormationV2(maxW/2, 150, 100); // Đội hình 1: Xoay với góc nghiêng 30 độ
-    formation2.setCircleFormationV2(maxW/2, 165, 115); // Đội hình 2: Đường thẳng không thay đổi
-    formation3.setCircleFormationV2(maxW/2,	180, 100); // Đội hình 3: Xoay với góc nghiêng 45 độ
-	
-		formation2.setRandomColor()
-	
-	formation.setReduceSize()
-	
-	
-	
-	
+	seqDroneSphere(formation);
 	setTimeout(() => {
-		formation.setCircleFormationV2(300, 150, 100);
-	}, 5000);
+		formation2.setColor(COLOR.Blue);
+		seqCircle(formation2)
+	}, 1000);
+	setTimeout(() => {
+		formation.stopSet();
+		formation2.stopSet();
+		console.log("xóa")
+	}, 3000);
+	
+
+	
 	
 }	
 
@@ -5105,8 +4918,34 @@ function testSeqDrone(){
 
 
 
-testSeqDrone()
+// testSeqDrone()
+let formation = new Formation();
 
+drones.forEach((drone, index) => {
+	
+		formation.addDrone(drone); // Đội hình 1: Drone đầu tiên
+	
+});
+
+let formation2 = new Formation();
+for(let i = 0; i < 20; i++){
+	formation2.addDrone(drones[i]);
+}
+formation2.setCircleFormationV2(maxW/2, 150, 100,5000 ); // Đội hình 1: Xoay với góc nghiêng 30 độ
+
+setTimeout(() => {
+	formation2.setCircleFormationV2(maxW/2, 165, 115,5000); // Đội hình 2: Đường thẳng không thay đổi
+}, 6000);
+
+let shell = new Shell({
+	...shellTypes['Crysanthemum'](6)
+});
+let i =0 ;
+while(i<10){
+	let random = Math.floor(Math.random() * 10);
+	shell.launchV3(maxW/2+random*10, maxH/2-200, 0.4, 0.6, true);
+	i++
+}
 
 
 

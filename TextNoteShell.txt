@@ -117,7 +117,11 @@ size{ size//kích cỡ,
 shell.{
 busrt(x, y) //x>>min0->
 launch(position, launchHeight) vị trí và độ cao giữa màn hình là 0
+
 launchV2(position, launchHeight,PitionX(góc nghiêng bắn) -10 ->10
+
+launchV3(startX, startY, launchHeight, speedMultiplier = 1, isFalling = false)
+bắn từ vị trí x, y độ cao launch, tốc độ , is=true rơi<>
 }heigth 2 bên 0.5posision lệch nhau *-1
 
 cái dường tia của pháo
