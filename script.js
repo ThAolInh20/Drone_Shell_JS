@@ -118,7 +118,23 @@ const stages = [
 
 
 
+// Hàm chuyển màu dần dần
 
+
+// Hàm hỗ trợ: Nội suy màu (chuyển dần dần giữa 2 màu)
+function interpolateColor(startRGB, endRGB, t) {
+    const r = Math.round(startRGB[0] + t * (endRGB[0] - startRGB[0]));
+    const g = Math.round(startRGB[1] + t * (endRGB[1] - startRGB[1]));
+    const b = Math.round(startRGB[2] + t * (endRGB[2] - startRGB[2]));
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+// Hàm hỗ trợ: Phân tích màu từ chuỗi "rgb(r, g, b)"
+function parseColor(colorString) {
+    const match = colorString.match(/rgb\((\d+), (\d+), (\d+)\)/);
+    if (!match) return [0, 0, 0]; // Mặc định là màu đen nếu không parse được
+    return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
+}
 // Mảng lưu các Drone đang hoạt động
 /**
  * Mảng tạo đối tượng drone
@@ -143,6 +159,7 @@ class Drone {
 		this.pistilColor = COLOR.White;
 		this.baseRadius = radius;
         this.life = life;
+		this.strobeInterval = null;
     }
 
     // update(timeStep, speed, gAcc=0) {
@@ -197,60 +214,59 @@ class Drone {
         return this.life>0;
     }
 }
+
+
+
+
 class Formation {
 	
     constructor() {
-        this.drones = []; // Mảng lưu danh sách các drone
+        this.drones = [];
+		 // Mảng lưu danh sách các drone
     }
     addDrone(drone) {
         this.drones.push(drone);
     }
 	setColor(color){
+		console.log("set color")	
 		this.drones.forEach(drone=>{
-			drone.color=color
-			
+			this.fadeColor(drone, color, COLOR.White,120);
 		})
 	}
+	setRadiusDrone(radius,color){
+		this.drones.forEach(drone=>{
+			drone.radius = radius;
+		})
+	}
+	
 	/**
 	 * tạo size 3d 
 	 * @param {*} check - =1 thì lớn giảm dần
 	 * @returns 
 	 */
-	setReduceSize(check= 1) {
-		if(this.drones.length<0) return
-
+	setReduceSize(check=1) {
+		if(this.drones.length<1) return
+		console.log(this.drones.length)
 		let maxRadius = this.drones[1].radius*1.2;
 		let minRadius = 0.4;
 		let total = (maxRadius-minRadius)/this.drones.length
 		
 		if(check == 1){
 			let i = 0;
-			while(maxRadius>minRadius){
-				
+			while(i<this.drones.length){
 					this.drones[i].radius = maxRadius
 					i++;
 					maxRadius-=total
-				
-			}
-			while(i<drones.length){
-				this.drones[i].radius = 0.4
-				i++
+					console.log('hehe',i)
 			}
 		}else{ 
 			let i = this.drones.length-1;
-			while(maxRadius>minRadius){
-				
+			while(i>=0){
 					this.drones[i].radius = maxRadius
 					i--;
 					maxRadius-=total
-				
 			}
-			while(i>=0){
-				this.drones[i].radius = 0.4
-				i--
-			}
-		}
-		
+		}	
 	}
 	/**
 	 * Đổi màu liên tucj
@@ -276,33 +292,62 @@ class Formation {
 		// Đặt khoảng thời gian thay đổi màu
 		setInterval(updateColors, interval);
 	}
-    // setCircleFormation(centerX, centerY, radius) {
-    //     const angleStep = (2 * Math.PI) / this.drones.length;
-    //     this.drones.forEach((drone, index) => {
-    //         const angle = angleStep * index;
-    //         drone.x = centerX + radius * Math.cos(angle);
-    //         drone.y = centerY + radius * Math.sin(angle);
-    //     });
-    // }
-	// setCircleFormationV2(centerX, centerY, radius, angularSpeed = Math.PI / 120) {
-	// 	let rotationAngle = 0; // Góc bắt đầu
 
-	// 	// Hàm cập nhật vị trí các drone theo đội hình hình tròn
-	// 	const updateFormation = () => {
-	// 		const angleStep = (2 * Math.PI) / this.drones.length;
-	// 		this.drones.forEach((drone, index) => {
-	// 			const angle = angleStep * index + rotationAngle; // Thêm góc xoay
-	// 			drone.x = centerX 	+ radius * Math.cos(angle);
-	// 			drone.y = centerY + radius * Math.sin(angle);
-	// 		});
-
-	// 		rotationAngle += angularSpeed; // Cập nhật góc xoay
-	// 	};
-
-	// 	// Gọi định kỳ để cập nhật đội hình
-	// 	setInterval(updateFormation, 16); // 16ms ~ 60 FPS
+	/**
+	 * tạo hiệu ứng nhấp nháy
+	 * @param {*} interval 
+	 * @param {*} troll 
+	 * @param {*} color 
+	 */
+	setRandomColorV2(duration = 2000,colorStrobe = null,interval = 64, troll = 0.9) {
+		const color = this.drones[1].color
+		// Lưu màu ban đầu
+		const updateColors = () => {
+			const shuffledDrones = [...this.drones].sort(() => Math.random() - troll);
+			const targetColor2 = colorStrobe || getRandomColor(); // Màu ngẫu nhiên hoặc màu được chỉ định
+			
+			shuffledDrones.forEach((drone, index) => {
+				if (Math.random() < 0.5) {
+					const isBlack = Math.random() < troll; // 90% cơ hội chuyển thành màu đen
+	
+					const targetColor = isBlack ? "black" : targetColor2;
+					const targetPistilColor = isBlack ? "rgba(55, 52, 50, 0)" : COLOR.White;
+	
+					this.fadeColor(drone, targetColor, targetPistilColor, interval);
+				}
+			});
+		};
+	
+		// Thiết lập bộ đếm thời gian
+		const effectInterval = setInterval(updateColors, interval);
+		setTimeout(() => {
+			clearInterval(effectInterval); // Dừng cập nhật màu
+		}, duration);
 		
-	// }
+	}
+	fadeColor(drone, targetColor, targetPistilColor, duration) {
+		const currentColor = parseColor(drone.color); // Hàm để lấy giá trị RGB từ `drone.color`
+		const targetRGB = parseColor(targetColor);
+	
+		const steps = Math.floor(duration / 16); // Số bước chuyển (dựa trên 60FPS)
+		let step = 0;
+	
+		const interval = setInterval(() => {
+			if (step >= steps) {
+				// Kết thúc chuyển đổi, đặt màu cuối cùng
+				drone.color = targetColor;
+				drone.pistilColor = targetPistilColor;
+				clearInterval(interval);
+				return;
+			}
+	
+			// Tính toán màu mới
+			drone.color = interpolateColor(currentColor, targetRGB, step / steps);
+			drone.pistilColor = targetPistilColor; // Pistil chuyển ngay lập tức (nếu cần)
+	
+			step++;
+		}, 16); // 16ms cho mỗi frame (60FPS)
+	}
 	
 	/**
 	 * Tạo đội hình vòng xoay ngang
@@ -314,7 +359,7 @@ class Formation {
 	 * @param {*} speed - góc xoay = Math.PI / 600
 	 * @param {*} tiltAngle -góc nghiêng Math.PI / 2.15
 	 */
-	setCircleFormationV2(centerX, centerY, radius,  formationLifetime = 2000,check=1,speed = Math.PI / 600, tiltAngle = Math.PI / 2.15) {
+	setCircleFormationV2(centerX, centerY, radius,  formationLifetime = 2000,agn=1,check=1,speed = Math.PI / 600, tiltAngle = -Math.PI / 2.02) {
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
 		const cosTilt = Math.cos(tiltAngle); // Tính cos của góc nghiêng
@@ -322,7 +367,7 @@ class Formation {
 		// const color = this.drones[0].color; // Màu sắc mặc định của drone
 		let elapsedTime = 0; // Biến để theo dõi thời gian đã trôi qua
 		const startTime = Date.now(); // Thời điểm bắt đầu
-	
+		console.log("đội hình vòng tròn")
 		// Hàm cập nhật đội hình theo thời gian
 		const update = () => {
 			// const currentTime = Date.now();
@@ -343,7 +388,8 @@ class Formation {
 				
 			// 	// })
 			// }
-	
+			radius = radius + Math.sin(time);
+			centerY = centerY +agn* Math.cos(time)/10;
 			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
 			const currentTime = Date.now(); // Lấy thời gian hiện tại
 			const elapsedTime = currentTime - startTime; // Tính thời gian đã trôi qua
@@ -351,7 +397,7 @@ class Formation {
 			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
 			if (elapsedTime >= formationLifetime) {
 				//trả về vị trí ban đầu
-				this.setReset()
+				this.reset()
 				return; // Dừng quy trình
 			}
 			
@@ -385,7 +431,7 @@ class Formation {
 		// Bắt đầu cập nhật đội hình
 		update();
 	}
-
+	
 	/**
 	 * Xoay vòng tròn với khả năng điều chỉnh độ nghiêng theo cả 2 trục (X và Y)
 	 * @param {*} centerX - Tọa độ tâm X
@@ -403,7 +449,7 @@ class Formation {
 		const sinTiltX = Math.sin(tiltAngleX); // Tính sin của góc nghiêng X
 		const cosTiltY = Math.cos(tiltAngleY); // Tính cos của góc nghiêng Y
 		const sinTiltY = Math.sin(tiltAngleY); // Tính sin của góc nghiêng Y
-
+		const startTime = Date.now(); // Thời điểm bắt đầu
 		// Hàm cập nhật đội hình theo thời gian
 		const update = () => {
 			const currentTime = Date.now(); // Lấy thời gian hiện tại
@@ -411,7 +457,7 @@ class Formation {
 
 			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
 			if (elapsedTime >= formationLifetime) {
-				console.log("Đội hình đã hết thời gian tồn tại!");
+				this.reset()
 				return; // Dừng quy trình
 			}
 			time += speed; // Tăng thời gian để thay đổi góc quay
@@ -547,7 +593,7 @@ class Formation {
         });
     }
 
-	setReset(){
+	reset(){
 		this.drones.forEach(drone=>{
 			drone.x=-1;
 			drone.y=-1;
@@ -557,13 +603,7 @@ class Formation {
         this.drones.forEach(drone => drone.update(timeStep, speed, gAcc));
     }
 
-	stopSet(){
-		this.drones.forEach(drone=>{
-			drone.x=0;
-			drone.y=0
-			console.log(drone.x)
-		})
-	}
+	
 	
 }
 
@@ -603,6 +643,7 @@ for (let i = 0; i < 1000; i++) {
 
 // 	console.log(drones);
 // }
+
 
 
 
@@ -3130,7 +3171,7 @@ function startSequence2() {
 	}
 	// vietNamV1Seq();
 	//testShell(0.5, 0.5);
-	monodySeq();
+	// monodySeq();
 	// seqDrone();
 	
 
@@ -3950,10 +3991,10 @@ class Shell {
 
 		// Randomly make comet "burn out" a bit early.
 		// This is disabled for horsetail shells, due to their very short airtime.
-		if (Math.random() > 0.4 && !this.horsetail) {
-			comet.secondColor = INVISIBLE;
-			comet.transitionTime = Math.pow(Math.random(), 1.5) * 700 + 500;
-		}
+		// if (Math.random() > 0.4 && !this.horsetail) {
+		// 	comet.secondColor = INVISIBLE;
+		// 	comet.transitionTime = Math.pow(Math.random(), 1.5) * 700 + 500;
+		// }
 		// soundManager.playSound('lift');
 	}
 	launchV3(startX, startY, launchHeight, speedMultiplier = 1, isFalling = false) {
@@ -4022,6 +4063,60 @@ class Shell {
 	
 		// soundManager.playSound('lift');
 	}
+	launchV4(position, launchHeight, positionX = 0) {
+		const width = stageW;
+		const height = stageH + 50;
+		// Distance from sides of screen to keep shells.
+		const hpad = 60;
+		// Distance from top of screen to keep shell bursts.
+		const vpad = 50;
+		// Minimum burst height, as a percentage of stage height
+		const minHeightPercent = 0.45;
+		// Minimum burst height in px
+		const minHeight = height - height * minHeightPercent;
+	
+		const launchX = position * (width - hpad * 2) + hpad;
+		const launchY = height;
+		const burstY = minHeight - (launchHeight * (minHeight - vpad));
+		const launchDistance = launchY - burstY + 250 * (positionX > 0 ? -position : position);
+	
+		// Using a custom power curve to approximate Vi needed to reach launchDistance under gravity and air drag.
+		const launchVelocity = Math.pow(launchDistance * 0.04, 0.64);
+	
+		const comet = this.comet = Star.addV2(
+			launchX,
+			launchY,
+			typeof this.color === 'string' && this.color !== 'random' ? this.color : COLOR.White,
+			Math.PI, // Góc bắn lên (hoặc thay đổi theo yêu cầu nếu nghiêng Y nhiều)
+			launchVelocity * (this.horsetail ? 1.2 : 1),
+			launchVelocity * (this.horsetail ? 100 : 400),
+			positionX * 2, // Độ nghiêng theo X (giá trị từ -1 đến 1)
+			positionX * -1 // Tăng/giảm độ cao nếu nghiêng
+		);
+	
+		// Making comet "heavy" limits air drag
+		comet.heavy = true;
+		comet.spinRadius = MyMath.random(0.32, 0.85);
+		comet.sparkFreq = 32 / quality;
+		if (isHighQuality) comet.sparkFreq = 8;
+		comet.sparkLife = 320;
+		comet.sparkLifeVariation = 3;
+		if (this.glitter === 'willow' || this.fallingLeaves) {
+			comet.sparkFreq = 20 / quality;
+			comet.sparkSpeed = 0.5;
+			comet.sparkLife = 500;
+		}
+		if (this.color === INVISIBLE) {
+			comet.sparkColor = COLOR.Gold;
+		}
+	
+		// // Randomly make comet "burn out" a bit early.
+		// if (Math.random() > 0.4 && !this.horsetail) {
+		// 	comet.secondColor = INVISIBLE;
+		// 	comet.transitionTime = Math.pow(Math.random(), 1.5) * 700 + 500;
+		// }
+	}
+	
 	burst(x, y) {
 		// Set burst speed so overall burst grows to set size. This specific formula was derived from testing, and is affected by simulated air drag.
 		const speed = this.spreadSize / 96;
@@ -4853,99 +4948,153 @@ class ShellV2 extends Shell{
 }
 
 
-function seqDroneSphere(formation,w=maxW/2,h=maxH/2,radius=150){
-
+function seqDroneSphere(formation, w = maxW / 2, h = maxH / 2, radius = 150, formationLifetime = 5000, rotationSpeed = 0.001) {
     let rotationAngleX = 0;
     let rotationAngleY = 0;
     let rotationAngleZ = 0;
+    const startTime = Date.now();
 
     function updateFormation3D() {
-        rotationAngleX += 0.001; // Tăng góc xoay X
-        rotationAngleY += 0.001; // Tăng góc xoay Y
-        rotationAngleZ += 0.001; // Tăng góc xoay Z
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - startTime;
 
-        formation.setSphereFormation(w, h,radius, rotationAngleX, rotationAngleY, rotationAngleZ);
+        // Kiểm tra nếu đã hết thời gian tồn tại đội hình
+        
+
+        // Tăng góc xoay theo tốc độ xác định
+        rotationAngleX += rotationSpeed;
+        rotationAngleY += rotationSpeed;
+        rotationAngleZ += rotationSpeed;
+
+        // Cập nhật đội hình
+		if (elapsedTime >= formationLifetime) {
+            formation.reset(); // Dừng việc cập nhật đội hình
+            return
+			
+        }else{
+			formation.setSphereFormation(w, h, radius, rotationAngleX, rotationAngleY, rotationAngleZ);
+
+		}
+        // Tiếp tục gọi lại updateFormation3D mỗi frame
+        requestAnimationFrame(updateFormation3D);
     }
 
-    setInterval(updateFormation3D, 16);
+    // Bắt đầu cập nhật đội hình
+    requestAnimationFrame(updateFormation3D);
 }
 
-async function seqCircle(formation){
-	formation.setCircleFormationV2(maxW/2, 150, 100); // Đội hình 1: Xoay với góc nghiêng 30 độ
-    // formation2.setCircleFormationV2(maxW/2, 165, 115); // Đội hình 2: Đường thẳng không thay đổi
-    // formation3.setCircleFormationV2(maxW/2,	180, 100); // Đội hình 3: Xoay với góc nghiêng 45 độ
-	let x = 150;
-	let ye = 16.67; // Thời gian trễ cho mỗi khung hình tại 60fps (khoảng 16.67ms)
-	while(x < 500){
-		await new Promise(resolve => setTimeout(resolve, ye));
-		formation.setCircleFormationV2(maxW / 2, x, 100); 
-		x += 1;
-	}	
-}	
-
-
-function testSeqDrone(){
-	
-
+		
+/**
+ * Tạo quả cầu nguyên tử
+ * @param {*} k vị trí index cuối cùng của drone
+ * @param {*} centerX -	tọa độ x của tâm
+ * @param {*} centerY 	- tọa độ y của tâm
+ * @param {*} radius2  - bán kính quả cầu
+ * @param {*} formationLifetime - thời gian tồn tại của đội hình
+ * @param {*} color - màu của vòng ngoài
+ * @param {*} pistilColor - màu của vòng trong
+ * @param {*} tiltAngleX 
+ * @param {*} tiltAngleY 
+ * @param {*} speed 
+ * @returns 
+ */
+function seqDroneBom(k,centerX, centerY, radius2,formationLifetime=10000,color, pistilColor, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/3, speed = Math.PI / 900){
 	
 	let formation = new Formation();
+	let formation3 = new Formation();
+	let formation4 = new Formation();
+	let formation2 = new Formation();
+	let soluong = 480*radius2/125;
+	for(let i = 0;i<soluong; i++){
+		if(i<soluong/8){
+			formation2.addDrone(drones[i+k]);
+		}else if (i<soluong/4){
+			formation3.addDrone(drones[i+k]);
+		}else if (i<soluong*3/4){	
+			formation4.addDrone(drones[i+k]);
+		}else {
+			formation.addDrone(drones[i+k]);
+		}		
+	}
+	formation.setColor(color);
+	formation2.setColor(color);
+	formation3.setColor(color);
+	formation4.setRandomColorV2(formationLifetime,pistilColor)
+
+	formation.setRadiusDrone(1.5)
+	formation4.setRadiusDrone(1.5)
+
+	formation2.setReduceSize(-1);
+	formation3.setReduceSize(-1);
+
+
+	formation2.setCircleFormationV3(centerX, centerY, radius2,formationLifetime, tiltAngleX , tiltAngleY, speed = Math.PI / 900);
+	formation3.setCircleFormationV3(centerX, centerY, radius2,formationLifetime, -tiltAngleX, -tiltAngleY, speed = Math.PI / 900);
+	
+	seqDroneSphere(formation, centerX, centerY, radius2/1.75, formationLifetime);
+	seqDroneSphere(formation4,centerX, centerY, radius2/1.55, formationLifetime);
+	
+	
+	return k + soluong;
+}
+function seqDroneUFO(k,x=maxW/2, y=maxH/2-250, radius = 300, color=COLOR.Blue, life=10000){
+	let formation1 =new Formation();
 	let formation2 =new Formation();
-	// let formation3 =new Formation();
-	drones.forEach((drone, index) => {
-		if (index < 100) {
-			formation.addDrone(drone); // Đội hình 1: Drone đầu tiên
-		} else if(index<120) {
-			formation2.addDrone(drone)
+	let formation3 =new Formation();
+	let formation4 =new Formation();
+	let formation5 =new Formation();
+
+	let soluong =  380;
+	for(let i = 0;i<soluong; i++){
+		if(i<soluong*3/19){
+			formation1.addDrone(drones[i+k]);
 		}
-	});
-	seqDroneSphere(formation);
-	setTimeout(() => {
-		formation2.setColor(COLOR.Blue);
-		seqCircle(formation2)
-	}, 1000);
-	setTimeout(() => {
-		formation.stopSet();
-		formation2.stopSet();
-		console.log("xóa")
-	}, 3000);
+		else if(i<soluong*3*2/19){
+			formation5.addDrone(drones[i+k]);
+		}
+		else if(i<soluong*10/19){
+			formation4.addDrone(drones[i+k]);
+		}
+		else if(i<soluong*14/19){
+			formation2.addDrone(drones[i+k]);
+		}
+		else{
+			formation3.addDrone(drones[i+k]);
+		}
+
+	}
+	formation1.setColor(color);
+	formation2.setColor(color);
+	formation3.setColor(color);
+	formation4.setColor(color);
+	formation5.setColor(color);
 	
+	formation1.setCircleFormationV2(x, y-30, radius, life,-1);
+	formation2.setCircleFormationV2(x, y-15, radius+25, life,-1);
+	formation3.setCircleFormationV2(x, y, radius+50, life,0);
+	formation4.setCircleFormationV2(x, y+15, radius+25, life,1);
+	formation5.setCircleFormationV2(x, y+30, radius, life,1);
 
-	
-	
-}	
-
-
-
-
-
-// testSeqDrone()
-let formation = new Formation();
-
-drones.forEach((drone, index) => {
-	
-		formation.addDrone(drone); // Đội hình 1: Drone đầu tiên
-	
-});
-
-let formation2 = new Formation();
-for(let i = 0; i < 20; i++){
-	formation2.addDrone(drones[i]);
 }
-formation2.setCircleFormationV2(maxW/2, 150, 100,5000 ); // Đội hình 1: Xoay với góc nghiêng 30 độ
+function resetDrones(x){
+	for(let i = 0;i< x;i++){
+		drones[i]=new Drone(0, 0, 5, 0, 0,COLOR.Red,200000000);
+	}
+	return 0;
+}
 
+let x = seqDroneBom(0,maxW/2, maxH/2, 100, 100000, COLOR.Red, COLOR.White,Math.PI/2.1,Math.PI/3.6);
 setTimeout(() => {
-	formation2.setCircleFormationV2(maxW/2, 165, 115,5000); // Đội hình 2: Đường thẳng không thay đổi
-}, 6000);
+	x = resetDrones(x)
+	
+	let  y = seqDroneUFO(x,maxW/2, maxH/2-250, 300, COLOR.Blue, 15000);
+}, 2000);
 
-let shell = new Shell({
-	...shellTypes['Crysanthemum'](6)
-});
-let i =0 ;
-while(i<10){
-	let random = Math.floor(Math.random() * 10);
-	shell.launchV3(maxW/2+random*10, maxH/2-200, 0.4, 0.6, true);
-	i++
-}
+
+
+
+
+ 
 
 
 
