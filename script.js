@@ -222,13 +222,17 @@ class Formation {
 	
     constructor() {
         this.drones = [];
+		this.centerX=null;
+		this.centerY=null;
+		this.radius=null;
+		this.length = 0;
 		 // Mảng lưu danh sách các drone
     }
     addDrone(drone) {
         this.drones.push(drone);
     }
 	setColor(color){
-		console.log("set color")	
+
 		this.drones.forEach(drone=>{
 			this.fadeColor(drone, color, COLOR.White,120);
 		})
@@ -238,6 +242,26 @@ class Formation {
 			drone.radius = radius;
 		})
 	}
+	reset(){
+		this.drones.forEach(drone=>{
+			drone.x=-1;
+			drone.y=-1;
+		})
+	}
+    updateFormation(timeStep, speed, gAcc) {
+        this.drones.forEach(drone => drone.update(timeStep, speed, gAcc));
+    }
+	/**
+	 * Tạo tọa độ x, y của đội hình và bán kính
+	 * @param {*} mx 
+	 * @param {*} my 
+	 * @param {*} radius 
+	 */
+	setCenter(mx,my,radius){
+		this.centerX=mx;
+		this.centerY=my;
+		this.radius=radius;
+	}
 	
 	/**
 	 * tạo size 3d 
@@ -246,7 +270,7 @@ class Formation {
 	 */
 	setReduceSize(check=1) {
 		if(this.drones.length<1) return
-		console.log(this.drones.length)
+		
 		let maxRadius = this.drones[1].radius*1.2;
 		let minRadius = 0.4;
 		let total = (maxRadius-minRadius)/this.drones.length
@@ -299,7 +323,7 @@ class Formation {
 	 * @param {*} troll 
 	 * @param {*} color 
 	 */
-	setRandomColorV2(duration = 2000,colorStrobe = null,interval = 64, troll = 0.9) {
+	setRandomColorV2(duration = 2000000,colorStrobe = null,interval = 64, troll = 0.9) {
 		const color = this.drones[1].color
 		// Lưu màu ban đầu
 		const updateColors = () => {
@@ -348,18 +372,15 @@ class Formation {
 			step++;
 		}, 16); // 16ms cho mỗi frame (60FPS)
 	}
-	
 	/**
 	 * Tạo đội hình vòng xoay ngang
-	 * @param {*} centerX -x
-	 * @param {*} centerY -y
-	 * @param {*} radius - bán kính 
+
 	 * @param {*} formationLifetime - thời gian tồn tại 
 	 * @param {*} check -chiều xoay =1 cùng chiều|| =-1 ngược chiều
 	 * @param {*} speed - góc xoay = Math.PI / 600
 	 * @param {*} tiltAngle -góc nghiêng Math.PI / 2.15
 	 */
-	setCircleFormationV2(centerX, centerY, radius,  formationLifetime = 2000,agn=1,check=1,speed = Math.PI / 600, tiltAngle = -Math.PI / 2.02) {
+	setCircleFormationV2(formationLifetime = 2000,agn=1,check=1,speed = Math.PI / 600, tiltAngle = -Math.PI / 2.02) {
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
 		const cosTilt = Math.cos(tiltAngle); // Tính cos của góc nghiêng
@@ -367,29 +388,11 @@ class Formation {
 		// const color = this.drones[0].color; // Màu sắc mặc định của drone
 		let elapsedTime = 0; // Biến để theo dõi thời gian đã trôi qua
 		const startTime = Date.now(); // Thời điểm bắt đầu
-		console.log("đội hình vòng tròn")
 		// Hàm cập nhật đội hình theo thời gian
 		const update = () => {
-			// const currentTime = Date.now();
-			// elapsedTime = currentTime - startTime;
-			// if (elapsedTime >= formationLifetime) {
-			// 	//  // Chia drone thành 2 nhóm: 50% thành màu đen, 50% thành màu ngẫu nhiên
-			// 	//  const blackCount = Math.floor(this.drones.length * 0.5); // Số lượng drone thành màu đen
-			// 	//  const shuffledDrones = [...this.drones].sort(() => Math.random() - 0.5); // Trộn ngẫu nhiên mảng drones
-	 
-			// 	//  // Đổi màu
-			// 	//  shuffledDrones.forEach((drone, index) => {
-			// 	// 	 if (index < blackCount) {
-			// 	// 		 drone.color = "black";
-			// 	// 		 drone.pistilColor="black" // Màu đen
-			// 	// 	 } else {
-			// 	// 		 drone.color = getRandomColor(); // Màu ngẫu nhiên
-			// 	// 	 }
-				
-			// 	// })
-			// }
-			radius = radius + Math.sin(time);
-			centerY = centerY +agn* Math.cos(time)/10;
+			//tạo hiệu ứng mở rộng
+			this.radius = this.radius + agn*Math.sin(time);
+			this.centerY = this.centerY + agn* Math.cos(time)/10;
 			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
 			const currentTime = Date.now(); // Lấy thời gian hiện tại
 			const elapsedTime = currentTime - startTime; // Tính thời gian đã trôi qua
@@ -407,8 +410,8 @@ class Formation {
 			this.drones.forEach((drone, index) => {
 				 // Màu sắc mặc định
 				const angle = angleStep * index + rotationAngle*check; // Góc quay cho mỗi drone
-				const x = radius * Math.cos(angle); // Tọa độ X trên vòng tròn
-				const y = radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
+				const x = this.radius * Math.cos(angle); // Tọa độ X trên vòng tròn
+				const y = this.radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
 	
 				// Biến đổi 3D với góc nghiêng tiltAngle
 				const transformedX = x; // Trục X giữ nguyên
@@ -416,8 +419,8 @@ class Formation {
 				const depth = y * sinTilt; // Chiều sâu để tạo hiệu ứng 3D
 	
 				// Đặt lại vị trí drone
-				drone.x = centerX + transformedX;
-				drone.y = centerY + transformedY;
+				drone.x = this.centerX + transformedX;
+				drone.y = this.centerY + transformedY;
 	
 				// Tạo hiệu ứng "độ sâu" bằng cách thay đổi kích thước hoặc màu sắc dựa trên `depth`
 				// drone.radius = drone.baseRadius + depth * 0.005; // Kích thước thay đổi theo độ sâu
@@ -433,16 +436,19 @@ class Formation {
 	}
 	
 	/**
-	 * Xoay vòng tròn với khả năng điều chỉnh độ nghiêng theo cả 2 trục (X và Y)
-	 * @param {*} centerX - Tọa độ tâm X
-	 * @param {*} centerY - Tọa độ tâm Y
-	 * @param {*} radius - Bán kính vòng tròn
-	 * @param {*} formationLifetime - Thời gian tồn tại đội hình
-	 * @param {*} tiltAngleX - Độ nghiêng theo trục X  math.pi/1->vv
-	 * @param {*} tiltAngleY - Độ nghiêng theo trục Y math.pi/1->vv
-	 * @param {*} speed - Tốc độ xoay math.pi/600 
+	 * Đội hình vong tròn 3D di chuyển
+	 * @param {*} centerX 
+	 * @param {*} centerY 
+	 * @param {*} radius 
+	 * @param {*} deltaX - di chuyển theo trục X
+	 * @param {*} deltaY - 	di chuyển theo trục Y
+	 * @param {*} formationLifetime 
+	 * @param {*} tiltAngleX 
+	 * @param {*} tiltAngleY 
+	 * @param {*} speed 
 	 */
-	setCircleFormationV3(centerX, centerY, radius,formationLifetime, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/2, speed = Math.PI / 900) {
+	setCircleFormationV3(formationLifetime=10000, tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900,deltaX = 0, deltaY = 0, ) {
+		
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
 		const cosTiltX = Math.cos(tiltAngleX); // Tính cos của góc nghiêng X
@@ -450,45 +456,118 @@ class Formation {
 		const cosTiltY = Math.cos(tiltAngleY); // Tính cos của góc nghiêng Y
 		const sinTiltY = Math.sin(tiltAngleY); // Tính sin của góc nghiêng Y
 		const startTime = Date.now(); // Thời điểm bắt đầu
+	
+		let offsetX = deltaX; // Offset cho vị trí X
+		let offsetY = deltaY; // Offset cho vị trí Y
+		
 		// Hàm cập nhật đội hình theo thời gian
 		const update = () => {
 			const currentTime = Date.now(); // Lấy thời gian hiện tại
 			const elapsedTime = currentTime - startTime; // Tính thời gian đã trôi qua
-
+	
 			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
 			if (elapsedTime >= formationLifetime) {
-				this.reset()
+				this.reset();
 				return; // Dừng quy trình
 			}
+	
 			time += speed; // Tăng thời gian để thay đổi góc quay
 			const rotationAngle = time; // Góc quay hiện tại
-
+			
+			// Cập nhật vị trí di chuyển của đội hình
+			this.centerX += offsetX;
+			this.centerY += offsetY;
+	
 			this.drones.forEach((drone, index) => {
 				const angle = angleStep * index + rotationAngle; // Góc quay cho mỗi drone
-				const x = radius * Math.cos(angle); // Tọa độ X trên vòng tròn
-				const y = radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
-
+				const x = this.radius * Math.cos(angle); // Tọa độ X trên vòng tròn
+				const y = this.radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
+	
 				// Biến đổi 3D với góc nghiêng trên cả hai trục
 				const transformedX = x * cosTiltY - y * sinTiltX; // Trục X biến đổi theo nghiêng Y và X
 				const transformedY = y * cosTiltX - x * sinTiltY; // Trục Y biến đổi theo nghiêng X và Y
 				const depth = x * sinTiltX + y * sinTiltY; // Chiều sâu để tạo hiệu ứng 3D
-
-				// Đặt lại vị trí drone
-				drone.x = centerX + transformedX;
-				drone.y = centerY + transformedY;
-
+	
+				// Đặt lại vị trí drone cộng thêm offset
+				drone.x = this.centerX + transformedX ;
+				drone.y = this.centerY + transformedY ;
+	
 				// Tạo hiệu ứng "độ sâu" bằng cách thay đổi kích thước hoặc màu sắc dựa trên `depth`
 				// drone.radius = drone.baseRadius + depth * 0.05; // Kích thước thay đổi theo độ sâu
 				// drone.color = depth > 0 ? "rgba(255, 0, 0, 1)" : "rgba(0, 0, 255, 0.8)"; // Màu sắc thay đổi theo độ sâu
 			});
-
+	
 			// Gọi lại hàm cập nhật liên tục
 			requestAnimationFrame(update);
 		};
-
+	
 		// Bắt đầu cập nhật đội hình
 		update();
 	}
+	/**
+	 * Đội hình vong tròn 3D 
+	 * @param {*} centerX 
+	 * @param {*} centerY 
+	 * @param {*} radius 
+	 * @param {*} formationLifetime 
+	 * @param {*} tiltAngleX 
+	 * @param {*} tiltAngleY 
+	 * @param {*} speed 
+	 */
+	setCircleFormationV1(formationLifetime=10000, tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900) {
+	
+		let time = 0; // Biến thời gian để tính góc xoay
+		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
+		const cosTiltX = Math.cos(tiltAngleX); // Tính cos của góc nghiêng X
+		const sinTiltX = Math.sin(tiltAngleX); // Tính sin của góc nghiêng X
+		const cosTiltY = Math.cos(tiltAngleY); // Tính cos của góc nghiêng Y
+		const sinTiltY = Math.sin(tiltAngleY); // Tính sin của góc nghiêng Y
+		const startTime = Date.now(); // Thời điểm bắt đầu
+	
+		// Hàm cập nhật đội hình theo thời gian
+		const update = () => {
+			const currentTime = Date.now(); // Lấy thời gian hiện tại
+			const elapsedTime = currentTime - startTime; // Tính thời gian đã trôi qua
+	
+			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			if (elapsedTime >= formationLifetime) {
+				this.reset();
+				return; // Dừng quy trình
+			}
+	
+			time += speed; // Tăng thời gian để thay đổi góc quay
+			const rotationAngle = time; // Góc quay hiện tại
+	
+			// Cập nhật vị trí di chuyển của đội hình
+			
+	
+			this.drones.forEach((drone, index) => {
+				const angle = angleStep * index + rotationAngle; // Góc quay cho mỗi drone
+				const x = this.radius * Math.cos(angle); // Tọa độ X trên vòng tròn
+				const y = this.radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
+	
+				// Biến đổi 3D với góc nghiêng trên cả hai trục
+				const transformedX = x * cosTiltY - y * sinTiltX; // Trục X biến đổi theo nghiêng Y và X
+				const transformedY = y * cosTiltX - x * sinTiltY; // Trục Y biến đổi theo nghiêng X và Y
+				const depth = x * sinTiltX + y * sinTiltY; // Chiều sâu để tạo hiệu ứng 3D
+	
+				// Đặt lại vị trí drone cộng thêm offset
+				drone.x = this.centerX + transformedX ;
+				drone.y = this.centerY + transformedY ;
+	
+				// Tạo hiệu ứng "độ sâu" bằng cách thay đổi kích thước hoặc màu sắc dựa trên `depth`
+				// drone.radius = drone.baseRadius + depth * 0.05; // Kích thước thay đổi theo độ sâu
+				// drone.color = depth > 0 ? "rgba(255, 0, 0, 1)" : "rgba(0, 0, 255, 0.8)"; // Màu sắc thay đổi theo độ sâu
+			});
+	
+			// Gọi lại hàm cập nhật liên tục
+			requestAnimationFrame(update);
+		};
+	
+		// Bắt đầu cập nhật đội hình
+		update();
+	}
+	
 	/**
 	 * Tạo đội hình drone theo hình cầu 3D có thể xoay
 	 * @param {*} centerX - Tọa độ trung tâm X
@@ -500,86 +579,73 @@ class Formation {
 	 * @param {*} rotationAngleY - Góc xoay quanh trục Y
 	 * @param {*} rotationAngleZ - Góc xoay quanh trục Z
 	 */
-	setSphereFormation(centerX, centerY, radius, rotationAngleX = 0, rotationAngleY = 0, rotationAngleZ = 0) {
-		
+	setSphereFormation(formationLifetime = 5000,deltaX = 0, deltaY = 0 ) {
 		
 		const totalDrones = this.drones.length;
 		const angleStepPhi = Math.PI / Math.sqrt(totalDrones); // Chia góc φ (từ 0 đến π) đều
 		const angleStepTheta = (2 * Math.PI) / Math.sqrt(totalDrones); // Chia góc θ (từ 0 đến 2π) đều
-
-		this.drones.forEach((drone, index) => {
-			// // Tính toán góc φ (từ 0 đến π) và θ (từ 0 đến 2π)
-			const phi = (index % Math.sqrt(totalDrones)) * angleStepPhi; // Từ trên xuống dưới
-			const theta = Math.floor(index / Math.sqrt(totalDrones)) * angleStepTheta; // Vòng quanh trục Z
-
-			// const phi = Math.acos(2 * Math.random() - 1); // Góc phi (0 đến π)
-        	// const theta = Math.random() * 2 * Math.PI;   // Góc theta (0 đến 2π)
-
-			// Chuyển đổi tọa độ cầu (r, θ, φ) sang Descarte (x, y, z)
-			let x = radius * Math.sin(phi) * Math.cos(theta); // X trên mặt cầu
-			let y = radius * Math.sin(phi) * Math.sin(theta); // Y trên mặt cầu
-			let z = radius * Math.cos(phi); // Z trên mặt cầu (độ cao)
-
-			// Biến đổi tọa độ dựa trên góc xoay (rotationAngleX, rotationAngleY, rotationAngleZ)
-			// Xoay quanh trục X
-			let tempY = y * Math.cos(rotationAngleX) - z * Math.sin(rotationAngleX);
-			let tempZ = y * Math.sin(rotationAngleX) + z * Math.cos(rotationAngleX);
-			y = tempY;
-			z = tempZ;
-
-			// Xoay quanh trục Y
-			let tempX = x * Math.cos(rotationAngleY) + z * Math.sin(rotationAngleY);
-			tempZ = -x * Math.sin(rotationAngleY) + z * Math.cos(rotationAngleY);
-			x = tempX;
-			z = tempZ;
-
-			// Xoay quanh trục Z
-			tempX = x * Math.cos(rotationAngleZ) - y * Math.sin(rotationAngleZ);
-			tempY = x * Math.sin(rotationAngleZ) + y * Math.cos(rotationAngleZ);
-			x = tempX;
-			y = tempY;
-
-			// Đặt lại vị trí drone với tâm hình cầu (centerX, centerY, centerZ)
-			drone.x = centerX + x;
-			drone.y = centerY + y;
-			// drone.z = centerZ + z;
-			
-			// Tạo hiệu ứng "độ sâu" (như kích thước hoặc độ sáng thay đổi dựa trên tọa độ z)
-			// drone.size = Math.max(1, 3 + z / radius * 2); // Kích thước thay đổi dựa trên độ sâu
-			// drone.color = z > 0 ? color : `rgba(26, 26, 47, 0.8)`; // Màu thay đổi theo chiều sâu
-		});
-	}
-
+		let startTime = Date.now(); // Lưu thời gian bắt đầu để kiểm tra độ tồn tại đội hình
+		let rotationAngleX = 0;
+		let rotationAngleY = 0;
+		let rotationAngleZ = 0;
+		// Tạo một hàm update để di chuyển đội hình
+		const updateFormation = () => {
+			const currentTime = Date.now();
+			const elapsedTime = currentTime - startTime;
 	
-	seqSpherev2(centerX, centerY, attractionForce, rotationSpeed, timeStep) {
-        this.drones.forEach(drone => {
-            // Di chuyển drone theo lực hút vào trung tâm
-            const dx = centerX - drone.x;
-            const dy = centerY - drone.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const force = attractionForce / (distance * distance); // Lực hút tỷ lệ nghịch với bình phương khoảng cách
-
-            // Tính toán hướng và tốc độ di chuyển
-            const angleToCenter = Math.atan2(dy, dx);
-            const moveX = force * Math.cos(angleToCenter) * timeStep;
-            const moveY = force * Math.sin(angleToCenter) * timeStep;
-
-            // Cập nhật vị trí của drone
-            drone.x += moveX;
-            drone.y += moveY;
-
-            // Giảm bán kính theo thời gian để drone di chuyển vào trong
-            if (drone.radius > 20) {
-                drone.radius -= 0.1;  // Điều chỉnh tốc độ giảm bán kính
-            }
-
-            // Quay drone xung quanh trung tâm
-            drone.angle += rotationSpeed * timeStep;  // Cập nhật góc quay
-            drone.x = centerX + drone.radius * Math.cos(drone.angle);
-            drone.y = centerY + drone.radius * Math.sin(drone.angle);
-        });
-    }
-
+			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			if (elapsedTime >= formationLifetime) {
+				this.reset(); // Dừng việc cập nhật đội hình nếu hết thời gian
+				return;
+			}
+	
+			// Tăng góc xoay theo tốc độ xác định
+			rotationAngleX += 0.001; // Chỉnh sửa theo tốc độ bạn muốn
+			rotationAngleY += 0.001;
+			rotationAngleZ += 0.001;
+	
+			// Cập nhật vị trí đội hình
+			this.centerX += deltaX;
+			this.centerY += deltaY;
+	
+			this.drones.forEach((drone, index) => {
+				// Tính toán góc φ (từ 0 đến π) và θ (từ 0 đến 2π)
+				const phi = (index % Math.sqrt(totalDrones)) * angleStepPhi; // Từ trên xuống dưới
+				const theta = Math.floor(index / Math.sqrt(totalDrones)) * angleStepTheta; // Vòng quanh trục Z
+	
+				// Chuyển đổi tọa độ cầu (r, θ, φ) sang Descarte (x, y, z)
+				let x = this.radius * Math.sin(phi) * Math.cos(theta); // X trên mặt cầu
+				let y = this.radius * Math.sin(phi) * Math.sin(theta); // Y trên mặt cầu
+				let z = this.radius * Math.cos(phi); // Z trên mặt cầu (độ cao)
+	
+				// Biến đổi tọa độ dựa trên góc xoay (rotationAngleX, rotationAngleY, rotationAngleZ)
+				let tempY = y * Math.cos(rotationAngleX) - z * Math.sin(rotationAngleX);
+				let tempZ = y * Math.sin(rotationAngleX) + z * Math.cos(rotationAngleX);
+				y = tempY;
+				z = tempZ;
+	
+				let tempX = x * Math.cos(rotationAngleY) + z * Math.sin(rotationAngleY);
+				tempZ = -x * Math.sin(rotationAngleY) + z * Math.cos(rotationAngleY);
+				x = tempX;
+				z = tempZ;
+	
+				tempX = x * Math.cos(rotationAngleZ) - y * Math.sin(rotationAngleZ);
+				tempY = x * Math.sin(rotationAngleZ) + y * Math.cos(rotationAngleZ);
+				x = tempX;
+				y = tempY;
+	
+				// Đặt lại vị trí drone với tâm hình cầu (centerX, centerY)
+				drone.x = this.centerX + x;
+				drone.y = this.centerY + y;
+			});
+	
+			// Tiếp tục gọi lại updateFormation mỗi frame
+			requestAnimationFrame(updateFormation);
+		}
+	
+		// Bắt đầu cập nhật đội hình
+		requestAnimationFrame(updateFormation);
+	}
 
     setLineFormation(startX, startY, spacing, horizontal = true) {
         this.drones.forEach((drone, index) => {
@@ -593,15 +659,7 @@ class Formation {
         });
     }
 
-	reset(){
-		this.drones.forEach(drone=>{
-			drone.x=-1;
-			drone.y=-1;
-		})
-	}
-    updateFormation(timeStep, speed, gAcc) {
-        this.drones.forEach(drone => drone.update(timeStep, speed, gAcc));
-    }
+	
 
 	
 	
@@ -4948,41 +5006,6 @@ class ShellV2 extends Shell{
 }
 
 
-function seqDroneSphere(formation, w = maxW / 2, h = maxH / 2, radius = 150, formationLifetime = 5000, rotationSpeed = 0.001) {
-    let rotationAngleX = 0;
-    let rotationAngleY = 0;
-    let rotationAngleZ = 0;
-    const startTime = Date.now();
-
-    function updateFormation3D() {
-        const currentTime = Date.now();
-        const elapsedTime = currentTime - startTime;
-
-        // Kiểm tra nếu đã hết thời gian tồn tại đội hình
-        
-
-        // Tăng góc xoay theo tốc độ xác định
-        rotationAngleX += rotationSpeed;
-        rotationAngleY += rotationSpeed;
-        rotationAngleZ += rotationSpeed;
-
-        // Cập nhật đội hình
-		if (elapsedTime >= formationLifetime) {
-            formation.reset(); // Dừng việc cập nhật đội hình
-            return
-			
-        }else{
-			formation.setSphereFormation(w, h, radius, rotationAngleX, rotationAngleY, rotationAngleZ);
-
-		}
-        // Tiếp tục gọi lại updateFormation3D mỗi frame
-        requestAnimationFrame(updateFormation3D);
-    }
-
-    // Bắt đầu cập nhật đội hình
-    requestAnimationFrame(updateFormation3D);
-}
-
 		
 /**
  * Tạo quả cầu nguyên tử
@@ -4998,7 +5021,7 @@ function seqDroneSphere(formation, w = maxW / 2, h = maxH / 2, radius = 150, for
  * @param {*} speed 
  * @returns 
  */
-function seqDroneBom(k,centerX, centerY, radius2,formationLifetime=10000,color, pistilColor, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/3, speed = Math.PI / 900){
+function seqDroneBom(k,centerX, centerY, radius2,deltaX=0,deltaY=0,formationLifetime=10000,color=COLOR.Blue, pistilColor=COLOR.White, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/3, speed = Math.PI / 900){
 	
 	let formation = new Formation();
 	let formation3 = new Formation();
@@ -5028,11 +5051,11 @@ function seqDroneBom(k,centerX, centerY, radius2,formationLifetime=10000,color, 
 	formation3.setReduceSize(-1);
 
 
-	formation2.setCircleFormationV3(centerX, centerY, radius2,formationLifetime, tiltAngleX , tiltAngleY, speed = Math.PI / 900);
-	formation3.setCircleFormationV3(centerX, centerY, radius2,formationLifetime, -tiltAngleX, -tiltAngleY, speed = Math.PI / 900);
+	formation2.setCircleFormationV3(centerX, centerY, radius2,deltaX,deltaY,formationLifetime, tiltAngleX , tiltAngleY, speed = Math.PI / 900);
+	formation3.setCircleFormationV3(centerX, centerY, radius2,deltaX,deltaY,formationLifetime, -tiltAngleX, -tiltAngleY, speed = Math.PI / 900);
 	
-	seqDroneSphere(formation, centerX, centerY, radius2/1.75, formationLifetime);
-	seqDroneSphere(formation4,centerX, centerY, radius2/1.55, formationLifetime);
+	formation4.setSphereFormation(centerX, centerY, radius2/1.97,deltaX,deltaY,formationLifetime, tiltAngleX, tiltAngleY, speed = Math.PI / 900);
+	formation.setSphereFormation(centerX, centerY, radius2/1.67,deltaX,deltaY,formationLifetime, -tiltAngleX, -tiltAngleY, speed = Math.PI / 900);
 	
 	
 	return k + soluong;
@@ -5083,22 +5106,102 @@ function resetDrones(x){
 	return 0;
 }
 
-let x = seqDroneBom(0,maxW/2, maxH/2, 100, 100000, COLOR.Red, COLOR.White,Math.PI/2.1,Math.PI/3.6);
-setTimeout(() => {
-	x = resetDrones(x)
+function moveFormationInCircle(formation,centerX, centerY, radius, formationLifetime=10000, tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900) {
+	let time = 0; // Biến thời gian để tính góc xoay
+	const angleStep = Math.PI/180; // Khoảng cách giữa các drone trên vòng tròn
+	const cosTiltX = Math.cos(tiltAngleX); // Tính cos của góc nghiêng X
+	const sinTiltX = Math.sin(tiltAngleX); // Tính sin của góc nghiêng X
+	const cosTiltY = Math.cos(tiltAngleY); // Tính cos của góc nghiêng Y
+	const sinTiltY = Math.sin(tiltAngleY); // Tính sin của góc nghiêng Y
+	const startTime = Date.now(); // Thời điểm bắt đầu
+
 	
-	let  y = seqDroneUFO(x,maxW/2, maxH/2-250, 300, COLOR.Blue, 15000);
-}, 2000);
+	// Hàm cập nhật đội hình theo thời gian
+	const update = () => {
+		const currentTime = Date.now(); // Lấy thời gian hiện tại
+		const elapsedTime = currentTime - startTime; // Tính thời gian đã trôi qua
+
+		// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+		if (elapsedTime >= formationLifetime) {
+			this.reset();
+			return; // Dừng quy trình
+		}
+
+		time += speed; // Tăng thời gian để thay đổi góc quay
+		const rotationAngle = time; // Góc quay hiện tại
+		
+		// Cập nhật vị trí di chuyển của đội hình
+		
+
+		
+		const angle = angleStep + rotationAngle; // Góc quay cho mỗi drone
+		const x = radius * Math.cos(angle); // Tọa độ X trên vòng tròn
+		const y = radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
+
+		// Biến đổi 3D với góc nghiêng trên cả hai trục
+		const transformedX = x * cosTiltY - y * sinTiltX; // Trục X biến đổi theo nghiêng Y và X
+		const transformedY = y * cosTiltX - x * sinTiltY; // Trục Y biến đổi theo nghiêng X và Y
+		
+
+		// Đặt lại vị trí drone cộng thêm offset
+		let mx = centerX + transformedX ;
+		let my = centerY + transformedY ;
+
+		formation.setCenter(mx, my);
+	
+
+		// Gọi lại hàm cập nhật liên tục
+		requestAnimationFrame(update);
+	};
+
+	// Bắt đầu cập nhật đội hình
+	update();
+}
 
 
 
+let k =0;
+let formation = new Formation();
+let formation3 = new Formation();
+let formation4 = new Formation();
+let formation2 = new Formation();
+let soluong = 480*100/125;
+for(let i = 0;i<soluong; i++){
+	if(i<soluong/8){
+		formation2.addDrone(drones[i+k]);
+	}else if (i<soluong/4){
+		formation3.addDrone(drones[i+k]);
+	}else if (i<soluong*3/4){	
+		formation4.addDrone(drones[i+k]);
+	}else {
+		formation.addDrone(drones[i+k]);
+	}		
+}
+// let initialCenterX = 500; // Vị trí trung tâm ban đầu
+// let initialCenterY = 500; // Vị trí trung tâm ban đầu
+// let radius = 200; // Bán kính vòng tròn
+// let speed = Math.PI / 900; // Tốc độ di chuyển (điều chỉnh tốc độ)
+// let formationLifetime = 10000; // Thời gian tồn tại của đội hình
+// moveFormationInCircle(initialCenterX, initialCenterY, radius, 0, speed, formationLifetime);
+// let x = seqDroneBom(0,maxW/2, maxH/2, 100, 100000, COLOR.Red, COLOR.White,Math.PI/2.1,Math.PI/3.6);
+// setTimeout(() => {
+// 	x = resetDrones(x)
+	
+// 	let  y = seqDroneUFO(x,maxW/2, maxH/2-250, 300, COLOR.Blue, 15000);
+// }, 2000);
+// formation.setCircleFormationV4(maxW/2, maxH/2, 150, 10000, Math.PI/2, Math.PI/3, Math.PI / 900,0,0);
 
+// seqDroneSphere(formation2, maxW/2, maxH/2, 150, 10000, Math.PI / 900,1,1);
+// seqDroneBom(0,maxW/2, maxH/2, 100,1,2);
+// formation.setCircleFormationV3(maxW/2, maxH/2, 150,1,2,100000000, Math.PI/2.1, Math.PI/3.6, Math.PI / 900);
 
  
-
-
-
-
+// moveFormationInCircle(maxW/4, maxH/3, 150, 0, 10000);
+formation.setCenter(maxW/3, maxH/4, 150)
+formation.setCircleFormationV1(100005);
+formation.setReduceSize(-1)
+formation.setRandomColorV2()
+formation.setSphereFormation()
 
 
 
