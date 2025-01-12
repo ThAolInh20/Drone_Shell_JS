@@ -10,22 +10,33 @@ drones.push(new Drone(0.5, 0.5, 5, 0, 0, COLOR.Gold, 3000000));
  */	
 function darkenColor(hex, amount)
 ---------------------------------------
-class  Formation(){}
-hình tròn ngang check =1 thì cùng chiều đồng hồ, =-1<>
-=>>>>>> setCircleFormationV2(centerX, centerY, radius,  formationLifetime = 2000,check=1,speed = Math.PI / 600, tiltAngle = Math.PI / 2.15)
+class  Formation(){
+ this.drones = [];
+		this.centerX=null;
+		this.centerY=null;
+		this.radius=null;
+		this.length = 0;
+		this.formationLifetime =10000;
+}
+setFormation(mx,my,formation=10000,radius)
+setCenter(mx, my, radius)
 
-thiết lập đội hình hình tròn 
-=>>>>>> setCircleFormationV3(centerX, centerY, radius, tiltAngleX = Math.PI /15, tiltAngleY = Math.PI / 3, speed = Math.PI / 600) 	
+addDrone(drone)
 
-Thay đổi kích cỡ fỏmat
-=>>>>>setReduceSize(check= 1)
+setColor(color)
 
-setColor(color) thay đổi màu 
+setRadiusDrone(radius)
+reset()
+setReduceSize(check=1)
+setRandomColor(interval = 64)
+setRandomColorV2(duration = 2000000,colorStrobe = null,interval = 64, troll = 0.9)
 
-tạo hiệu ứng nhấp nháy liên tục
-=>>>>>setRandomColor(){
+Tạo đội vòng hình xoay
+setCircleFormationV1( tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900)
+setCircleFormationV2(agn=0,check=1,speed = Math.PI / 600, tiltAngle = -Math.PI / 2.02)
+setCircleFormationV3( tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900,deltaX = 0, deltaY = 0 )
 
-=>>>>>setRandomColorV2(interval = 64, troll = 0.9,colorStrobe = null, duration = 2000) - nhấp nháy mượt hơn xíu với tốc độ , troll là số lượng màu đen, màu của strobe(ko có thì random), và thời gian sống
 
------------------------------------------
-seqDroneSphere(formation,w,h,size) làm cho quả cầu xoay
+
+
+

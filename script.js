@@ -1,6 +1,6 @@
 'use strict';
 console.clear();
-
+let airDrag = 0.8;
 // This is a prime example of what starts out as a simple project
 // and snowballs way beyond its intended size. It's a little clunky
 // reading/working on this single file, but here it is anyways :)
@@ -226,22 +226,40 @@ class Formation {
 		this.centerY=null;
 		this.radius=null;
 		this.length = 0;
+		this.formationLifetime =10000;
 		 // Mảng lưu danh sách các drone
     }
+	/**
+	 * Thêm Drone vào formation
+	 * @param {*} drone 
+	 */
     addDrone(drone) {
         this.drones.push(drone);
     }
+	/**
+	 * Đổi màu cho tất cả drone của formation
+	 * @param {*} color 
+	 */
 	setColor(color){
 
 		this.drones.forEach(drone=>{
 			this.fadeColor(drone, color, COLOR.White,120);
 		})
 	}
-	setRadiusDrone(radius,color){
+	/**
+	 * Tjay đổi radius của drone
+	 * @param {*} radius 
+	 */
+	setRadiusDrone(radius){
 		this.drones.forEach(drone=>{
 			drone.radius = radius;
 		})
 	}
+	/**
+	 * Đặt vị trí cho drone =-1
+	 * @param {*} x 
+	 * @param {*} y 
+	 */
 	reset(){
 		this.drones.forEach(drone=>{
 			drone.x=-1;
@@ -252,19 +270,32 @@ class Formation {
         this.drones.forEach(drone => drone.update(timeStep, speed, gAcc));
     }
 	/**
-	 * Tạo tọa độ x, y của đội hình và bán kính
+	 * Tạo tọa độ x, y của đội hình và bán kính, thời gian sống của đội hình
+	 * @param {*} mx 
+	 * @param {*} my 
+	 * @param {*} radius 
+	 * @param {*} formationLifetime - thời gian tồn tại
+	 */
+	setFormation(mx,my,formation=10000,radius){
+		this.centerX=mx;
+		this.centerY=my;
+		this.radius=radius;
+		this.formationLifetime=formation;
+	}
+	/**
+	 * Config lại các giá trị của Formation
 	 * @param {*} mx 
 	 * @param {*} my 
 	 * @param {*} radius 
 	 */
-	setCenter(mx,my,radius){
+	setCenter(mx, my, radius){
 		this.centerX=mx;
 		this.centerY=my;
 		this.radius=radius;
 	}
 	
 	/**
-	 * tạo size 3d 
+	 * tạo size tăng dần theo kích cỡ
 	 * @param {*} check - =1 thì lớn giảm dần
 	 * @returns 
 	 */
@@ -293,7 +324,8 @@ class Formation {
 		}	
 	}
 	/**
-	 * Đổi màu liên tucj
+	 * Tạo hiệu ứng đổi màu ngẫu nhiên
+	 * @param {*} interval 
 	 */
 	setRandomColor(interval = 64){
 		const updateColors = () => {
@@ -316,12 +348,14 @@ class Formation {
 		// Đặt khoảng thời gian thay đổi màu
 		setInterval(updateColors, interval);
 	}
+	
 
 	/**
-	 * tạo hiệu ứng nhấp nháy
-	 * @param {*} interval 
-	 * @param {*} troll 
-	 * @param {*} color 
+	 * tạo hiệu ứng nhấp nháy 
+	 * @param {*} duration - thời gian nhấp nháy
+	 * @param {*} interval - thời gian nhấp nháy
+	 * @param {*} troll - tỉ lệ số lượng màu đen 0->1
+	 * @param {*} colorStrobe - màu nhấp nháy
 	 */
 	setRandomColorV2(duration = 2000000,colorStrobe = null,interval = 64, troll = 0.9) {
 		const color = this.drones[1].color
@@ -374,14 +408,14 @@ class Formation {
 	}
 	/**
 	 * Tạo đội hình vòng xoay ngang
-
-	 * @param {*} formationLifetime - thời gian tồn tại 
-	 * @param {*} check -chiều xoay =1 cùng chiều|| =-1 ngược chiều
-	 * @param {*} speed - góc xoay = Math.PI / 600
-	 * @param {*} tiltAngle -góc nghiêng Math.PI / 2.15
+	 * @param {*} agn - tốc độ mở rộng độ lớn / nên để 0 để đứng im
+	 * @param {*} check - chiều vòng xoay 
+	 * @param {*} speed - tốc độ /default Math.PI / 600
+	 * @param {*} tiltAngle - góc nghiêng /default -Math.PI / 2.02
 	 */
-	setCircleFormationV2(formationLifetime = 2000,agn=1,check=1,speed = Math.PI / 600, tiltAngle = -Math.PI / 2.02) {
+	setCircleFormationV2(agn=0,check=1,speed = Math.PI / 600, tiltAngle = -Math.PI / 2.02) {
 		let time = 0; // Biến thời gian để tính góc xoay
+		let formationLifetime = this.formationLifetime; // Thời gian tồn tại đội hình
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
 		const cosTilt = Math.cos(tiltAngle); // Tính cos của góc nghiêng
 		const sinTilt = Math.sin(tiltAngle); // Tính sin của góc nghiêng
@@ -436,19 +470,15 @@ class Formation {
 	}
 	
 	/**
-	 * Đội hình vong tròn 3D di chuyển
-	 * @param {*} centerX 
-	 * @param {*} centerY 
-	 * @param {*} radius 
-	 * @param {*} deltaX - di chuyển theo trục X
-	 * @param {*} deltaY - 	di chuyển theo trục Y
-	 * @param {*} formationLifetime 
-	 * @param {*} tiltAngleX 
-	 * @param {*} tiltAngleY 
-	 * @param {*} speed 
+	 * Tạo đội hình xuay tròn 3D với tốc độ di chuyển
+	 * @param {*} tiltAngleX - độ nghiêng X
+	 * @param {*} tiltAngleY - độ ngjiêng Y
+	 * @param {*} speed -tốc độ xoay
+	 * @param {*} deltaX - tọa độ x thêm vào
+	 * @param {*} deltaY -	tọa độ y thêm vào
 	 */
-	setCircleFormationV3(formationLifetime=10000, tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900,deltaX = 0, deltaY = 0, ) {
-		
+	setCircleFormationV3( tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900,deltaX = 0, deltaY = 0 ) {
+		let formationLifetime = this.formationLifetime;
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
 		const cosTiltX = Math.cos(tiltAngleX); // Tính cos của góc nghiêng X
@@ -505,17 +535,13 @@ class Formation {
 		update();
 	}
 	/**
-	 * Đội hình vong tròn 3D 
-	 * @param {*} centerX 
-	 * @param {*} centerY 
-	 * @param {*} radius 
-	 * @param {*} formationLifetime 
-	 * @param {*} tiltAngleX 
-	 * @param {*} tiltAngleY 
+	 * Đội hình xoay tròn 3D hay dùng
+	 * @param {*} tiltAngleX - độ nghiêng X
+	 * @param {*} tiltAngleY - độ nghiêng Y
 	 * @param {*} speed 
 	 */
-	setCircleFormationV1(formationLifetime=10000, tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900) {
-	
+	setCircleFormationV1( tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900) {
+		let formationLifetime = this.formationLifetime;
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
 		const cosTiltX = Math.cos(tiltAngleX); // Tính cos của góc nghiêng X
@@ -569,18 +595,10 @@ class Formation {
 	}
 	
 	/**
-	 * Tạo đội hình drone theo hình cầu 3D có thể xoay
-	 * @param {*} centerX - Tọa độ trung tâm X
-	 * @param {*} centerY - Tọa độ trung tâm Y
-	 * @param {*} centerZ - Tọa độ trung tâm Z
-	 * @param {*} color - Màu sắc của drone
-	 * @param {*} radius - Bán kính của hình cầu
-	 * @param {*} rotationAngleX - Góc xoay quanh trục X
-	 * @param {*} rotationAngleY - Góc xoay quanh trục Y
-	 * @param {*} rotationAngleZ - Góc xoay quanh trục Z
+	 * Tạo đội hình hình cầu
 	 */
-	setSphereFormation(formationLifetime = 5000,deltaX = 0, deltaY = 0 ) {
-		
+	setSphereFormation( ) {
+		let formationLifetime = this.formationLifetime;
 		const totalDrones = this.drones.length;
 		const angleStepPhi = Math.PI / Math.sqrt(totalDrones); // Chia góc φ (từ 0 đến π) đều
 		const angleStepTheta = (2 * Math.PI) / Math.sqrt(totalDrones); // Chia góc θ (từ 0 đến 2π) đều
@@ -605,8 +623,7 @@ class Formation {
 			rotationAngleZ += 0.001;
 	
 			// Cập nhật vị trí đội hình
-			this.centerX += deltaX;
-			this.centerY += deltaY;
+			
 	
 			this.drones.forEach((drone, index) => {
 				// Tính toán góc φ (từ 0 đến π) và θ (từ 0 đến 2π)
@@ -3231,7 +3248,7 @@ function startSequence2() {
 	//testShell(0.5, 0.5);
 	// monodySeq();
 	// seqDrone();
-	
+	// skyFallSeq();
 
 }
 
@@ -3379,82 +3396,85 @@ function update(frameTime, lag) {
 	
 	const starDrag = 1 - (1 - Star.airDrag) * speed;
 	const starDragHeavy = 1 - (1 - Star.airDragHeavy) * speed;
-	const sparkDrag = 1 - (1 - Spark.airDrag) * speed;
+	// const sparkDrag = 1- (1 - Spark.airDrag) * speed;
+
+	const sparkDrag = 1- (1 - airDrag) * speed;//sửa
+	
 	const gAcc = timeStep / 1000 * GRAVITY;
 	COLOR_CODES_W_INVIS.forEach(color => {
-		// Stars
-		const stars = Star.active[color];
-		for (let i=stars.length-1; i>=0; i=i-1) {
-			const star = stars[i];
-			// Only update each star once per frame. Since color can change, it's possible a star could update twice without this, leading to a "jump".
-			if (star.updateFrame === currentFrame) {
-				continue;
-			}
-			star.updateFrame = currentFrame;
-			
-			star.life -= timeStep;
-			if (star.life <= 0) {
-				stars.splice(i, 1);
-				Star.returnInstance(star);
-			} else {
-				const burnRate = Math.pow(star.life / star.fullLife, 0.5);
-				const burnRateInverse = 1 - burnRate;
+	// Stars
+	const stars = Star.active[color];
+	for (let i=stars.length-1; i>=0; i=i-1) {
+		const star = stars[i];
+		// Only update each star once per frame. Since color can change, it's possible a star could update twice without this, leading to a "jump".
+		if (star.updateFrame === currentFrame) {
+			continue;
+		}
+		star.updateFrame = currentFrame;
+		
+		star.life -= timeStep;
+		if (star.life <= 0) {
+			stars.splice(i, 1);
+			Star.returnInstance(star);
+		} else {
+			const burnRate = Math.pow(star.life / star.fullLife, 0.5);
+			const burnRateInverse = 1 - burnRate;
 
-				star.prevX = star.x;
-				star.prevY = star.y;
-				star.x += star.speedX * speed;
-				star.y += star.speedY * speed;
-				// Apply air drag if star isn't "heavy". The heavy property is used for the shell comets.
-				if (!star.heavy) {
-					star.speedX *= starDrag;
-					star.speedY *= starDrag;
+			star.prevX = star.x;
+			star.prevY = star.y;
+			star.x += star.speedX * speed;
+			star.y += star.speedY * speed;
+			// Apply air drag if star isn't "heavy". The heavy property is used for the shell comets.
+			if (!star.heavy) {
+				star.speedX *= starDrag;
+				star.speedY *= starDrag;
+			}
+			else {
+				star.speedX *= starDragHeavy;
+				star.speedY *= starDragHeavy;
+			}
+			star.speedY += gAcc;
+			
+			if (star.spinRadius) {
+				star.spinAngle += star.spinSpeed * speed;
+				star.x += Math.sin(star.spinAngle) * star.spinRadius * speed;
+				star.y += Math.cos(star.spinAngle) * star.spinRadius * speed;
+			}
+			
+			if (star.sparkFreq) {
+				star.sparkTimer -= timeStep;
+				while (star.sparkTimer < 0) {
+					star.sparkTimer += star.sparkFreq * 0.75 + star.sparkFreq * burnRateInverse * 4;
+					Spark.add(
+						star.x,
+						star.y,
+						star.sparkColor,
+						Math.random() * PI_2,
+						Math.random() * star.sparkSpeed * burnRate,
+						star.sparkLife * 0.8 + Math.random() * star.sparkLifeVariation * star.sparkLife
+					);
 				}
-				else {
-					star.speedX *= starDragHeavy;
-					star.speedY *= starDragHeavy;
-				}
-				star.speedY += gAcc;
-				
-				if (star.spinRadius) {
-					star.spinAngle += star.spinSpeed * speed;
-					star.x += Math.sin(star.spinAngle) * star.spinRadius * speed;
-					star.y += Math.cos(star.spinAngle) * star.spinRadius * speed;
-				}
-				
-				if (star.sparkFreq) {
-					star.sparkTimer -= timeStep;
-					while (star.sparkTimer < 0) {
-						star.sparkTimer += star.sparkFreq * 0.75 + star.sparkFreq * burnRateInverse * 4;
-						Spark.add(
-							star.x,
-							star.y,
-							star.sparkColor,
-							Math.random() * PI_2,
-							Math.random() * star.sparkSpeed * burnRate,
-							star.sparkLife * 0.8 + Math.random() * star.sparkLifeVariation * star.sparkLife
-						);
+			}
+			
+			// Handle star transitions
+			if (star.life < star.transitionTime) {
+				if (star.secondColor && !star.colorChanged) {
+					star.colorChanged = true;
+					star.color = star.secondColor;
+					stars.splice(i, 1);
+					Star.active[star.secondColor].push(star);
+					if (star.secondColor === INVISIBLE) {
+						star.sparkFreq = 0;
 					}
 				}
 				
-				// Handle star transitions
-				if (star.life < star.transitionTime) {
-					if (star.secondColor && !star.colorChanged) {
-						star.colorChanged = true;
-						star.color = star.secondColor;
-						stars.splice(i, 1);
-						Star.active[star.secondColor].push(star);
-						if (star.secondColor === INVISIBLE) {
-							star.sparkFreq = 0;
-						}
-					}
-					
-					if (star.strobe) {
-						// Strobes in the following pattern: on:off:off:on:off:off in increments of `strobeFreq` ms.
-						star.visible = Math.floor(star.life / star.strobeFreq) % 3 === 0;
-					}
+				if (star.strobe) {
+					// Strobes in the following pattern: on:off:off:on:off:off in increments of `strobeFreq` ms.
+					star.visible = Math.floor(star.life / star.strobeFreq) % 3 === 0;
 				}
 			}
 		}
+	}
 											
 		// Sparks
 		const sparks = Spark.active[color];
@@ -3475,6 +3495,7 @@ function update(frameTime, lag) {
 			}
 		}
 	});
+	
 
 	// //Cập nhật drone
     for (let i = drones.length - 1; i >= 0; i--) {
@@ -3867,6 +3888,7 @@ function floralEffect(star) {
 
 // Floral burst with willow stars
 function fallingLeavesEffect(star) {
+	airDrag = 1//sửa
 	createBurst(7, (angle, speedMult) => {
 		const newStar = Star.add(
 			star.x,
@@ -3879,12 +3901,15 @@ function fallingLeavesEffect(star) {
 			star.speedY
 		);
 
-		newStar.sparkColor = COLOR.Gold;
+		newStar.sparkColor = Math.random()< 0.7 ? COLOR.Gold:COLOR.White;
 		newStar.sparkFreq = 144 / quality;
 		newStar.sparkSpeed = 0.28;
 		newStar.sparkLife = 750;
 		newStar.sparkLifeVariation = 3.2;
+		newStar.strobe = true
+		
 	});
+	
 	// Queue burst flash render
 	BurstFlash.add(star.x, star.y, 46);
 	soundManager.playSound('burstSmall');
@@ -3996,7 +4021,13 @@ class Shell {
 		}
 
 		comet.onDeath = comet => this.burst(comet.x, comet.y);
-
+		if(this.fallingLeaves){
+			playMusic('Music/lift6.mp3');
+			airDrag =1
+			
+		}else{
+			airDrag = 0.8
+		}
 		soundManager.playSound('lift');
 	}
 	launchV2(position, launchHeight, positionX = 0.5) {
@@ -4200,7 +4231,11 @@ class Shell {
 		}
 		const number = Math.random();
 		if (this.floral) onDeath = floralEffect;
-		if (this.fallingLeaves) onDeath = fallingLeavesEffect;
+		if (this.fallingLeaves) {
+			
+			onDeath = fallingLeavesEffect;
+
+		}
 		if (this.glitter === 'light') {
 			sparkFreq = 400;
 			sparkSpeed = 0.3;
@@ -4529,8 +4564,9 @@ const Star = {
 const Spark = {
 	// Visual properties
 	drawWidth: 0, // set in `configDidUpdate()`
-	airDrag: 0.8,
-
+	airDrag: airDrag,
+	
+	
 	// Star particles will be keyed by color
 	active: createParticleCollection(),
 	_pool: [],
@@ -4550,7 +4586,41 @@ const Spark = {
 		instance.speedX = Math.sin(angle) * speed;
 		instance.speedY = Math.cos(angle) * speed;
 		instance.life = life;
+		this.active[color].push(instance);
+		return instance;
+	},
 
+	// Public method for cleaning up and returning an instance back to the pool.
+	returnInstance(instance) {
+		// Add back to the pool.
+		this._pool.push(instance);
+	}
+};
+const SparkV2 = {
+	// Visual properties
+	drawWidth: 0, // set in `configDidUpdate()`
+	airDrag: 1,
+	
+	
+	// Star particles will be keyed by color
+	active: createParticleCollection(),
+	_pool: [],
+
+	_new() {
+		return {};
+	},
+
+	add(x, y, color, angle, speed, life) {
+		const instance = this._pool.pop() || this._new();
+
+		instance.x = x;
+		instance.y = y;
+		instance.prevX = x;
+		instance.prevY = y;
+		instance.color = color;
+		instance.speedX = Math.sin(angle) * speed;
+		instance.speedY = Math.cos(angle) * speed;
+		instance.life = life;
 		this.active[color].push(instance);
 		return instance;
 	},
@@ -5008,20 +5078,20 @@ class ShellV2 extends Shell{
 
 		
 /**
- * Tạo quả cầu nguyên tử
- * @param {*} k vị trí index cuối cùng của drone
- * @param {*} centerX -	tọa độ x của tâm
- * @param {*} centerY 	- tọa độ y của tâm
- * @param {*} radius2  - bán kính quả cầu
- * @param {*} formationLifetime - thời gian tồn tại của đội hình
- * @param {*} color - màu của vòng ngoài
- * @param {*} pistilColor - màu của vòng trong
+ * Tạo đội hình quả cầu và 2 vòng tròn xung quanh
+ * @param {*} k 
+ * @param {*} centerX 
+ * @param {*} centerY 
+ * @param {*} radius2 
+ * @param {*} formationLifetime 
+ * @param {*} color 
+ * @param {*} pistilColor 
  * @param {*} tiltAngleX 
  * @param {*} tiltAngleY 
  * @param {*} speed 
  * @returns 
  */
-function seqDroneBom(k,centerX, centerY, radius2,deltaX=0,deltaY=0,formationLifetime=10000,color=COLOR.Blue, pistilColor=COLOR.White, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/3, speed = Math.PI / 900){
+function seqDroneBom(k,centerX, centerY, radius2,formationLifetime=10000,color=COLOR.Blue, pistilColor=COLOR.White, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/3, speed = Math.PI / 900){
 	
 	let formation = new Formation();
 	let formation3 = new Formation();
@@ -5039,6 +5109,11 @@ function seqDroneBom(k,centerX, centerY, radius2,deltaX=0,deltaY=0,formationLife
 			formation.addDrone(drones[i+k]);
 		}		
 	}
+	formation.setFormation(centerX, centerY,formationLifetime,radius2/1.67);
+	formation2.setFormation(centerX, centerY,formationLifetime,radius2);
+	formation3.setFormation(centerX, centerY,formationLifetime,radius2);
+	formation4.setFormation(centerX, centerY,formationLifetime,radius2/1.97);
+
 	formation.setColor(color);
 	formation2.setColor(color);
 	formation3.setColor(color);
@@ -5051,23 +5126,33 @@ function seqDroneBom(k,centerX, centerY, radius2,deltaX=0,deltaY=0,formationLife
 	formation3.setReduceSize(-1);
 
 
-	formation2.setCircleFormationV3(centerX, centerY, radius2,deltaX,deltaY,formationLifetime, tiltAngleX , tiltAngleY, speed = Math.PI / 900);
-	formation3.setCircleFormationV3(centerX, centerY, radius2,deltaX,deltaY,formationLifetime, -tiltAngleX, -tiltAngleY, speed = Math.PI / 900);
+	formation2.setCircleFormationV3(formationLifetime, tiltAngleX , tiltAngleY, speed = Math.PI / 900);
+	formation3.setCircleFormationV3(formationLifetime, -tiltAngleX, -tiltAngleY, speed = Math.PI / 900);
 	
-	formation4.setSphereFormation(centerX, centerY, radius2/1.97,deltaX,deltaY,formationLifetime, tiltAngleX, tiltAngleY, speed = Math.PI / 900);
-	formation.setSphereFormation(centerX, centerY, radius2/1.67,deltaX,deltaY,formationLifetime, -tiltAngleX, -tiltAngleY, speed = Math.PI / 900);
+	formation4.setSphereFormation(formationLifetime, tiltAngleX, tiltAngleY, speed = Math.PI / 900);
+	formation.setSphereFormation(formationLifetime, -tiltAngleX, -tiltAngleY, speed = Math.PI / 900);
 	
 	
 	return k + soluong;
 }
-function seqDroneUFO(k,x=maxW/2, y=maxH/2-250, radius = 300, color=COLOR.Blue, life=10000){
+/**
+ * Tạo ufo xay tròn ngang 
+ * @param {*} k - vị trí index cuối cùng của drone
+ * @param {*} x - vị trí tâm x
+ * @param {*} y - vị trí tâm y
+ * @param {*} radius - bán kính vòng tròn
+ * @param {*} color - màu của đội hình
+ * @param {*} formationLifetime - thời gian tồn tại của đội hình
+ */
+function seqDroneUFO(k,x=maxW/2, y=maxH/2-250, radius = 300, color=COLOR.Blue, formationLifetime=10000){
+	
 	let formation1 =new Formation();
 	let formation2 =new Formation();
 	let formation3 =new Formation();
 	let formation4 =new Formation();
 	let formation5 =new Formation();
 
-	let soluong =  380;
+	let soluong =  380 ;
 	for(let i = 0;i<soluong; i++){
 		if(i<soluong*3/19){
 			formation1.addDrone(drones[i+k]);
@@ -5086,27 +5171,58 @@ function seqDroneUFO(k,x=maxW/2, y=maxH/2-250, radius = 300, color=COLOR.Blue, l
 		}
 
 	}
+
 	formation1.setColor(color);
 	formation2.setColor(color);
 	formation3.setColor(color);
 	formation4.setColor(color);
 	formation5.setColor(color);
+
+
 	
-	formation1.setCircleFormationV2(x, y-30, radius, life,-1);
-	formation2.setCircleFormationV2(x, y-15, radius+25, life,-1);
-	formation3.setCircleFormationV2(x, y, radius+50, life,0);
-	formation4.setCircleFormationV2(x, y+15, radius+25, life,1);
-	formation5.setCircleFormationV2(x, y+30, radius, life,1);
+	formation1.setFormation(x, y-30,formationLifetime, radius)
+	formation2.setFormation(x, y-15,formationLifetime, radius+25)
+	formation3.setFormation(x, y,formationLifetime, radius+50)
+	formation4.setFormation(x, y+15,formationLifetime, radius+25)
+	formation5.setFormation(x, y+30,formationLifetime, radius)
+	
+	formation1.setCircleFormationV2(-1);
+	formation2.setCircleFormationV2(-1);
+	formation3.setCircleFormationV2(0);
+	formation4.setCircleFormationV2(1);
+	formation5.setCircleFormationV2(1);
+
+	return k+soluong;
 
 }
+/**
+ * Reset lại drone tới vị trí x
+ * @param {*} x 
+ * @returns 
+ */
 function resetDrones(x){
 	for(let i = 0;i< x;i++){
 		drones[i]=new Drone(0, 0, 5, 0, 0,COLOR.Red,200000000);
 	}
 	return 0;
 }
-
-function moveFormationInCircle(formation,centerX, centerY, radius, formationLifetime=10000, tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900) {
+function resetFormation(formation){
+	formation.drones.forEach(drone => {
+		drone = new Drone(0, 0, 5, 0, 0,COLOR.Red,200000000);
+	})
+}
+/**
+ * Khiến cho 1 formation di chuyển theo hình tròn
+ * @param {*} formation - formation muốn di chuyển
+ * @param {*} centerX - tọa độ x của tâm vòng tròn
+ * @param {*} centerY - tọa độ y của tâm vòng tròn
+ * @param {*} radius - bán kính vòng tròn
+ * @param {*} formationLifetime - thời gian di chuyển 
+ * @param {*} tiltAngleX - góc nghiêng theo trục X
+ * @param {*} tiltAngleY - góc nghiêng theo trục Y
+ * @param {*} speed - tốc độ di chuyển
+ */
+function seqFormationMove(formation,centerX, centerY, radius, formationLifetime=100000, tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900) {
 	let time = 0; // Biến thời gian để tính góc xoay
 	const angleStep = Math.PI/180; // Khoảng cách giữa các drone trên vòng tròn
 	const cosTiltX = Math.cos(tiltAngleX); // Tính cos của góc nghiêng X
@@ -5123,7 +5239,7 @@ function moveFormationInCircle(formation,centerX, centerY, radius, formationLife
 
 		// Kiểm tra nếu đã hết thời gian tồn tại đội hình
 		if (elapsedTime >= formationLifetime) {
-			this.reset();
+			formation.reset();
 			return; // Dừng quy trình
 		}
 
@@ -5131,9 +5247,6 @@ function moveFormationInCircle(formation,centerX, centerY, radius, formationLife
 		const rotationAngle = time; // Góc quay hiện tại
 		
 		// Cập nhật vị trí di chuyển của đội hình
-		
-
-		
 		const angle = angleStep + rotationAngle; // Góc quay cho mỗi drone
 		const x = radius * Math.cos(angle); // Tọa độ X trên vòng tròn
 		const y = radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
@@ -5147,9 +5260,7 @@ function moveFormationInCircle(formation,centerX, centerY, radius, formationLife
 		let mx = centerX + transformedX ;
 		let my = centerY + transformedY ;
 
-		formation.setCenter(mx, my);
-	
-
+		formation.setCenter(mx, my,100);
 		// Gọi lại hàm cập nhật liên tục
 		requestAnimationFrame(update);
 	};
@@ -5160,48 +5271,87 @@ function moveFormationInCircle(formation,centerX, centerY, radius, formationLife
 
 
 
-let k =0;
-let formation = new Formation();
-let formation3 = new Formation();
-let formation4 = new Formation();
-let formation2 = new Formation();
-let soluong = 480*100/125;
-for(let i = 0;i<soluong; i++){
-	if(i<soluong/8){
-		formation2.addDrone(drones[i+k]);
-	}else if (i<soluong/4){
-		formation3.addDrone(drones[i+k]);
-	}else if (i<soluong*3/4){	
-		formation4.addDrone(drones[i+k]);
-	}else {
-		formation.addDrone(drones[i+k]);
-	}		
+
+
+function skyFallSeq(){
+	playMusic('Music/skyfall.mp3');
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 8000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 21000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 33000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 55000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000);
+	let i = 1;
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000+22000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000+30000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000+35000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000+49000);
+	i =2;
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000*2+2000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000*2+21000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000*2 +27000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000*2 +30000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000*2 +55000);
+	setTimeout(() => {
+		seqTripleRingShell(0.5,0.5,3)
+	}, 60000*3 +6000);
+	setTimeout(() => {
+		
+	}, 60000*3 +17000);
+	setTimeout(() => {
+		
+	}, 60000*3 +38000);
+	setTimeout(() => {
+		
+	}, 60000*3 +44000);
+	setTimeout(() => {
+		
+	}, 60000*3 +55000);
+	setTimeout(() => {
+		
+	}, 60000*4 +10000);
+	setTimeout(() => {
+		
+	}, 60000*4 +23000);
+	setTimeout(() => {
+		
+	}, 60000*4 +36000);
 }
-// let initialCenterX = 500; // Vị trí trung tâm ban đầu
-// let initialCenterY = 500; // Vị trí trung tâm ban đầu
-// let radius = 200; // Bán kính vòng tròn
-// let speed = Math.PI / 900; // Tốc độ di chuyển (điều chỉnh tốc độ)
-// let formationLifetime = 10000; // Thời gian tồn tại của đội hình
-// moveFormationInCircle(initialCenterX, initialCenterY, radius, 0, speed, formationLifetime);
-// let x = seqDroneBom(0,maxW/2, maxH/2, 100, 100000, COLOR.Red, COLOR.White,Math.PI/2.1,Math.PI/3.6);
-// setTimeout(() => {
-// 	x = resetDrones(x)
-	
-// 	let  y = seqDroneUFO(x,maxW/2, maxH/2-250, 300, COLOR.Blue, 15000);
-// }, 2000);
-// formation.setCircleFormationV4(maxW/2, maxH/2, 150, 10000, Math.PI/2, Math.PI/3, Math.PI / 900,0,0);
+setTimeout(() => {
+	const shell = new Shell({
+		...shellTypes['Crackle'](1),fallingLeaves:true,strobe:true
+	});
+	shell.color=COLOR.White
+	shell.launch(0.5,0.1)
+}, 2000);
 
-// seqDroneSphere(formation2, maxW/2, maxH/2, 150, 10000, Math.PI / 900,1,1);
-// seqDroneBom(0,maxW/2, maxH/2, 100,1,2);
-// formation.setCircleFormationV3(maxW/2, maxH/2, 150,1,2,100000000, Math.PI/2.1, Math.PI/3.6, Math.PI / 900);
-
- 
-// moveFormationInCircle(maxW/4, maxH/3, 150, 0, 10000);
-formation.setCenter(maxW/3, maxH/4, 150)
-formation.setCircleFormationV1(100005);
-formation.setReduceSize(-1)
-formation.setRandomColorV2()
-formation.setSphereFormation()
 
 
 
