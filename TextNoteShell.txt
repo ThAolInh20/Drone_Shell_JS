@@ -2,7 +2,7 @@
 	'Crackle': crackleShell,
 	'Crossette': crossetteShell,
 	'Crysanthemum': crysanthemumShell,
-	'Falling Leaves': fallingLeavesShell, // pháo có đuôi lấp lánh và nổ lấp lánh
+	'Falling Leaves': fallingLeavesShell, // đã cập nhật để rơi thêm đẹp hơn
 	'Floral': floralShell,
 	'Ghost': ghostShell,
 	'Horse Tail': horsetailShell,
@@ -92,6 +92,10 @@ seqRandomShell,//900+600*random+4600:0(fallingLeaves)
 	
 	seqSparkCount(left, right,count=2,height,posistionX=0,countSpark =15,wait=100) bắn liên tục 15 pháo độ nghiêng
 ==>>>   seqSpackMidAll(mid) bắn liên tục 2 bên vào giữa
+---------------------------------------------------------- 
+	left,right hight cơ số maxW, maxH
+	seqSparkDownAll(left, right, hight,coutShell=10,time=100) tạo 1 lần  dãy spark trong khoảng left, right,trong khoảng 0 -> maxW, hight(maxH)
+	seqSparkDown(left, right, hight,cout=10,time=1000) tạo spark liên tục với cout lần, mỗi lần 1000s
 ------------------------------------------------------ 
 	VietNamFlagRandom(a,b) //bắn liên tục từ vị trí a tới b
 	VietNamFlagFrame(right, left)// bắn 1 lần để tạo 1 hình chữ nhật màu đỏ
@@ -120,8 +124,11 @@ launch(position, launchHeight) vị trí và độ cao giữa màn hình là 0
 
 launchV2(position, launchHeight,PitionX(góc nghiêng bắn) -10 ->10
 
+
+//x, y theo tọa độ của chính--> maxW, maxH= 500, 600 ấy
 launchV3(startX, startY, launchHeight, speedMultiplier = 1, isFalling = false)
-bắn từ vị trí x, y độ cao launch, tốc độ , is=true rơi<>
+=>>>>>>>bắn từ vị trí x, y độ cao launch, tốc độ , is=true rơi<>
+
 }heigth 2 bên 0.5posision lệch nhau *-1
 
 cái dường tia của pháo

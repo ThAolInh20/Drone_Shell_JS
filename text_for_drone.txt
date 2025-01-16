@@ -2,13 +2,7 @@ maxw =767 *2=1534
 maxh = 860
 drones.push(new Drone(0.5, 0.5, 5, 0, 0, COLOR.Gold, 3000000));
 --------------------------------------------------------------
-/**
- * Chuyển mã màu thành ,màu tối hơn
- * @param {*} hex 
- * @param {*} amount 
- * @returns 
- */	
-function darkenColor(hex, amount)
+
 ---------------------------------------
 class  Formation(){
  this.drones = [];
@@ -20,21 +14,47 @@ class  Formation(){
 }
 setFormation(mx,my,formation=10000,radius)
 setCenter(mx, my, radius)
-
+->chỉnh vị trí tâm và bán kính đội hình
+-----------
 addDrone(drone)
-
+->thêm drone vào formation
+-------------
 setColor(color)
-
+->đổi màu của các drone
+-------------
 setRadiusDrone(radius)
+->chỉnh kích cỡ của các drone
+-------------
 reset()
+->cho các drone về vị trí -1
+-------------
 setReduceSize(check=1)
-setRandomColor(interval = 64)
-setRandomColorV2(duration = 2000000,colorStrobe = null,interval = 64, troll = 0.9)
+->tạo size tăng dần theo kích cỡ hoặc giảm dần
 
+-------------
+setRandomColor(interval = 64)
+->Tạo hiệu ứng đổi màu ngẫu nhiên
+-------------
+setRandomColorV2(duration = 2000000,colorStrobe = null,interval = 64, troll = 0.9)
+->tạo hiệu ứng nhấp nháy với thời gian áp dụng hiệu ứng, màu khi nhấp nháy, tốc độ , và số lượng
+-------------
 Tạo đội vòng hình xoay
-setCircleFormationV1( tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900)
+setCircleFormationV1( tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900) 
+-> Đội hình xoay tròn 3D hay dùng
+-------------
 setCircleFormationV2(agn=0,check=1,speed = Math.PI / 600, tiltAngle = -Math.PI / 2.02)
+* Tạo đội hình vòng xoay ngang với tốc độ mở rộng agn, chiều xoay check
+-------------
 setCircleFormationV3( tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900,deltaX = 0, deltaY = 0 )
+->Tạo đội hình xuay tròn 3D với tốc độ di chuyển
+---------------------------------------------------------------------------
+function bên ngoài  class
+
+function seqFormationMove(formation,centerX, centerY, radius, formationLifetime=100000, tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900)
+->> làm cho formation xoay tròn
+
+f
+
 
 
 

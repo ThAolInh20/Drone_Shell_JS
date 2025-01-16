@@ -276,11 +276,11 @@ class Formation {
 	 * @param {*} radius 
 	 * @param {*} formationLifetime - thời gian tồn tại
 	 */
-	setFormation(mx,my,formation=10000,radius){
+	setFormation(mx,my,formationLife=10000,radius){
 		this.centerX=mx;
 		this.centerY=my;
 		this.radius=radius;
-		this.formationLifetime=formation;
+		this.formationLifetime=formationLife;
 	}
 	/**
 	 * Config lại các giá trị của Formation
@@ -288,10 +288,10 @@ class Formation {
 	 * @param {*} my 
 	 * @param {*} radius 
 	 */
-	setCenter(mx, my, radius){
+	setCenter(mx, my){
 		this.centerX=mx;
 		this.centerY=my;
-		this.radius=radius;
+		
 	}
 	
 	/**
@@ -597,7 +597,7 @@ class Formation {
 	/**
 	 * Tạo đội hình hình cầu
 	 */
-	setSphereFormation( ) {
+	setSphereFormation(speedX=0.000,speedY=0.001, speedZ=0 ) {
 		let formationLifetime = this.formationLifetime;
 		const totalDrones = this.drones.length;
 		const angleStepPhi = Math.PI / Math.sqrt(totalDrones); // Chia góc φ (từ 0 đến π) đều
@@ -618,9 +618,9 @@ class Formation {
 			}
 	
 			// Tăng góc xoay theo tốc độ xác định
-			rotationAngleX += 0.001; // Chỉnh sửa theo tốc độ bạn muốn
-			rotationAngleY += 0.001;
-			rotationAngleZ += 0.001;
+			rotationAngleX += speedX; // Chỉnh sửa theo tốc độ bạn muốn
+			rotationAngleY += speedY;
+			rotationAngleZ += speedZ;
 	
 			// Cập nhật vị trí đội hình
 			
@@ -688,8 +688,8 @@ let maxH = window.innerHeight;
 // Khởi tạo các drone
 // create drone
 const drones = [];
-for (let i = 0; i < 1000; i++) {
-	drones.push(new Drone(0, 0, 5, 0, 0,COLOR.Red,200000000));
+for (let i = 0; i < 1500; i++) {
+	drones.push(new Drone(0, 0, 3.5, 0, 0,COLOR.Red,200000000));
 }
 
 
@@ -2214,6 +2214,48 @@ function seqSmallBarrage() {
 seqSmallBarrage.cooldown = 15000;
 seqSmallBarrage.lastCalled = Date.now();
 
+function testMusic(){
+	
+	let radius = 400
+	
+	let shell = new Shell(shellTypes['Crysanthemum'](2));
+	shell.launch(0.5,0.5)
+}
+async function seqSparkDownAll(left, right, hight,coutShell=10,time=100){
+	let timen =time
+	//Fix lại left right
+	// left = left*maxW
+	// right = right*maxW
+	// hight *= maxH
+
+	let i = 0
+	let shell = new Shell(shellTypes['Crysanthemum'](6));
+	shell.color=COLOR.Gold
+	while(i<coutShell){
+		
+		await new Promise(resolve => setTimeout(resolve, timen));
+		let x = left + Math.random() * (right - left);
+		left-=20
+		right+=20
+		let height =0.4+ Math.random()*0.2;
+		
+		let random = Math.random()*50
+		shell.launchV3(x,hight+random,height);
+		timen+=100;
+	
+		i++;
+
+	}
+}
+async function seqSparkDown(left, right, hight,cout=10,time=1000){
+	let i = 0;
+	
+	while(i<cout){
+		await new Promise(resolve => setTimeout(resolve, time));
+		seqSparkDownAll(left, right,hight, 30, 50)
+		i++
+	}
+}
 function seqTripleRingShell(x, height, size=6) {
 	const shell1 = new Shell(shellTypes['Ring'](size));
 	// Launch the first shel  
@@ -3249,6 +3291,7 @@ function startSequence2() {
 	// monodySeq();
 	// seqDrone();
 	// skyFallSeq();
+	testMusic();
 
 }
 
@@ -4022,13 +4065,15 @@ class Shell {
 
 		comet.onDeath = comet => this.burst(comet.x, comet.y);
 		if(this.fallingLeaves){
-			playMusic('Music/lift6.mp3');
-			airDrag =1
+			Math.random()<0.7?playMusic('Music/burst4.mp3'):playMusic('Music/lift6.mp3');
+			airDrag = 1
 			
-		}else{
-			airDrag = 0.8
+		}else if(this.ring||this.strobe){
+			setTimeout(() => {
+				airDrag = 0.8
+			}, 7000);
 		}
-		soundManager.playSound('lift');
+		soundManager.playSound('lift')
 	}
 	launchV2(position, launchHeight, positionX = 0.5) {
 		const width = stageW;
@@ -4084,9 +4129,11 @@ class Shell {
 		// 	comet.secondColor = INVISIBLE;
 		// 	comet.transitionTime = Math.pow(Math.random(), 1.5) * 700 + 500;
 		// }
-		// soundManager.playSound('lift');
+		
+		// soundManager.playSound('lift')
 	}
-	launchV3(startX, startY, launchHeight, speedMultiplier = 1, isFalling = false) {
+	//rơi
+	launchV3(startX, startY, launchHeight, speedMultiplier = 1, isFalling = true) {
 		const width = stageW;
 		const height = stageH;
 		// Distance from sides of screen to keep shells.
@@ -4097,7 +4144,7 @@ class Shell {
 		const minHeightPercent = 0.45;
 		// Minimum burst height in px
 		const minHeight = height - height * minHeightPercent;
-	
+		
 		// Initial launch position
 		const launchX = startX;
 		const launchY = startY;
@@ -4480,9 +4527,9 @@ function createParticleCollection() {
 const Star = {
 	// Visual properties
 	drawWidth: 3,
-	airDrag: 0.98,
+	airDrag:0.98,
 	airDragHeavy: 0.992,
-
+	
 	// Star particles will be keyed by color
 	active: createParticleCollection(),// hình như tạo ra các star
 	_pool: [],
@@ -4596,41 +4643,7 @@ const Spark = {
 		this._pool.push(instance);
 	}
 };
-const SparkV2 = {
-	// Visual properties
-	drawWidth: 0, // set in `configDidUpdate()`
-	airDrag: 1,
-	
-	
-	// Star particles will be keyed by color
-	active: createParticleCollection(),
-	_pool: [],
 
-	_new() {
-		return {};
-	},
-
-	add(x, y, color, angle, speed, life) {
-		const instance = this._pool.pop() || this._new();
-
-		instance.x = x;
-		instance.y = y;
-		instance.prevX = x;
-		instance.prevY = y;
-		instance.color = color;
-		instance.speedX = Math.sin(angle) * speed;
-		instance.speedY = Math.cos(angle) * speed;
-		instance.life = life;
-		this.active[color].push(instance);
-		return instance;
-	},
-
-	// Public method for cleaning up and returning an instance back to the pool.
-	returnInstance(instance) {
-		// Add back to the pool.
-		this._pool.push(instance);
-	}
-};
 
 
 
@@ -5144,7 +5157,7 @@ function seqDroneBom(k,centerX, centerY, radius2,formationLifetime=10000,color=C
  * @param {*} color - màu của đội hình
  * @param {*} formationLifetime - thời gian tồn tại của đội hình
  */
-function seqDroneUFO(k,x=maxW/2, y=maxH/2-250, radius = 300, color=COLOR.Blue, formationLifetime=10000){
+function seqDroneUFO(k,x=maxW/2, y=maxH/2-250,agn=1, radius = 300, color=COLOR.Blue, formationLifetime=10000){
 	
 	let formation1 =new Formation();
 	let formation2 =new Formation();
@@ -5186,11 +5199,11 @@ function seqDroneUFO(k,x=maxW/2, y=maxH/2-250, radius = 300, color=COLOR.Blue, f
 	formation4.setFormation(x, y+15,formationLifetime, radius+25)
 	formation5.setFormation(x, y+30,formationLifetime, radius)
 	
-	formation1.setCircleFormationV2(-1);
-	formation2.setCircleFormationV2(-1);
-	formation3.setCircleFormationV2(0);
-	formation4.setCircleFormationV2(1);
-	formation5.setCircleFormationV2(1);
+	formation1.setCircleFormationV2(agn,undefined,Math.PI/900);
+	formation2.setCircleFormationV2(agn,undefined,Math.PI/900);
+	formation3.setCircleFormationV2(agn,undefined,Math.PI/900);
+	formation4.setCircleFormationV2(agn,1,Math.PI/900);
+	formation5.setCircleFormationV2(agn,1,Math.PI/900);
 
 	return k+soluong;
 
@@ -5222,7 +5235,7 @@ function resetFormation(formation){
  * @param {*} tiltAngleY - góc nghiêng theo trục Y
  * @param {*} speed - tốc độ di chuyển
  */
-function seqFormationMove(formation,centerX, centerY, radius, formationLifetime=100000, tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900) {
+function seqFormationMove(formation,centerX, centerY, radius, formationLifetime=100000, tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900) {
 	let time = 0; // Biến thời gian để tính góc xoay
 	const angleStep = Math.PI/180; // Khoảng cách giữa các drone trên vòng tròn
 	const cosTiltX = Math.cos(tiltAngleX); // Tính cos của góc nghiêng X
@@ -5260,7 +5273,58 @@ function seqFormationMove(formation,centerX, centerY, radius, formationLifetime=
 		let mx = centerX + transformedX ;
 		let my = centerY + transformedY ;
 
-		formation.setCenter(mx, my,100);
+		formation.setCenter(mx, my);
+		// Gọi lại hàm cập nhật liên tục
+		requestAnimationFrame(update);
+	};
+
+	// Bắt đầu cập nhật đội hình
+	update();
+}
+function seqFormationCircle(formation,centerX, centerY,radius,formationLifetime,speed = Math.PI / 600,agn=0,check=1, tiltAngle = -Math.PI / 2.02) {
+	let time = 0; // Biến thời gian để tính góc xoay
+	// let formationLifetime = this.formationLifetime; // Thời gian tồn tại đội hình
+	const angleStep =  Math.PI ; // Khoảng cách giữa các drone trên vòng tròn
+	const cosTilt = Math.cos(tiltAngle); // Tính cos của góc nghiêng
+	const sinTilt = Math.sin(tiltAngle); // Tính sin của góc nghiêng
+	// const color = this.drones[0].color; // Màu sắc mặc định của drone
+	let elapsedTime = 0; // Biến để theo dõi thời gian đã trôi qua
+	const startTime = Date.now(); // Thời điểm bắt đầu
+	// Hàm cập nhật đội hình theo thời gian
+	const update = () => {
+		//tạo hiệu ứng mở rộng
+		radius = radius + agn*Math.sin(time);
+		centerY = centerY + agn* Math.cos(time)/10;
+		// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+		const currentTime = Date.now(); // Lấy thời gian hiện tại
+		const elapsedTime = currentTime - startTime; // Tính thời gian đã trôi qua
+
+		// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+		if (elapsedTime >= formationLifetime) {
+			//trả về vị trí ban đầu
+			return; // Dừng quy trình
+		}
+		
+		time += speed; // Tăng thời gian để thay đổi góc quay
+		const rotationAngle = time; // Góc quay hiện tại
+
+	
+			 // Màu sắc mặc định
+		const angle = angleStep+ rotationAngle*check; // Góc quay cho mỗi drone
+		const x = radius * Math.cos(angle); // Tọa độ X trên vòng tròn
+		const y = radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
+
+		// Biến đổi 3D với góc nghiêng tiltAngle
+		const transformedX = x; // Trục X giữ nguyên
+		const transformedY = y * cosTilt; // Trục Y bị thu nhỏ theo cos(tiltAngle)
+		const depth = y * sinTilt; // Chiều sâu để tạo hiệu ứng 3D
+
+		// Đặt lại vị trí drone
+		
+		formation.setCenter(centerX + transformedX,centerY + transformedY)
+		if(depth<0&&depth-0.5)	
+
+
 		// Gọi lại hàm cập nhật liên tục
 		requestAnimationFrame(update);
 	};
@@ -5270,38 +5334,194 @@ function seqFormationMove(formation,centerX, centerY, radius, formationLifetime=
 }
 
 
+function seqDroneGalaxy(x,time =100000){
+	
+	let mattroi = new Formation()
+	let thuy = new Formation()
+	let kim = new Formation()
+	let traidat = new Formation()
+	let hoa = new Formation()
+	let moc = new Formation()
+	let tho = new Formation()
+	let thienvuong = new Formation()
+	let hai = new Formation(); // Thêm hành tinh Hải Vương
+	
+	let kk =200;
+	let i = 0;
+	for(let i = 0 ; i< 100;i++){
+		traidat.addDrone(drones[i])
+	}
+	for(let i = 0 ; i<30;i++){
+		thuy.addDrone(drones[i+100])
+	}
+	for(let i = 0 ; i<60;i++){
+		kim.addDrone(drones[i+100+30])
+	}
+	for(let i = 0 ; i<200;i++){
+		hoa.addDrone(drones[i+100+30+60+200])
+	}
+	for(let i = 0 ; i<200;i++){
+		moc.addDrone(drones[i+100+30+60+200+200])
+	}
+	for(let i = 0 ; i<200;i++){
+		tho.addDrone(drones[i+100+30+60+200+200])
+	}
+	for(let i = 0 ; i<300;i++){
+		mattroi.addDrone(drones[i+100+30+60+200+200+200])
+	}
 
+	// for(let i = 0; i<300)
+	let radius= 50
+	mattroi.setFormation(maxW/2,maxH/2-160,time,radius*2.3)
+	// Sao Thủy
+	thuy.setFormation(maxW/2+170, maxH/2-160, time, radius * 0.39);
+	// Sao Kim
+	kim.setFormation(maxW/2+230, maxH/2-160, time, radius * 0.72);
+	// Trái Đất
+	traidat.setFormation(maxW/2+270, maxH/2-160, time,radius * 1);
+	hoa.setFormation(maxW/2+400, maxH/2-160, time,radius * 1.2);
+	moc.setFormation(maxW/2+450, maxH/2-160, time,radius * 1.9);
+	tho.setFormation(maxW/2+500, maxH/2-160, time,radius * 2);
+	
+	
+
+	// Thiết lập màu trực tiếp
+	mattroi.setColor(COLOR.Red); // Mặt Trời: Cam rực rỡ
+	thuy.setColor("#B0B0B0"); // Sao Thủy: Xám bạc
+	kim.setColor("#D9C68E"); // Sao Kim: Vàng nhạt
+	traidat.setColor("#2C75FF"); // Trái Đất: Xanh đại dương
+	hoa.setColor("#FF4500"); // Sao Hỏa: Đỏ cam
+	moc.setColor("#D2B48C"); // Sao Mộc: Nâu nhạt
+	tho.setColor("#F5DEB3"); // Sao Thổ: Vàng nhạt
+	// thienvuong.setColor("#AFDBF5"); // Sao Thiên Vương: Xanh lục nhạt
+	// hai.setColor("#2E6EFF");
+
+	mattroi.setSphereFormation()
+	thuy.setSphereFormation(0.03)
+	kim.setSphereFormation(0.02)
+	traidat.setSphereFormation(0.01)
+	hoa.setSphereFormation(0.005)
+	tho.setSphereFormation(0.005)
+	// thienvuong.setSphereFormation()
+	// hai.setSphereFormation()
+	seqFormationCircle(thuy,maxW/2,maxH/2-160,170,time,Math.PI/200)
+	seqFormationCircle(kim,maxW/2,maxH/2-160,230,time,Math.PI/300)
+	seqFormationCircle(traidat,maxW/2,maxH/2-160,270,time,Math.PI/400)
+	seqFormationCircle(hoa,maxW/2,maxH/2-160,400,time,Math.PI/500)
+	seqFormationCircle(tho,maxW/2,maxH/2-160,450,time,Math.PI/600)
+
+
+
+}
 
 
 function skyFallSeq(){
-	playMusic('Music/skyfall.mp3');
+	let k = 1000;
+	let x = resetDrones(k)
+	x = seqDroneUFO(0,maxW/2,maxH/2-300,0.5,400,COLOR.Blue,40000);
+	seqSparkDown(maxW/2-400,maxW/2+400,maxH/2-300,5)
+	console.log(x)
+	// playMusic('Music/skyfall.mp3');
 	setTimeout(() => {
 		seqTripleRingShell(0.5,0.5,3)
 	}, 8000);
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
-	}, 21000);
+		seqDoubleCrysanthemum(0.3,0.5)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 1000);
+	}, 13000);
 	setTimeout(() => {
+		seqDoubleCrysanthemum(0.3,0.5)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 1000);
+	}, 20000);
+	setTimeout(() => {
+		seqDoubleCrysanthemum(0.3,0.5)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 1000);	
+	}, 24000);
+	setTimeout(() => {
+		
+	}, 25000);
+	setTimeout(() => {
+		shell.launch(0.3,0.5)
+	}, 28000);
+	setTimeout(() => {
+		
 		seqTripleRingShell(0.5,0.5,3)
 	}, 33000);
 	setTimeout(() => {
 		seqTripleRingShell(0.5,0.5,3)
-	}, 55000);
+	}, 38000);
+	setTimeout(() => {
+		seqDoubleCrysanthemum(0.3,0.5)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 1000);
+	}, 41000);
+	setTimeout(() => {
+		seqDoubleCrysanthemum(0.3,0.5)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 1000);
+	}, 44000);
+	setTimeout(() => {
+		shell.launch(0.3,0.5)
+	}, 51000);
 	setTimeout(() => {
 		seqTripleRingShell(0.5,0.5,3)
+	}, 55000);
+	setTimeout(() => {
+		seqDoubleCrysanthemum(0.3,0.5)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 1000);
 	}, 60000);
 	let i = 1;
 	setTimeout(() => {
 		seqTripleRingShell(0.5,0.5,3)
+	}, 60000+4000);
+	setTimeout(() => {
+		seqDoubleCrysanthemum(0.3,0.5)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 1000);
+	}, 60000+16000);
+	setTimeout(() => {
+		shell.launch(0.5,0.5)
 	}, 60000+22000);
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
+		
+	}, 60000+25000);
+	setTimeout(() => {
+		seqDoubleCrysanthemum(0.3,0.5)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 1000);
+	}, 60000+27000);
+	setTimeout(() => {
+		seqDoubleCrysanthemum(0.3,0.5)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 1000);
 	}, 60000+30000);
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
+		seqDoubleCrysanthemum(0.3,0.5)
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.7,0.5)
+		}, 1000);
 	}, 60000+35000);
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
+		shell.launch(0.3,0.5)
+	}, 60000+38000);
+	setTimeout(() => {
+		shell.launch(0.5,0.5)
+	}, 60000+41000);
+	setTimeout(() => {
+		shell.launch(0.8,0.5)
 	}, 60000+49000);
 	i =2;
 	setTimeout(() => {
@@ -5344,13 +5564,14 @@ function skyFallSeq(){
 		
 	}, 60000*4 +36000);
 }
-setTimeout(() => {
-	const shell = new Shell({
-		...shellTypes['Crackle'](1),fallingLeaves:true,strobe:true
-	});
-	shell.color=COLOR.White
-	shell.launch(0.5,0.1)
-}, 2000);
+let x = 0;
+seqDroneGalaxy(x)
+
+
+
+
+	
+
 
 
 
