@@ -47,13 +47,16 @@ setCircleFormationV2(agn=0,check=1,speed = Math.PI / 600, tiltAngle = -Math.PI /
 -------------
 setCircleFormationV3( tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900,deltaX = 0, deltaY = 0 )
 ->Tạo đội hình xuay tròn 3D với tốc độ di chuyển
+
+setHeartFormation(centerX, centerY, size) 
+setRectangleFormation(startX, startY, width, height) 
 ---------------------------------------------------------------------------
 function bên ngoài  class
 
 function seqFormationMove(formation,centerX, centerY, radius, formationLifetime=100000, tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900)
 ->> làm cho formation xoay tròn
 
-f
+seqColorMer(formation, time=10000, hz=100) //Đổi màu lần lượt liên tục
 
 
 

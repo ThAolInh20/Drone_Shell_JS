@@ -1,6 +1,6 @@
 'use strict';
 console.clear();
-let airDrag = 0.8;
+let airDrag =0.8;
 // This is a prime example of what starts out as a simple project
 // and snowballs way beyond its intended size. It's a little clunky
 // reading/working on this single file, but here it is anyways :)
@@ -25,6 +25,390 @@ const MAX_WIDTH = 7680;
 const MAX_HEIGHT = 4320;
 const GRAVITY = 0.9; // Acceleration in px/s
 let simSpeed = 1;
+const letters = {
+	A: [
+        "00100",
+        "01010",
+        "10001",
+        "10001",
+        "11111",
+        "10001",
+        "10001",
+        "10001"
+    ],
+    B: [
+        "11110",
+        "10001",
+        "10001",
+        "11110",
+        "10001",
+        "10001",
+        "10001",
+        "11110"
+    ],
+    C: [
+        "01111",
+        "10000",
+        "10000",
+        "10000",
+        "10000",
+        "10000",
+        "01111",
+        "00000"
+    ],
+    D: [
+        "11110",
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "11110",
+        "00000"
+    ],
+    E: [
+        "11111",
+        "10000",
+        "10000",
+        "11111",
+        "10000",
+        "10000",
+        "11111",
+        "00000"
+    ],
+    F: [
+        "11111",
+        "10000",
+        "10000",
+        "11111",
+        "10000",
+        "10000",
+        "10000",
+        "00000"
+    ],
+    G: [
+        "01111",
+        "10000",
+        "10000",
+        "10111",
+        "10001",
+        "10001",
+        "01111",
+        "00000"
+    ],
+    H: [
+        "10001",
+        "10001",
+        "10001",
+        "11111",
+        "10001",
+        "10001",
+        "10001",
+        "10001"
+    ],
+    I: [
+        "11111",
+        "00100",
+        "00100",
+        "00100",
+        "00100",
+        "00100",
+        "11111",
+        "00000"
+    ],
+    J: [
+        "11111",
+        "00001",
+        "00001",
+        "00001",
+        "00001",
+        "10001",
+        "01110",
+        "00000"
+    ],
+    K: [
+        "10001",
+        "10010",
+        "10100",
+        "11000",
+        "10100",
+        "10010",
+        "10001",
+        "00000"
+    ],
+    L: [
+        "10000",
+        "10000",
+        "10000",
+        "10000",
+        "10000",
+        "10000",
+        "11111",
+        "00000"
+    ],
+    M: [
+        "10001",
+        "11011",
+        "10101",
+        "10101",
+        "10001",
+        "10001",
+        "10001",
+        "10001"
+    ],
+    N: [
+        "10001",
+        "11001",
+        "10101",
+        "10101",
+        "10011",
+        "10011",
+        "10001",
+        "10001"
+    ],
+    O: [
+        "01110",
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "01110",
+        "00000"
+    ],
+    P: [
+        "11110",
+        "10001",
+        "10001",
+        "11110",
+        "10000",
+        "10000",
+        "10000",
+        "00000"
+    ],
+    Q: [
+        "01110",
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "10101",
+        "01110",
+        "00001"
+    ],
+    R: [
+        "11110",
+        "10001",
+        "10001",
+        "11110",
+        "10100",
+        "10010",
+        "10001",
+        "00000"
+    ],
+    S: [
+        "01111",
+        "10000",
+        "10000",
+        "01110",
+        "00001",
+        "00001",
+        "11110",
+        "00000"
+    ],
+    T: [
+        "11111",
+        "00100",
+        "00100",
+        "00100",
+        "00100",
+        "00100",
+        "00100",
+        "00000"
+    ],
+    U: [
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "01110",
+        "00000"
+    ],
+    V: [
+        "10001",
+        "10001",
+        "10001",
+        "10001",
+        "01010",
+        "01010",
+        "00100",
+        "00000"
+    ],
+    W: [
+        "10001",
+        "10001",
+        "10001",
+        "10101",
+        "10101",
+        "11011",
+        "10001",
+        "00000"
+    ],
+    X: [
+        "10001",
+        "10001",
+        "01010",
+        "00100",
+        "01010",
+        "10001",
+        "10001",
+        "00000"
+    ],
+    Y: [
+        "10001",
+        "10001",
+        "01010",
+        "00100",
+        "00100",
+        "00100",
+        "00100",
+        "00000"
+    ],
+    Z: [
+        "11111",
+        "00001",
+        "00010",
+        "00100",
+        "01000",
+        "10000",
+        "11111",
+        "00000"
+    ]
+};
+const digits = {
+    1: [
+        "111",
+        "111",
+        "111",
+        "111",
+        "111",
+        "111",
+        "111",
+        "111",
+        "111",
+        "111"
+    ],
+    0: [
+        "1111111",
+        "1111111",
+        "1100011",
+        "1100011",
+        "1100011",
+        "1100011",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111"
+    ],
+    2: [
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "1111111",
+        "1111111",
+        "1100000",
+        "1100000",
+        "1111111",
+        "1111111"
+    ],
+    3: [
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "1111111",
+        "1111111"
+    ],
+    4: [
+        "1100011",
+        "1100011",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011"
+    ],
+    5: [
+        "1111111",
+        "1111111",
+        "1100000",
+        "1100000",
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "1111111",
+        "1111111"
+    ],
+    6: [
+        "1111111",
+        "1111111",
+        "1100000",
+        "1100000",
+        "1111111",
+        "1111111",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111"
+    ],
+    7: [
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011"
+    ],
+    8: [
+        "1111111",
+        "1111111",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111"
+    ],
+    9: [
+        "1111111",
+        "1111111",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "1111111",
+        "1111111"
+    ]
+};
 
 function getDefaultScaleFactor() {
 	if (IS_MOBILE) return 0.9;
@@ -246,6 +630,7 @@ class Formation {
 			this.fadeColor(drone, color, COLOR.White,120);
 		})
 	}
+	
 	/**
 	 * Tjay đổi radius của drone
 	 * @param {*} radius 
@@ -323,6 +708,25 @@ class Formation {
 			}
 		}	
 	}
+	/**
+ * Chuyển đổi màu lần lượt với khoảng cách thời gian giữa các drone
+ * @param {*} color Màu đích
+ * @param {*} timeGap Khoảng cách thời gian giữa các lần đổi màu (ms)
+ */
+async setColorV2(color, timeGap=0.7) {
+	// Hàm delay đơn giản
+	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+	color = color??getRandomColor()
+	// Thay đổi màu lần lượt cho từng drone
+	for (let i = 0; i < this.drones.length; i++) {
+		const drone = this.drones[i];
+		// Gọi hàm đổi màu với hiệu ứng
+		this.fadeColor(drone, color, COLOR.White, 120);
+
+		// Đợi trước khi chuyển sang drone tiếp theo
+		await delay(timeGap);
+	}
+}
 	/**
 	 * Tạo hiệu ứng đổi màu ngẫu nhiên
 	 * @param {*} interval 
@@ -503,6 +907,72 @@ class Formation {
 	
 			time += speed; // Tăng thời gian để thay đổi góc quay
 			const rotationAngle = time; // Góc quay hiện tại
+			let radius = drones[0].radius
+			// Cập nhật vị trí di chuyển của đội hình
+			this.centerX += offsetX;
+			this.centerY += offsetY;
+	
+			this.drones.forEach((drone, index) => {
+				const angle = angleStep * index + rotationAngle; // Góc quay cho mỗi drone
+				const x = this.radius * Math.cos(angle); // Tọa độ X trên vòng tròn
+				const y = this.radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
+	
+				// Biến đổi 3D với góc nghiêng trên cả hai trục
+				const transformedX = x * cosTiltY - y * sinTiltX; // Trục X biến đổi theo nghiêng Y và X
+				const transformedY = y * cosTiltX - x * sinTiltY; // Trục Y biến đổi theo nghiêng X và Y
+				const depth = (y * sinTiltY+80)/100; // Chiều sâu để tạo hiệu ứng 3D
+				
+				
+				// Đặt lại vị trí drone cộng thêm offset
+				drone.x = this.centerX + transformedX ;
+				drone.y = this.centerY + transformedY ;
+				
+				// Tạo hiệu ứng "độ sâu" bằng cách thay đổi kích thước hoặc màu sắc dựa trên `depth`
+				// drone.radius = drone.baseRadius; // Kích thước thay đổi theo độ sâu
+				// drone.color = depth > 0 ? "rgba(255, 0, 0, 1)" : "rgba(0, 0, 255, 0.8)"; // Màu sắc thay đổi theo độ sâu
+			});
+	
+			// Gọi lại hàm cập nhật liên tục
+			requestAnimationFrame(update);
+		};
+	
+		// Bắt đầu cập nhật đội hình
+		update();
+	}
+	/**
+	 * Tạo đội hình xuay tròn 3D với tốc độ di chuyển kích cỡ theo độ sâu
+	 * @param {*} tiltAngleX - độ nghiêng X
+	 * @param {*} tiltAngleY - độ ngjiêng Y
+	 * @param {*} speed -tốc độ xoay
+	 * @param {*} deltaX - tọa độ x thêm vào
+	 * @param {*} deltaY -	tọa độ y thêm vào
+	 */
+	setCircleFormationV3c5( tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900,deltaX = 0, deltaY = 0 ) {
+		let formationLifetime = this.formationLifetime;
+		let time = 0; // Biến thời gian để tính góc xoay
+		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
+		const cosTiltX = Math.cos(tiltAngleX); // Tính cos của góc nghiêng X
+		const sinTiltX = Math.sin(tiltAngleX); // Tính sin của góc nghiêng X
+		const cosTiltY = Math.cos(tiltAngleY); // Tính cos của góc nghiêng Y
+		const sinTiltY = Math.sin(tiltAngleY); // Tính sin của góc nghiêng Y
+		const startTime = Date.now(); // Thời điểm bắt đầu
+	
+		let offsetX = deltaX; // Offset cho vị trí X
+		let offsetY = deltaY; // Offset cho vị trí Y
+		
+		// Hàm cập nhật đội hình theo thời gian
+		const update = () => {
+			const currentTime = Date.now(); // Lấy thời gian hiện tại
+			const elapsedTime = currentTime - startTime; // Tính thời gian đã trôi qua
+	
+			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			if (elapsedTime >= formationLifetime) {
+				this.reset();
+				return; // Dừng quy trình
+			}
+	
+			time += speed; // Tăng thời gian để thay đổi góc quay
+			const rotationAngle = time; // Góc quay hiện tại
 			
 			// Cập nhật vị trí di chuyển của đội hình
 			this.centerX += offsetX;
@@ -516,14 +986,15 @@ class Formation {
 				// Biến đổi 3D với góc nghiêng trên cả hai trục
 				const transformedX = x * cosTiltY - y * sinTiltX; // Trục X biến đổi theo nghiêng Y và X
 				const transformedY = y * cosTiltX - x * sinTiltY; // Trục Y biến đổi theo nghiêng X và Y
-				const depth = x * sinTiltX + y * sinTiltY; // Chiều sâu để tạo hiệu ứng 3D
+				const depth = (y * sinTiltY+80)/100; // Chiều sâu để tạo hiệu ứng 3D
+				
 	
 				// Đặt lại vị trí drone cộng thêm offset
 				drone.x = this.centerX + transformedX ;
 				drone.y = this.centerY + transformedY ;
-	
+				
 				// Tạo hiệu ứng "độ sâu" bằng cách thay đổi kích thước hoặc màu sắc dựa trên `depth`
-				// drone.radius = drone.baseRadius + depth * 0.05; // Kích thước thay đổi theo độ sâu
+				drone.radius = drone.baseRadius*depth; // Kích thước thay đổi theo độ sâu
 				// drone.color = depth > 0 ? "rgba(255, 0, 0, 1)" : "rgba(0, 0, 255, 0.8)"; // Màu sắc thay đổi theo độ sâu
 			});
 	
@@ -675,12 +1146,264 @@ class Formation {
             }
         });
     }
-
 	
+	/**
+	 * Tạo hình ngôi sao
+	 * @param {*} centerX tâm x
+	 * @param {*} centerY tâm y
+	 * @param {*} R_outer khoảng cách cạnh ngoài
+	 * @param {*} R_inner khoảng cách cạnh trong
+	 */
+	setStarFormation(centerX, centerY, R_outer, R_inner) {
+		const numPoints = this.drones.length; // Số drone cần sắp xếp
+		const starPoints = []; // Lưu tọa độ ngôi sao
+		
+		// Góc bắt đầu để đỉnh trên cùng thẳng đứng
+		const totalAngles = Math.PI * 2; // 360 độ
+		const step = totalAngles / (5 * 2); // Góc giữa các đỉnh (10 điểm)
+		const startAngle = -Math.PI / 2; // Đỉnh trên cùng nằm ở trục y âm (góc -90 độ)
+		
+		// Tính toán 10 điểm của ngôi sao
+		for (let i = 0; i < 10; i++) {
+			// Đỉnh ngoài (i chẵn) hoặc đỉnh trong (i lẻ)
+			const radius = i % 2 === 0 ? R_outer : R_inner;
+			const angle = startAngle + i * step;
+
+			const x = centerX + radius * Math.cos(angle);
+			const y = centerY + radius * Math.sin(angle);
+			starPoints.push({ x, y });
+		}
+
+		// Gán tọa độ cho từng drone
+		this.drones.forEach((drone, index) => {
+			const point = starPoints[index % 10]; // Lặp lại điểm nếu drones > 10
+			drone.x = point.x;
+			drone.y = point.y;
+		});
+		let formationLifetime = this.formationLifetime;
+		let startTime = Date.now();
+		const updateFormation = () => {
+			const currentTime = Date.now();
+			const elapsedTime = currentTime - startTime;
+	
+			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			if (elapsedTime >= formationLifetime) {
+				this.reset(); // Dừng việc cập nhật đội hình nếu hết thời gian
+				return;
+			}
+			requestAnimationFrame(updateFormation);
+		}
+	
+		// Bắt đầu cập nhật đội hình
+		requestAnimationFrame(updateFormation);
+	}
+	setStarFormationV2(centerX, centerY, R_outer, R_inner) {
+		const numDrones = this.drones.length; // Số lượng drone
+		const starPoints = []; // Lưu tọa độ các điểm của ngôi sao
+		const totalAngles = Math.PI * 2; // 360 độ
+		const step = totalAngles / (5 * 2); // Góc giữa các đỉnh (10 điểm)
+		const startAngle = -Math.PI / 2; // Đỉnh trên cùng nằm ở trục y âm (góc -90 độ)
+	
+		// Tính toán tọa độ cho 10 điểm của ngôi sao (5 đỉnh ngoài và 5 đỉnh trong)
+		for (let i = 0; i < 10; i++) {
+			// Đỉnh ngoài (i chẵn) hoặc đỉnh trong (i lẻ)
+			const radius = i % 2 === 0 ? R_outer : R_inner;
+			const angle = startAngle + i * step;
+	
+			const x = centerX + radius * Math.cos(angle);
+			const y = centerY + radius * Math.sin(angle);
+			starPoints.push({ x, y });
+		}
+	
+		// Xác định số hàng và phân bổ drone vào các vị trí của ngôi sao
+		const rows = Math.ceil(numDrones / 10); // Số hàng, mỗi hàng có tối đa 10 drone
+		let droneIndex = 0;
+	
+		// Duyệt qua các hàng và phân bổ drone
+		for (let row = 0; row < rows; row++) {
+			const yOffset = (row / rows) * (R_outer + R_inner); // Tính độ cao của mỗi hàng
+	
+			// Duyệt qua các điểm của ngôi sao để phân bổ drone
+			for (let i = 0; i < 10; i++) {
+				if (droneIndex < numDrones) {
+					const point = starPoints[i];
+	
+					// Cập nhật tọa độ drone
+					const drone = this.drones[droneIndex];
+					drone.x = point.x;
+					drone.y = point.y + yOffset; // Dịch chuyển theo trục Y theo hàng
+					droneIndex++;
+				}
+			}
+		}
+	}
+
+	setRectangleFormation(startX, startY, width, height) {
+		const nums = this.drones.length; // Số lượng drone có sẵn
+
+		// Tính số hàng và số cột tối ưu
+		const numCols = Math.ceil(Math.sqrt(nums * (width / height))); // Số cột
+		const numRows = Math.ceil(nums / numCols); // Số hàng
+
+		const colSpacing = width / (numCols - 1); // Khoảng cách giữa các cột
+		const rowSpacing = height / (numRows - 1); // Khoảng cách giữa các hàng
+
+		let droneIndex = 0;
+
+		for (let row = 0; row < numRows; row++) {
+			for (let col = 0; col < numCols; col++) {
+				if (droneIndex < nums) {
+					const x = startX + col * colSpacing;
+					const y = startY + row * rowSpacing;
+					this.drones[droneIndex].x = x;
+					this.drones[droneIndex].y = y;
+					droneIndex++;
+				} else {
+					break; // Nếu hết drone thì dừng lại
+				}
+			}
+		}
+		let formationLifetime = this.formationLifetime;
+		let startTime = Date.now();
+		const updateFormation = () => {
+			const currentTime = Date.now();
+			const elapsedTime = currentTime - startTime;
+	
+			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			if (elapsedTime >= formationLifetime) {
+				this.reset(); // Dừng việc cập nhật đội hình nếu hết thời gian
+				return;
+			}
+			requestAnimationFrame(updateFormation);
+		}
+	
+		// Bắt đầu cập nhật đội hình
+		requestAnimationFrame(updateFormation);
+	}
+	
+	setHeartFormation(centerX, centerY, size) {
+		const nums = this.drones.length; // Số lượng drone
+		const heartPoints = []; // Danh sách tọa độ của hình trái tim
+
+		// Công thức parametric cho hình trái tim
+		// x = 16 * sin³(t), y = 13 * cos(t) - 5 * cos(2t) - 2 * cos(3t) - cos(4t)
+		// Scale theo `size` và di chuyển về `centerX, centerY`
+		for (let i = 0; i < nums; i++) {
+			const t = (Math.PI * 2 * i) / nums; // Góc chia đều từ 0 -> 2π
+			const x = centerX + size * 16 * Math.pow(Math.sin(t), 3);
+			const y =
+				centerY -
+				size *
+					(13 * Math.cos(t) -
+						5 * Math.cos(2 * t) -
+						2 * Math.cos(3 * t) -
+						Math.cos(4 * t));
+			heartPoints.push({ x, y });
+		}
+
+		// Gán tọa độ từ heartPoints cho drones
+		this.drones.forEach((drone, index) => {
+			const point = heartPoints[index];
+			drone.x = point.x;
+			drone.y = point.y;
+		});
+		let formationLifetime = this.formationLifetime;
+		let startTime = Date.now();
+		const updateFormation = () => {
+			const currentTime = Date.now();
+			const elapsedTime = currentTime - startTime;
+	
+			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			if (elapsedTime >= formationLifetime) {
+				this.reset(); // Dừng việc cập nhật đội hình nếu hết thời gian
+				return;
+			}
+			requestAnimationFrame(updateFormation);
+		}
+	
+		// Bắt đầu cập nhật đội hình
+		requestAnimationFrame(updateFormation);
+	}
+	/**
+	 * Vẽ ký tự số
+	 * @param {*} digit - số 2
+	 * @param {*} startX 
+	 * @param {*} startY 
+	 * @param {*} spacing 
+	 */
+	drawDigit(digit, startX, startY, spacing) {
+		const matrix = digits[digit]; // Lấy ma trận của số
+		let droneIndex = 0;
+		for (let row = 0; row < matrix.length; row++) {
+			for (let col = 0; col < matrix[row].length; col++) {
+				if (matrix[row][col] === '1') {
+					// Đặt drone tại vị trí tương ứng
+					this.drones[droneIndex].x = startX + col * spacing;
+					this.drones[droneIndex].y = startY + row * spacing;
+					droneIndex++;
+					console.log(droneIndex)
+				}
+			}
+		}
+		let formationLifetime = this.formationLifetime;
+		let startTime = Date.now();
+		const updateFormation = () => {
+			const currentTime = Date.now();
+			const elapsedTime = currentTime - startTime;
+	
+			// Kiểm tra nếu đã hết thời gian tồn tại đội hình
+			if (elapsedTime >= formationLifetime) {
+				this.reset(); // Dừng việc cập nhật đội hình nếu hết thời gian
+				return;
+			}
+			requestAnimationFrame(updateFormation);
+		}
+	
+		// Bắt đầu cập nhật đội hình
+		requestAnimationFrame(updateFormation);
+		
+	}
+	/**
+	 * vẽ kí tư chữ
+	 * @param {*} letter - chữ 'a'
+	 * @param {*} startX 
+	 * @param {*} startY 
+	 * @param {*} spacing 
+	 */
+	drawLetter(letter, startX, startY, spacing) {
+		letter = letter.toUpperCase()
+		const matrix = letters[letter]; // Lấy ma trận của ký tự
+		let droneIndex = 0;
+		for (let row = 0; row < matrix.length; row++) {
+			for (let col = 0; col < matrix[row].length; col++) {
+				if (matrix[row][col] === '1') {
+					// Đặt drone tại vị trí tương ứng
+					this.drones[droneIndex].x = startX + col * spacing;
+					this.drones[droneIndex].y = startY + row * spacing;
+					droneIndex++;
+				}
+			}
+		}
+		
+	}
+	//Đang lỗi
+	drawText(text, startX, startY, spacing, letterSpacing) {
+		for (let i = 0; i < text.length; i++) { // Sửa "lenght" thành "length"
+			const char = text[i].toUpperCase(); // Đảm bảo chữ cái viết hoa
+			if (letters[char]) { // Kiểm tra ký tự có tồn tại trong `letters`
+				const xOffset = i * (letters[char][0].length * spacing + letterSpacing);
+				this.drawLetter(char, startX + xOffset, startY, spacing);
+			} else {
+				console.warn(`Character "${char}" is not defined in letters.`);
+			}
+		}
+	}
+
 
 	
 	
 }
+
 
 let maxW = window.innerWidth - 2;
 let maxH = window.innerHeight;
@@ -688,7 +1411,7 @@ let maxH = window.innerHeight;
 // Khởi tạo các drone
 // create drone
 const drones = [];
-for (let i = 0; i < 1500; i++) {
+for (let i = 0; i < 500	; i++) {
 	drones.push(new Drone(0, 0, 3.5, 0, 0,COLOR.Red,200000000));
 }
 
@@ -1227,6 +1950,7 @@ const crysanthemumShell = (size = 1) => {
 	const pistilColor = pistil && makePistilColor(color);
 	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
 	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	
 	let starDensity = glitter ? 1.1 : 1.25;
 	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
 	if (isHighQuality) starDensity = 1.2;
@@ -1242,6 +1966,273 @@ const crysanthemumShell = (size = 1) => {
 		pistil,
 		pistilColor,
 		streamers,
+		flower:Math.random()<0.2
+		,smiley:Math.random()<0.2 //tạo mặt cười
+		,hearth:Math.random()<0.2 //hiệu ứng trái tim
+		,snow:Math.random()<0.2
+		,lotus:Math.random()<0.2
+		
+	};
+};
+const flowerShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 1;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		pistil:true,
+		pistilColor,
+		
+		flower:true
+	};
+};
+const catShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 1;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		pistil:false,
+		pistilColor,
+	
+		cat:true
+	};
+};
+const snowShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 1;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		pistil,
+		pistilColor,
+		streamers,
+		snow:true
+	};
+};
+const fishShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 1;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		pistil,
+		pistilColor,
+		streamers,
+		fish:true
+	};
+};
+const smileyShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 1;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		
+		streamers,
+		smiley:true
+	};
+};
+
+const waveShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 1;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		
+		
+		strobe:true,
+		wave:true
+	};
+};
+const hearthShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 1;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		pistil:true,
+		pistilColor,
+		streamers:false,
+		hearth:true
+	};
+};
+const birdShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 0.72;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		pistil,
+		pistilColor,
+		strobe:true,
+		streamers:false,
+		bird:true
+	};
+};
+const butterflyShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 0.72;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		pistil,
+		pistilColor,
+		streamers:false,
+		butterfly:true
+	};
+};
+const lotusShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 0.72;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		pistil,
+		pistilColor,
+		streamers:false,
+		lotus:true
 	};
 };
 //type Shells
@@ -1464,6 +2455,16 @@ const shellTypes = {
 	'Crackle': crackleShell,
 	'Crossette': crossetteShell,
 	'Crysanthemum': crysanthemumShell,
+	'Flower':flowerShell,
+	'Hearth':hearthShell,
+	'Wave':waveShell,
+	'Smiley':smileyShell,
+	'Cat':catShell,
+	'Fish':fishShell,
+	'Snow':snowShell,
+	'Bird':birdShell,
+	'Lotus':lotusShell,
+	'Butterfly':butterflyShell,
 	'Falling Leaves': fallingLeavesShell,
 	'Floral': floralShell,
 	'Ghost': ghostShell,
@@ -2318,7 +3319,7 @@ async function seqShellShortLeftToRight(count, position, time) {
 		life += 0.085;
 	}
 	setTimeout(() => {
-		const lastShell = new Shell(shellTypes['ring'](size.size * 1.7));
+		const lastShell = new Shell(shellTypes['Ring'](size.size * 1.7));
 		lastShell.launch(0.5, 0.5)
 	}, timen - 15);
 }
@@ -2370,7 +3371,7 @@ async function seqShellShortRightToLeft(count, position, time) {
 		life += 0.085;
 	}
 	setTimeout(() => {
-		const lastShell = new Shell(shellTypes['ring'](size.size * 1.7));
+		const lastShell = new Shell(shellTypes['Ring'](size.size * 1.7));
 		lastShell.launch(0.5, 0.5)
 	}, timen - 15);
 }
@@ -2560,7 +3561,13 @@ function seqDoubleCrysanthemum(x, y) {
 
 
 }
-
+function seqDoubleShell(x,y,shell){
+	shell.launch(x,y)
+	shell.size*= 0.7
+	setTimeout(() => {
+		shell.launch(Math.abs(1-x),y)
+	}, 300);
+}
 function seqTripleV2(x, y) {
 	const size = getRandomShellSize();
 	const shell1 = new Shell(shellTypes['Horse Tail'](size.size * 0.25));
@@ -2666,22 +3673,31 @@ async function seqSparkHalfLeft(position, height1, count, time=50) {
 		timen += 80 * 0.05;
 	}
 }
-function creatFiveShell(left, right) {
+function creatFiveShell(left, right,shell,color) {
 	let spread = (right - left) / 5;
 	while (left <= right) {
 		let number = 0.01 + Math.random() * 0.01
-		let shell = new Shell(shellTypes['Crysanthemum'](0.7))
+		shell.color=color??getRandomColor();
 		shell.launch(left + number, -0.3 + number)
 		left += spread;
 	}
 }
-async function seqShellAllInOne(left, right, count=3) {
+/**
+ * Bắn liên tục cùng lúc 1 loại pháo 
+ * @param {*} left 
+ * @param {*} right 
+ * @param {*} shell 
+ * @param {*} size - kích cỡ nhỏ thôi 0.7->0.9
+ * @param {*} count 
+ * @param {*} time 
+ */
+async function seqShellAllInOne(left, right,shell,color, count=3,time=50) {
 	let i = 0;
-	let time = 0;
+
 	while (i < count) {
 		await new Promise(resolve => setTimeout(resolve, time));
-		creatFiveShell(left, right)
-		time += 30
+		creatFiveShell(left, right,shell,color)
+	
 		i++
 	}
 }
@@ -2955,17 +3971,17 @@ function testShell(x, y){
 	;
 	
 }
-async function seqShellRandomForTime(count=5){
+async function seqShellRandomForTime(count=5,hight=0.4, shell,color){
 	
 	let i = 0;
 	let time = 50;
 	while(i<count){
 		await new Promise(resolve => setTimeout(resolve, time));
 		let vt = Math.random();
-		let shell = new Shell({...shellTypes['Strobe'](4), strobe:true, })		
-		shell.launch(vt,0.4)
+		shell.color=color??getRandomColor()
+		shell.launch(vt,hight*Math.random())
 		i++
-		time+=100;
+		
 	}
 }
 function monodySeq(){
@@ -3291,7 +4307,8 @@ function startSequence2() {
 	// monodySeq();
 	// seqDrone();
 	// skyFallSeq();
-	testMusic();
+	// testMusic();
+	// creatFiveShell(0.3,0.5,'Cat')
 
 }
 
@@ -3763,6 +4780,101 @@ function createParticleRectangle(startX, startY, width, height, count, randomnes
 	}
 }
 
+/**
+ * Tạo hạt theo hình ngôi sao
+ * @param {number} centerX Tọa độ tâm X
+ * @param {number} centerY Tọa độ tâm Y
+ * @param {number} R_outer Bán kính ngoài
+ * @param {number} R_inner Bán kính trong
+ * @param {number} points Số cánh của ngôi sao
+ * @param {number} count Số hạt
+ * @param {number} randomness Độ ngẫu nhiên (0 -> 1)
+ * @param {function} particleFactory Hàm tạo hạt
+ */
+function createParticleStar(centerX, centerY, R_outer, R_inner, points, count, randomness, particleFactory) {
+	// Tính góc giữa các điểm của ngôi sao
+	const totalAngles = Math.PI * 2; // 360 độ
+	const step = totalAngles / (points * 2); // Góc giữa các đỉnh
+	const startAngle = -Math.PI / 2; // Đỉnh trên cùng nằm ở trục y âm
+
+	// Tính toán tọa độ các đỉnh của ngôi sao
+	const starPoints = [];
+	for (let i = 0; i < points * 2; i++) {
+		const radius = i % 2 === 0 ? R_outer : R_inner; // Xen kẽ giữa R_outer và R_inner
+		const angle = startAngle + i * step;
+		const x = centerX + radius * Math.cos(angle);
+		const y = centerY + radius * Math.sin(angle);
+		starPoints.push({ x, y });
+	}
+
+	// Phân bố hạt dọc theo các đoạn nối giữa các điểm
+	for (let i = 0; i < starPoints.length; i++) {
+		const start = starPoints[i];
+		const end = starPoints[(i + 1) % starPoints.length]; // Điểm cuối, kết nối vòng
+
+		// Chia đoạn thành các phần nhỏ dựa trên số hạt
+		for (let j = 0; j < count; j++) {
+			const t = j / count; // Tỷ lệ vị trí trên đoạn (0 -> 1)
+			const x = start.x + t * (end.x - start.x);
+			const y = start.y + t * (end.y - start.y);
+
+			// Thêm sự ngẫu nhiên vào tọa độ
+			const randomX = x + (Math.random() - 0.5) * randomness * (end.x - start.x);
+			const randomY = y + (Math.random() - 0.5) * randomness * (end.y - start.y);
+
+			// Gọi hàm tạo hạt
+			particleFactory(randomX, randomY);
+		}
+	}
+}
+/**
+ * Tạo hiệu ứng burst hạt theo hình ngôi sao
+ * @param {number} centerX Tọa độ tâm X
+ * @param {number} centerY Tọa độ tâm Y
+ * @param {number} R_outer Bán kính ngoài của ngôi sao
+ * @param {number} R_inner Bán kính trong của ngôi sao
+ * @param {number} points Số cánh của ngôi sao
+ * @param {number} count Số lượng hạt
+ * @param {number} randomness Độ ngẫu nhiên (0 -> 1)
+ * @param {function} particleFactory Hàm tạo hạt
+ * @param {number} startAngle Góc bắt đầu của burst
+ * @param {number} arcLength Độ dài cung góc
+ */
+function createStarBurst(centerX, centerY, R_outer, R_inner, points, count, randomness, particleFactory, startAngle = 0, arcLength = Math.PI * 2) {
+	// Tính toán các đỉnh của ngôi sao
+	const totalAngles = Math.PI * 2;
+	const step = totalAngles / (points * 2);
+	const startAngleOffset = -Math.PI / 2; // Đỉnh trên cùng
+
+	const starPoints = [];
+	for (let i = 0; i < points * 2; i++) {
+		const radius = i % 2 === 0 ? R_outer : R_inner; // Đỉnh ngoài hoặc trong
+		const angle = startAngleOffset + i * step;
+		const x = centerX + radius * Math.cos(angle);
+		const y = centerY + radius * Math.sin(angle);
+		starPoints.push({ x, y });
+	}
+
+	// Tính toán bán kính của từng vòng cung (ring) dọc theo các đoạn nối
+	for (let i = 0; i < starPoints.length; i++) {
+		const start = starPoints[i];
+		const end = starPoints[(i + 1) % starPoints.length];
+
+		// Chia đoạn thành các phần nhỏ theo số lượng hạt cần tạo
+		for (let j = 0; j < count; j++) {
+			const t = j / count; // Tỷ lệ vị trí trên đoạn
+			const x = start.x + t * (end.x - start.x);
+			const y = start.y + t * (end.y - start.y);
+
+			// Thêm sự ngẫu nhiên vào tọa độ
+			const randomX = x + (Math.random() - 0.5) * randomness * (end.x - start.x);
+			const randomY = y + (Math.random() - 0.5) * randomness * (end.y - start.y);
+
+			// Tạo hạt dọc theo đoạn
+			particleFactory(randomX, randomY);
+		}
+	}
+}
 // Helper used to create a spherical burst of particles
 function createBurst(count, particleFactory, startAngle = 0, arcLength = PI_2) {
 	// Assuming sphere with surface area of `count`, calculate various
@@ -3808,6 +4920,401 @@ function createBurstv2(count, particleFactory, startAngle = 0, width = 10, heigh
 		}
 	}
 }
+
+function createHeartBurst(count, particleFactory, startAngle = 0, arcLength = Math.PI * 2) {
+    // Tạo một góc ngẫu nhiên để xoay hình trái tim
+    const randomRotation = Math.random() * Math.PI * 2; // Góc ngẫu nhiên từ 0 đến 2pi
+
+    const positions = [];
+
+    // Sinh các vị trí theo hình trái tim
+    for (let i = 0; i < count; i++) {
+        const t = Math.random() * Math.PI * 2;  // Tạo giá trị ngẫu nhiên cho góc
+
+        // Phương trình hình trái tim
+        let x = 16 * Math.pow(Math.sin(t), 3);
+        let y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+
+        // Xoay hình trái tim bằng cách xoay các tọa độ theo góc random
+        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
+        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+
+        positions.push({ x: xRotated, y: yRotated });
+    }
+
+    // Tính toán và tạo các hạt từ các vị trí đã tính toán
+    for (const { x, y } of positions) {
+        // Tính toán góc và kích thước của hạt
+        const angle = Math.atan2(y, x) + startAngle;
+        const size = Math.sqrt(x * x + y * y) / 20; // Quy mô độ lớn của các hạt
+
+        // Gọi hàm tạo hạt
+        particleFactory(angle, size);
+    }
+}
+/**
+ * tạo hình lốc xoáy
+ * @param {*} count 
+ * @param {*} particleFactory 
+ * @param {*} loops - số vòng
+ * @param {*} startAngle 
+ */
+function createSpiralBurst(count, particleFactory, loops = 3, startAngle = 0) {
+    const randomRotation = Math.random() * Math.PI * 2; // Góc xoay ngẫu nhiên
+    const positions = [];
+
+    for (let i = 0; i < count; i++) {
+        const t = (i / count) * loops * Math.PI * 2; // Góc xoắn
+        const r = 0.5 + 0.5 * (t / (Math.PI * 2 * loops)); // Tăng bán kính dần
+
+        const x = r * Math.cos(t);
+        const y = r * Math.sin(t);
+
+        // Xoay lốc xoáy
+        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
+        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+
+        positions.push({ x: xRotated, y: yRotated });
+    }
+
+    for (const { x, y } of positions) {
+        const angle = Math.atan2(y, x) + startAngle;
+        const size = Math.sqrt(x * x + y * y);
+        particleFactory(angle, size);
+    }
+}
+/**
+ * Tạo hình cánh hoa
+ * @param {*} count 
+ * @param {*} particleFactory 
+ * @param {*} petals - số canhs
+ * @param {*} startAngle 
+ */
+function createFlowerBurst(count, particleFactory, petals = 6, startAngle = 0) {
+    const randomRotation = Math.random() * Math.PI * 2; // Góc xoay ngẫu nhiên
+    const positions = [];
+	petals =2 +Math.random()*petals
+    for (let i = 0; i < count; i++) {
+        const t = Math.random() * Math.PI * 2; // Góc ngẫu nhiên
+        const r = Math.sin(petals * t); // Bán kính phụ thuộc vào số cánh
+
+        const x = r * Math.cos(t);
+        const y = r * Math.sin(t);
+
+        // Xoay hình hoa
+        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
+        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+
+        positions.push({ x: xRotated, y: yRotated });
+    }
+
+    for (const { x, y } of positions) {
+        const angle = Math.atan2(y, x) + startAngle;
+        const size = Math.sqrt(x * x + y * y);
+        particleFactory(angle, size);
+    }
+}
+/**
+ * Này đang lỗi
+ * @param {*} count 
+ * @param {*} particleFactory 
+ * @param {*} spikes 
+ * @param {*} innerRadius 
+ * @param {*} outerRadius 
+ * @param {*} startAngle 
+ */
+function createStarBurst(count, particleFactory, spikes = 5, innerRadius = 0.5, outerRadius = 1, startAngle = 0) {
+    
+	const randomRotation = Math.random() * Math.PI * 2; // Góc xoay ngẫu nhiên
+    const positions = [];
+
+    for (let i = 0; i < count; i++) {
+        const t = (i / count) * Math.PI * 2; // Góc cho từng điểm
+        const radius = i % 2 === 0 ? outerRadius : innerRadius; // Xen kẽ bán kính
+
+        const x = radius * Math.cos(t);
+        const y = radius * Math.sin(t);
+
+        // Xoay ngôi sao
+        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
+        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+
+        positions.push({ x: xRotated, y: yRotated });
+    }
+
+    for (const { x, y } of positions) {
+        const angle = Math.atan2(y, x) + startAngle;
+        const size = Math.sqrt(x * x + y * y);
+        particleFactory(angle, size);
+    }
+}
+function createWaveBurst(count, particleFactory, amplitude =1, frequency =2, startAngle = 0) {
+    const randomRotation = Math.random() * Math.PI * 2; // Góc xoay ngẫu nhiên
+    const positions = [];
+	count = count*Math.random()
+	amplitude += Math.random()*3
+	frequency += Math.random()*3
+    for (let i = 0; i < count; i++) {
+        const t = (i / count) * Math.PI * 2; // Góc cho từng điểm
+        const x = t;
+        const y = amplitude * Math.sin(frequency * t);
+
+        // Xoay sóng
+        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
+        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+
+        positions.push({ x: xRotated, y: yRotated });
+    }
+
+    for (const { x, y } of positions) {
+        const angle = Math.atan2(y, x) + startAngle;
+        const size = Math.sqrt(x * x + y * y);
+        particleFactory(angle, size/4.5);
+    }
+}
+function createSmileyBurst(count, particleFactory, startAngle = 0) {
+    const randomRotation = Math.random() * Math.PI * 2; // Góc xoay ngẫu nhiên
+    const positions = [];
+
+    // Tạo hạt cho khuôn mặt (hình tròn ngoài)
+    for (let i = 0; i < count * 0.5; i++) {
+        const t = (i / (count * 0.5)) * Math.PI * 2; // Góc cho từng điểm
+        const radius = 10; // Bán kính khuôn mặt
+        const x = radius * Math.cos(t);
+        const y = radius * Math.sin(t);
+
+        // Xoay ngẫu nhiên hình tròn
+        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
+        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+
+        positions.push({ x: xRotated, y: yRotated });
+    }
+
+    // Tạo hạt cho mắt trái
+    for (let i = 0; i < count * 0.1; i++) {
+        const t = (i / (count * 0.1)) * Math.PI * 2; // Góc cho mắt
+        const radius = 2; // Bán kính mắt
+        const offsetX = -4; // Tọa độ mắt trái
+        const offsetY = -4;
+        const x = offsetX + radius * Math.cos(t);
+        const y = offsetY + radius * Math.sin(t);
+
+        // Xoay mắt trái
+        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
+        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+
+        positions.push({ x: xRotated, y: yRotated });
+    }
+
+    // Tạo hạt cho mắt phải
+    for (let i = 0; i < count * 0.1; i++) {
+        const t = (i / (count * 0.1)) * Math.PI * 2;
+        const radius = 2;
+        const offsetX = 4; // Tọa độ mắt phải
+        const offsetY = -4;
+        const x = offsetX + radius * Math.cos(t);
+        const y = offsetY + radius * Math.sin(t);
+
+        // Xoay mắt phải
+        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
+        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+
+        positions.push({ x: xRotated, y: yRotated });
+    }
+
+    // Tạo hạt cho miệng (hình cung)
+    for (let i = 0; i < count * 0.3; i++) {
+        const t = (i / (count * 0.3)) * Math.PI; // Góc từ 0 đến pi
+        const radius = 6; // Bán kính miệng
+        const offsetY = 3; // Vị trí miệng (hơi xuống dưới)
+        const x = radius * Math.cos(t);
+        const y = offsetY + radius * Math.sin(t);
+
+        // Xoay miệng
+        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
+        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+
+        positions.push({ x: xRotated, y: yRotated });
+    }
+
+    // Tạo các hạt từ các vị trí đã tính
+    for (const { x, y } of positions) {
+        const angle = Math.atan2(y, x) + startAngle;
+        const size = Math.sqrt(x * x + y * y) / 10; // Quy mô kích thước hạt
+        particleFactory(angle, size);
+    }
+}
+function createQuestionMarkBurst(count, particleFactory, scale = 10, randomness = 0.1) {
+    const positions = [];
+
+    // Vẽ phần cong của dấu hỏi
+    for (let i = 0; i < count * 0.8; i++) {
+        const t = (i / (count * 0.8)) * Math.PI; // Tính góc từ 0 đến π (nửa đường tròn)
+        const x = scale * Math.sin(t) + scale * 0.5; // Dịch phải một chút
+        const y = scale * Math.cos(t);
+
+        // Thêm độ ngẫu nhiên
+        const randomX = x + (Math.random() - 0.5) * randomness * scale;
+        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+
+        positions.push({ x: randomX, y: randomY });
+    }
+
+    // Vẽ phần dấu chấm
+    for (let i = 0; i < count * 0.2; i++) {
+        const x = scale * 0.5; // Cố định vị trí x
+        const y = -scale * 1.5; // Dịch xuống dưới một khoảng
+
+        const randomX = x + (Math.random() - 0.5) * randomness * scale;
+        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+
+        positions.push({ x: randomX, y: randomY });
+    }
+
+    // Chuyển đổi thành hạt
+    for (const { x, y } of positions) {
+        const angle = Math.atan2(y, x);
+        const size = Math.sqrt(x * x + y * y) / scale;
+        particleFactory(angle, size);
+    }
+}
+function createSnowflakeBurst(count, particleFactory, arms = 10, randomness = 0.7) {
+    const positions = [];
+	arms *=Math.random()
+	randomness*=Math.random()
+    const angleStep = (Math.PI * 2) / arms;
+
+    for (let i = 0; i < count; i++) {
+        const armIndex = i % arms; // Xác định tay nào của bông tuyết
+        const armAngle = armIndex * angleStep; // Góc của tay bông tuyết
+        const distance = Math.random() + 0.5; // Khoảng cách từ tâm (có ngẫu nhiên)
+        const randomOffset = (Math.random() - 0.5) * randomness;
+
+        // Tính tọa độ của hạt
+        const x = distance * Math.cos(armAngle + randomOffset);
+        const y = distance * Math.sin(armAngle + randomOffset);
+
+        positions.push({ x, y });
+    }
+
+    for (const { x, y } of positions) {
+        const angle = Math.atan2(y, x);
+        const size = Math.sqrt(x * x + y * y);
+        particleFactory(angle, size);
+    }
+}
+function createFishBurst(count, particleFactory, scale =20, randomness = 0.7) {
+	const randomRotation = Math.random() * Math.PI * 2; // Góc xoay ngẫu nhiên
+	scale*=Math.random()
+	randomness*=Math.random()
+    // Tạo thân cá (hình ellipse)
+    for (let i = 0; i < count * 0.6; i++) {
+        const t = (i / (count * 0.6)) * Math.PI * 2; // Góc từ 0 đến 2π
+        const x = scale * Math.cos(t); // Tọa độ x (thân dài)
+        const y = scale * 0.5 * Math.sin(t); // Tọa độ y (thân ngắn)
+
+        // Thêm độ ngẫu nhiên vào tọa độ
+        const randomX = x + (Math.random() - 0.5) * randomness * scale;
+        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+
+        // Xoay thân cá
+        const xRotated = randomX * Math.cos(randomRotation) - randomY * Math.sin(randomRotation);
+        const yRotated = randomX * Math.sin(randomRotation) + randomY * Math.cos(randomRotation);
+
+        // Tạo hạt
+        const angle = Math.atan2(yRotated, xRotated);
+        const size = Math.sqrt(xRotated * xRotated + yRotated * yRotated) / scale;
+        particleFactory(angle, size);
+    }
+
+    // Tạo đuôi cá (hình tam giác)
+    for (let i = 0; i < count * 0.4; i++) {
+        const t = Math.random(); // Giá trị ngẫu nhiên để tạo hình tam giác
+        const x = -scale - t * scale * 0.5; // Đuôi nằm bên trái thân
+        const y = (Math.random() - 0.5) * scale; // Phân bố chiều cao đuôi
+
+        // Thêm độ ngẫu nhiên vào tọa độ
+        const randomX = x + (Math.random() - 0.5) * randomness * scale;
+        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+
+        // Xoay đuôi cá
+        const xRotated = randomX * Math.cos(randomRotation) - randomY * Math.sin(randomRotation);
+        const yRotated = randomX * Math.sin(randomRotation) + randomY * Math.cos(randomRotation);
+
+        // Tạo hạt
+        const angle = Math.atan2(yRotated, xRotated);
+        const size = Math.sqrt(xRotated * xRotated + yRotated * yRotated) / scale;
+        particleFactory(angle, size);
+    }
+}
+function createCatBurst(count, particleFactory, scale = 10, randomness = 0.1) {
+    const randomRotation = Math.random() * Math.PI * 2; // Xoay toàn bộ mèo ngẫu nhiên
+    const positions = [];
+
+    // Tạo phần đầu mèo (hình tròn)
+    for (let i = 0; i < count * 0.6; i++) {
+        const t = (i / (count * 0.6)) * Math.PI * 2; // Góc từ 0 đến 2π
+        const x = scale * Math.cos(t); // Tọa độ x
+        const y = scale * Math.sin(t); // Tọa độ y
+
+        // Thêm độ ngẫu nhiên
+        const randomX = x + (Math.random() - 0.5) * randomness * scale;
+        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+
+        positions.push({ x: randomX, y: randomY });
+    }
+
+    // Tạo hai tai mèo (hai tam giác trên đầu)
+    for (let i = 0; i < count * 0.2; i++) {
+        const t = Math.random(); // Giá trị ngẫu nhiên để tạo độ rộng tam giác
+        const x = -scale * 0.8 + t * scale * 0.5; // Tai trái
+        const y = -scale - t * scale * 0.8;
+
+        const randomX = x + (Math.random() - 0.5) * randomness * scale;
+        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+
+        positions.push({ x: randomX, y: randomY });
+    }
+
+    for (let i = 0; i < count * 0.2; i++) {
+        const t = Math.random(); // Giá trị ngẫu nhiên để tạo độ rộng tam giác
+        const x = scale * 0.8 - t * scale * 0.5; // Tai phải
+        const y = -scale - t * scale * 0.8;
+
+        const randomX = x + (Math.random() - 0.5) * randomness * scale;
+        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+
+        positions.push({ x: randomX, y: randomY });
+    }
+
+    // Tạo hai mắt mèo (hai hình elip nhỏ)
+    for (let i = 0; i < count * 0.1; i++) {
+        const x = -scale * 0.3 + (Math.random() - 0.5) * randomness * scale; // Mắt trái
+        const y = scale * 0.2 + (Math.random() - 0.5) * randomness * scale;
+
+        positions.push({ x, y });
+    }
+
+    for (let i = 0; i < count * 0.1; i++) {
+        const x = scale * 0.3 + (Math.random() - 0.5) * randomness * scale; // Mắt phải
+        const y = scale * 0.2 + (Math.random() - 0.5) * randomness * scale;
+
+        positions.push({ x, y });
+    }
+
+    // Chuyển đổi vị trí thành hạt và xoay mèo
+    for (const { x, y } of positions) {
+        // Xoay tọa độ
+        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
+        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+
+        // Tạo hạt
+        const angle = Math.atan2(yRotated, xRotated);
+        const size = Math.sqrt(xRotated * xRotated + yRotated * yRotated) / scale;
+        particleFactory(angle, size);
+    }
+}
+
 function createBurstRectangle(count, particleFactory, width = 10, height = 5, startAngle = 0, arcLength = PI_2) {
 	// Calculate the number of particles per row
 	// Create an array to store random positions
@@ -3830,6 +5337,72 @@ function createBurstRectangle(count, particleFactory, width = 10, height = 5, st
 		particleFactory(angle, size);
 	}
 }
+function createBirdBurst(count, particleFactory, scale = 5, randomness = 0.3) {
+    const positions = [];
+	randomness*=Math.random()
+	scale*=Math.random()
+    for (let i = 0; i < count; i++) {
+        const t = (i / count) * Math.PI; // Góc từ 0 đến π
+        const x = scale * Math.sin(t); // Tạo cánh chim
+        const y = scale * Math.sin(t) * Math.sin(t); // Độ cong của cánh
+
+        // Thêm độ ngẫu nhiên
+        const randomX = x + (Math.random() - 0.5) * randomness * scale;
+        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+
+        positions.push({ x: randomX, y: randomY });
+    }
+
+    for (const { x, y } of positions) {
+        const angle = Math.atan2(y, x);
+        const size = Math.sqrt(x * x + y * y) / scale;
+        particleFactory(angle, size);
+    }
+}
+function createLotusBurst(count, particleFactory, scale = 5, petalCount = 7, randomness = 0.1) {
+    const positions = [];
+	
+    for (let i = 0; i < count; i++) {
+        const t = (i / count) * Math.PI * 2; // Góc từ 0 đến 2π
+        const r = scale * Math.abs(Math.sin(petalCount * t / 2)); // Bán kính dao động theo số cánh hoa
+        const x = r * Math.cos(t);
+        const y = r * Math.sin(t);
+
+        // Thêm độ ngẫu nhiên
+        const randomX = x + (Math.random() - 0.5) * randomness * scale;
+        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+
+        positions.push({ x: randomX, y: randomY });
+    }
+
+    for (const { x, y } of positions) {
+        const angle = Math.atan2(y, x);
+        const size = Math.sqrt(x * x + y * y) / scale;
+        particleFactory(angle, size);
+    }
+}
+function createButterflyBurst(count, particleFactory, scale =5, randomness = 0.1) {
+    const positions = [];
+
+    for (let i = 0; i < count; i++) {
+        const t = (i / count) * Math.PI * 2; // Góc từ 0 đến 2π
+        const x = scale * Math.sin(t) * Math.sin(t); // Tạo cánh bướm đối xứng
+        const y = scale * Math.sin(t) * Math.cos(t);
+
+        // Thêm độ ngẫu nhiên
+        const randomX = x + (Math.random() - 0.5) * randomness * scale;
+        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+
+        positions.push({ x: randomX, y: randomY });
+    }
+
+    for (const { x, y } of positions) {
+        const angle = Math.atan2(y, x);
+        const size = Math.sqrt(x * x + y * y) / scale;
+        particleFactory(angle, size);
+    }
+}
+
 function createBurstRectangleV2(count, particleFactory, width = 10, height = 5, startAngle = 0, arcLength = PI_2) {
 	// Calculate the number of particles per row
 	// Create an array to store random positions
@@ -4411,8 +5984,60 @@ class Shell {
 					}
 				});
 			}
-			else {
-				createBurst(this.starCount, starFactory);
+			let check = 1;
+			if(this.hearth){
+				createHeartBurst(this.starCount, starFactory)
+				check =0;
+			}
+			if(this.flower){
+				createFlowerBurst(this.starCount, starFactory);
+				check =0;
+			}
+			if(this.spiral){
+				createSpiralBurst(this.starCount, starFactory)
+				check =0;
+			}
+			if(this.wave){
+				createWaveBurst(this.starCount, starFactory)
+				check =0;
+			}
+			if(this.smiley){
+				createSmileyBurst(this.starCount, starFactory)
+				check =0;
+			}
+			
+			if(this.snow){
+				createSnowflakeBurst(this.starCount, starFactory)
+				check =0;
+			}
+			if(this.fish){
+				createFishBurst(this.starCount, starFactory)
+				check =0;
+			}
+			if(this.cat){
+				createCatBurst(this.starCount, starFactory)
+				check =0;
+			}
+			if(this.butterfly){
+				createButterflyBurst(this.starCount, starFactory)
+				check =0;
+
+			}
+			if(this.lotus){
+				createLotusBurst(this.starCount, starFactory)
+				check =0;
+
+			}
+			if(this.bird){
+				createBirdBurst(this.starCount, starFactory)
+				check =0;
+			}
+			else{
+				if(check == 1){
+					createBurst(this.starCount, starFactory)
+				}
+				// createQuestionMarkBurst(this.starCount, starFactory)
+				
 			}
 		}
 		else if (Array.isArray(this.color)) {
@@ -4479,6 +6104,7 @@ class Shell {
 			soundManager.playSound('burst', soundScale);
 		}
 	}
+	
 }
 
 
@@ -4847,246 +6473,7 @@ if (IS_HEADER) {
 			);
 	}, 0);
 }
-class ShellV2 extends Shell{
-	constructor(options, starlife){
-		super(options);
-		Object.assign(this, options);
-		this.starLifeVariation = options.starLifeVariation || 0.125+starlife/1000;
-		this.color = options.color || randomColor();
-		this.glitterColor = options.glitterColor || this.color;
-		
-		// Set default starCount if needed, will be based on shell size and scale exponentially, like a sphere's surface area.
-		if (!this.starCount) {
-			const density = options.starDensity || 1;
-			const scaledSize = this.spreadSize / 54;
-			this.starCount = Math.max(6, scaledSize * scaledSize * density);
-		}
-		
-	}
-	burstV2(x, y) {
-		// Set burst speed so overall burst grows to set size. This specific formula was derived from testing, and is affected by simulated air drag.
-		const speed = this.spreadSize / 96;
 
-		let color, onDeath, sparkFreq, sparkSpeed, sparkLife;
-		let sparkLifeVariation = 0.25;
-		// Some death effects, like crackle, play a sound, but should only be played once.
-		let playedDeathSound = true;
-
-		if (this.crossette) onDeath = (star) => {
-			if (!playedDeathSound) {
-				soundManager.playSound('crackleSmall');
-				playedDeathSound = false;
-			}
-			crossetteEffect(star);
-		}
-		if (this.crackle) onDeath = (star) => {
-			if (!playedDeathSound) {
-				soundManager.playSound('crackle');
-				playedDeathSound = true;
-			}
-			crackleEffect(star);
-		}
-		const number = Math.random();
-		if (this.floral) onDeath = floralEffect;
-		if (this.fallingLeaves) onDeath = fallingLeavesEffect;
-		if (this.glitter === 'light') {
-			sparkFreq = 400;
-			sparkSpeed = 0.3;
-			sparkLife = 300;
-			sparkLifeVariation = 2;
-		}
-		else if (this.glitter === 'medium') {
-			sparkFreq = 200;
-			sparkSpeed = 0.44;
-			sparkLife = 700;
-			sparkLifeVariation = 2;
-		}
-		else if (this.glitter === 'heavy') {
-			sparkFreq = 80;
-			sparkSpeed = 0.8;
-			sparkLife = 1400;
-			sparkLifeVariation = 2;
-		}
-		else if (this.glitter === 'thick') {
-			sparkFreq = 16;
-			sparkSpeed = isHighQuality ? 1.65 : 1.5;
-			sparkLife = 1400;
-			sparkLifeVariation = 3;
-		}
-		else if (this.glitter === 'streamer') {
-			sparkFreq = 32;
-			sparkSpeed = 1.05;
-			sparkLife = 620;
-			sparkLifeVariation = 2;
-		}
-		else if (this.glitter === 'willow') {
-			sparkFreq = 120;
-			sparkSpeed = 0.34;
-			sparkLife = 1400;
-			sparkLifeVariation = 3.8;
-		}
-
-		// Apply quality to spark count
-		sparkFreq = sparkFreq / quality;
-
-		// Star factory for primary burst, pistils, and streamers.
-		let firstStar = true;
-		const starFactory = (angle, speedMult) => {
-			// For non-horsetail shells, compute an initial vertical speed to add to star burst.
-			// The magic number comes from testing what looks best. The ideal is that all shell
-			// bursts appear visually centered for the majority of the star life (excl. willows etc.)
-			const standardInitialSpeed = this.spreadSize / 1800;
-
-			const star = Star.add(
-				x,
-				y,
-				color || randomColor(),
-				angle,
-				speedMult * speed,
-				// add minor variation to star life
-				this.starLife + Math.random() * this.starLife * this.starLifeVariation,
-				this.horsetail ? this.comet && this.comet.speedX : 0,
-				this.horsetail ? this.comet && this.comet.speedY : -standardInitialSpeed
-			);
-
-			if (this.secondColor) {
-				star.transitionTime = this.starLife * (Math.random() * 0.05 + 0.32);
-				star.secondColor = this.secondColor;
-			}
-
-			if (this.strobe) {
-				star.transitionTime = this.starLife * (Math.random() * 0.08 + 0.46);
-				star.strobe = true;
-				// How many milliseconds between switch of strobe state "tick". Note that the strobe pattern
-				// is on:off:off, so this is the "on" duration, while the "off" duration is twice as long.
-				star.strobeFreq = Math.random() * 20 + 40;
-				if (this.strobeColor) {
-					star.secondColor = this.strobeColor;
-				}
-			}
-
-			star.onDeath = onDeath;
-
-			if (this.glitter) {
-				star.sparkFreq = sparkFreq;
-				star.sparkSpeed = sparkSpeed;
-				star.sparkLife = sparkLife;
-				star.sparkLifeVariation = sparkLifeVariation;
-				star.sparkColor = this.glitterColor;
-				star.sparkTimer = Math.random() * star.sparkFreq;
-			}
-		};
-
-
-		if (typeof this.color === 'string') {
-			if (this.color === 'random') {
-				color = null; // falsey value creates random color in starFactory
-			} else {
-				color = this.color;
-			}
-
-			// Rings have positional randomness, but are rotated randomly
-			if (this.ring) {
-				const ringStartAngle = Math.random() * Math.PI;
-				const ringSquash = Math.pow(Math.random(), 2) * 0.85 + 0.15;;
-				createParticleArc(0, PI_2, this.starCount, 0, angle => {
-					// Create a ring, squashed horizontally
-					const initSpeedX = Math.sin(angle) * speed * ringSquash;
-					const initSpeedY = Math.cos(angle) * speed;
-					// Rotate ring
-					const newSpeed = MyMath.pointDist(0, 0, initSpeedX, initSpeedY);
-					const newAngle = MyMath.pointAngle(0, 0, initSpeedX, initSpeedY) + ringStartAngle;
-					const star = Star.add(
-						x,
-						y,
-						color,
-						newAngle,
-						// apply near cubic falloff to speed (places more particles towards outside)
-						newSpeed,//speed,
-						// add minor variation to star life
-						this.starLife + Math.random() * this.starLife * this.starLifeVariation
-					);
-
-					if (this.glitter) {
-						star.sparkFreq = sparkFreq;
-						star.sparkSpeed = sparkSpeed;
-						star.sparkLife = sparkLife;
-						star.sparkLifeVariation = sparkLifeVariation;
-						star.sparkColor = this.glitterColor;
-						star.sparkTimer = Math.random() * star.sparkFreq;
-					}
-				});
-			}
-			else {
-				createBurst(this.starCount, starFactory);
-			}
-		}
-		else if (Array.isArray(this.color)) {
-			if (Math.random() < 0.5) {
-				const start = Math.random() * Math.PI;
-				const start2 = start + Math.PI;
-				const arc = Math.PI;
-				color = this.color[0];
-				// Not creating a full arc automatically reduces star count.
-				createBurst(this.starCount, starFactory, start, arc);
-				color = this.color[1];
-				createBurst(this.starCount, starFactory, start2, arc);
-			} else {
-				color = this.color[0];
-				createBurst(this.starCount / 2, starFactory);
-				color = this.color[1];
-				createBurst(this.starCount / 2, starFactory);
-			}
-		}
-		else {
-			throw new Error('Invalid shell color. Expected string or array of strings, but got: ' + this.color);
-		}
-
-		if (this.pistil) {
-			const innerShell = new Shell({
-				spreadSize: this.spreadSize * 0.5,
-				starLife: this.starLife * 0.6,
-				starLifeVariation: this.starLifeVariation,
-				starDensity: 1.4,
-				color: this.pistilColor,
-				glitter: 'light',
-				glitterColor: this.pistilColor === COLOR.Gold ? COLOR.Gold : COLOR.White
-			});
-			innerShell.burst(x, y);
-		}
-
-		if (this.streamers) {
-			const innerShell = new Shell({
-				spreadSize: this.spreadSize * 0.9,
-				starLife: this.starLife * 0.8,
-				starLifeVariation: this.starLifeVariation,
-				starCount: Math.floor(Math.max(6, this.spreadSize / 45)),
-				color: COLOR.White,
-				glitter: 'streamer'
-			});
-			innerShell.burst(x, y);
-		}
-
-		// Queue burst flash render
-		BurstFlash.add(x, y, this.spreadSize / 4);
-
-		// Play sound, but only for "original" shell, the one that was launched.
-		// We don't want multiple sounds from pistil or streamer "sub-shells".
-		// This can be detected by the presence of a comet.
-		if (this.comet) {
-			// Scale explosion sound based on current shell size and selected (max) shell size.
-			// Shooting selected shell size will always sound the same no matter the selected size,
-			// but when smaller shells are auto-fired, they will sound smaller. It doesn't sound great
-			// when a value too small is given though, so instead of basing it on proportions, we just
-			// look at the difference in size and map it to a range known to sound good.
-			const maxDiff = 2;
-			const sizeDifferenceFromMaxSize = Math.min(maxDiff, shellSizeSelector() - this.shellSize);
-			const soundScale = (1 - sizeDifferenceFromMaxSize / maxDiff) * 0.3 + 0.7;
-			soundManager.playSound('burst', soundScale);
-		}
-	}
-	
-}
 
 
 		
@@ -5281,7 +6668,7 @@ function seqFormationMove(formation,centerX, centerY, radius, formationLifetime=
 	// Bắt đầu cập nhật đội hình
 	update();
 }
-function seqFormationCircle(formation,centerX, centerY,radius,formationLifetime,speed = Math.PI / 600,agn=0,check=1, tiltAngle = -Math.PI / 2.02) {
+function seqFormationCircle(formation,centerX, centerY,radius,formationLifetime,speed = Math.PI / 600,agn=0,check=1, tiltAngle = -Math.PI / 2.05) {
 	let time = 0; // Biến thời gian để tính góc xoay
 	// let formationLifetime = this.formationLifetime; // Thời gian tồn tại đội hình
 	const angleStep =  Math.PI ; // Khoảng cách giữa các drone trên vòng tròn
@@ -5319,10 +6706,20 @@ function seqFormationCircle(formation,centerX, centerY,radius,formationLifetime,
 		const transformedY = y * cosTilt; // Trục Y bị thu nhỏ theo cos(tiltAngle)
 		const depth = y * sinTilt; // Chiều sâu để tạo hiệu ứng 3D
 
-		// Đặt lại vị trí drone
+		// Tính phối cảnh dựa trên độ sâu
+        const perspective = 1 / (1 + depth / 600); // Thay đổi độ phối cảnh (300 là độ sâu giả định)
+        const adjustedX = transformedX * perspective; // Điều chỉnh theo phối cảnh
+        const adjustedY = transformedY * perspective; // Điều chỉnh theo phối cảnh
+        const sizeFactor = perspective; // Kích thước thay đổi theo phối cảnh
 		
-		formation.setCenter(centerX + transformedX,centerY + transformedY)
-		if(depth<0&&depth-0.5)	
+		// Đặt lại vị trí drone
+		let size = (2*sizeFactor)<0?-2*sizeFactor:2*sizeFactor
+		// formation.setCenter(centerX + transformedX,centerY + transformedY)
+		formation.setCenter(centerX + adjustedX, centerY + adjustedY);
+		formation.setRadiusDrone(size*1.2)
+        formation.radius=sizeFactor*50
+		// const colorIntensity = Math.floor((1 - perspective) * 255);
+        // formation.setColor(`rgb(${colorIntensity}, ${255 - colorIntensity}, 200)`);
 
 
 		// Gọi lại hàm cập nhật liên tục
@@ -5334,7 +6731,7 @@ function seqFormationCircle(formation,centerX, centerY,radius,formationLifetime,
 }
 
 
-function seqDroneGalaxy(x,time =100000){
+function seqDroneGalaxy(x,time =100000,centerX=maxW/2, centerY=maxH/2){
 	
 	let mattroi = new Formation()
 	let thuy = new Formation()
@@ -5343,46 +6740,47 @@ function seqDroneGalaxy(x,time =100000){
 	let hoa = new Formation()
 	let moc = new Formation()
 	let tho = new Formation()
-	let thienvuong = new Formation()
-	let hai = new Formation(); // Thêm hành tinh Hải Vương
+	
 	
 	let kk =200;
 	let i = 0;
+	for(let i = 0;i<200;i++){
+		mattroi.addDrone(drones[i])
+	}
 	for(let i = 0 ; i< 100;i++){
-		traidat.addDrone(drones[i])
+		traidat.addDrone(drones[i+200])
 	}
 	for(let i = 0 ; i<30;i++){
-		thuy.addDrone(drones[i+100])
+		thuy.addDrone(drones[i+100+200])
 	}
 	for(let i = 0 ; i<60;i++){
-		kim.addDrone(drones[i+100+30])
+		kim.addDrone(drones[i+100+30+200])
 	}
 	for(let i = 0 ; i<200;i++){
-		hoa.addDrone(drones[i+100+30+60+200])
+		hoa.addDrone(drones[i+100+30+60+200+200])
 	}
 	for(let i = 0 ; i<200;i++){
-		moc.addDrone(drones[i+100+30+60+200+200])
+		moc.addDrone(drones[i+100+30+60+200+200+200])
 	}
 	for(let i = 0 ; i<200;i++){
-		tho.addDrone(drones[i+100+30+60+200+200])
+		tho.addDrone(drones[i+100+30+60+200+200+200])
 	}
-	for(let i = 0 ; i<300;i++){
-		mattroi.addDrone(drones[i+100+30+60+200+200+200])
-	}
+	
+	
 
 	// for(let i = 0; i<300)
 	let radius= 50
-	mattroi.setFormation(maxW/2,maxH/2-160,time,radius*2.3)
-	// Sao Thủy
-	thuy.setFormation(maxW/2+170, maxH/2-160, time, radius * 0.39);
-	// Sao Kim
-	kim.setFormation(maxW/2+230, maxH/2-160, time, radius * 0.72);
-	// Trái Đất
-	traidat.setFormation(maxW/2+270, maxH/2-160, time,radius * 1);
-	hoa.setFormation(maxW/2+400, maxH/2-160, time,radius * 1.2);
-	moc.setFormation(maxW/2+450, maxH/2-160, time,radius * 1.9);
-	tho.setFormation(maxW/2+500, maxH/2-160, time,radius * 2);
 	
+	// Sao Thủy
+	thuy.setFormation(centerX+170, centerY, time, radius * 0.2);
+	// Sao Kim
+	kim.setFormation(centerX+230, centerY, time, radius * 0.4);
+	// Trái Đất
+	traidat.setFormation(centerX+270, centerY, time,radius * 1);
+	hoa.setFormation(centerX+400, centerY, time,radius * 1.2);
+	moc.setFormation(centerX+450, centerY, time,radius * 1.9);
+	tho.setFormation(centerX+500, centerY, time,radius * 2);
+	mattroi.setFormation(centerX,centerY,time,radius*1)
 	
 
 	// Thiết lập màu trực tiếp
@@ -5396,7 +6794,7 @@ function seqDroneGalaxy(x,time =100000){
 	// thienvuong.setColor("#AFDBF5"); // Sao Thiên Vương: Xanh lục nhạt
 	// hai.setColor("#2E6EFF");
 
-	mattroi.setSphereFormation()
+	mattroi.setSphereFormation(0,0.02)
 	thuy.setSphereFormation(0.03)
 	kim.setSphereFormation(0.02)
 	traidat.setSphereFormation(0.01)
@@ -5404,15 +6802,94 @@ function seqDroneGalaxy(x,time =100000){
 	tho.setSphereFormation(0.005)
 	// thienvuong.setSphereFormation()
 	// hai.setSphereFormation()
-	seqFormationCircle(thuy,maxW/2,maxH/2-160,170,time,Math.PI/200)
-	seqFormationCircle(kim,maxW/2,maxH/2-160,230,time,Math.PI/300)
-	seqFormationCircle(traidat,maxW/2,maxH/2-160,270,time,Math.PI/400)
-	seqFormationCircle(hoa,maxW/2,maxH/2-160,400,time,Math.PI/500)
-	seqFormationCircle(tho,maxW/2,maxH/2-160,450,time,Math.PI/600)
+	let nn=100
+	seqFormationCircle(thuy,centerX,centerY-160,270+nn,time,Math.PI/200)
+	seqFormationCircle(kim,centerX,centerY-160,270+nn,time,Math.PI/300)
+	seqFormationCircle(traidat,centerX,centerY-160,270+nn,time,Math.PI/400)
+	seqFormationCircle(hoa,centerX,centerY-160,270+nn,time,Math.PI/500)
+	seqFormationCircle(tho,centerX,centerY-160,270+nn,time,Math.PI/600)
 
-
+	return  x +1000
 
 }
+/**
+ * làm cờ việt nam nma đang bí đoạn tạo ngôi sao(hoãn)
+ * @param {*} x 
+ * @param {*} startX 
+ * @param {*} startY 
+ * @param {*} width 
+ * @param {*} height 
+ * @param {*} time 
+ */
+function seqDroneFlagVN(x, startX=100, startY=100, width=100, height=100, time=200000){
+	let form = new Formation()
+	let star1 = new Formation()
+	let star2 = new Formation()
+	let star3 = new Formation()
+	for(let i = 0 ; i < 50	; i++){
+		form.addDrone(drones[i])
+	}
+	for(let i = 0 ; i < 100; i++){
+		star1.addDrone(drones[i+135])
+	}
+	// for(let i = 0 ; i < 10; i++){
+	// 	star2.addDrone(drones[i+120+10])
+	// }
+	// for(let i = 0 ; i < 10; i++){
+	// 	star3.addDrone(drones[i+120+20])
+	// }
+
+
+	star1.formationLifetime= time
+	star2.formationLifetime= time
+	star3.formationLifetime= time
+
+	form.setRadiusDrone(5)
+	star1.setRadiusDrone(5)
+	star2.setRadiusDrone(5)
+	star3.setRadiusDrone(5)
+
+	form.setFormation(100,100,time,100)
+
+	form.setColor('red')
+	star1.setColor(COLOR.Gold)
+	star2.setColor(COLOR.Gold)
+	star3.setColor(COLOR.Gold)
+
+	seqDroneColorMer(form,100000)
+	form.setRectangleFormation(startX,startY,width,height)
+	form.setCircleFormationV3()
+	// star1.setStarFormationV2(maxW/2,maxH/2-170,100,100)
+	// star2.setStarFormation(maxW/2,maxH/2-170,60,30)
+	// star3.setStarFormation(maxW/2,maxH/2-170,50,20)
+	star1.setStarFormation(maxW/2,maxH/2-170, 50, 25);
+	
+	
+}
+
+/**
+ * Đổi màu lần lượt liên tục cho 1 formation
+ * @param {*} formation 
+ * @param {*} time 
+ * @param {*} hz 
+ */
+async function seqDroneColorMer(formation, time=10000, hz=100){
+	let elapsedTime = 0; // Thời gian đã  qua
+	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+	let cou = formation.lenght;
+	while (elapsedTime < time) {
+		// Thay đổi màu sắc đội hình tuần tự
+		await formation.setColorV2(getRandomColor(),cou*20);
+
+		// Chờ trước khi thực hiện lần tiếp theo
+		await delay(hz);
+
+		// Tăng thời gian đã trôi qua
+		elapsedTime += hz;
+	}
+}
+
+
 
 
 function skyFallSeq(){
@@ -5564,14 +7041,118 @@ function skyFallSeq(){
 		
 	}, 60000*4 +36000);
 }
-let x = 0;
-seqDroneGalaxy(x)
+// let x = 0;
+// // seqDroneGalaxy(x)
+// let form = new Formation();
+// for(let i = 0; i<50;i++){
+// 	form.addDrone(drones[100+i]);
+// }
+// form.setFormation(500,500,100000,50);
+// // form.setRectangleFormation(200,100,80,40)
+// form.setHeartFormation(100,200,5)
+// form.setRandomColorV2(100000,COLOR.White,undefined,0.5)
+// form.setCircleFormationV1()
 
 
 
+/**
+ * Đếm người 10-9
+ * @param {*} x 
+ * @param {*} startX 
+ * @param {*} startY 
+ * @param {*} space 
+ * @returns 
+ */
+function seqDroneCountDown(x,startX, startY, space){
+	let format = new Formation()
+	for(let i = 0 ;i<60;i++){
+		format.addDrone(drones[i+x])
+	}
 
+	format.setFormation(500,500,10000,10)
+	format.setColorV2()
+	format.drawDigit(9,startX, startY, space)
+
+	setTimeout(() => {
+		format.reset()
+		
+	}, 900);
+	setTimeout(() => {
+		format.setColorV2()
+		format.drawDigit(8,startX, startY, space)
+		setTimeout(() => {
+			format.reset()
+		}, 900);
+		
+	}, 1000);
+	setTimeout(() => {
+		format.setColorV2()
+		format.drawDigit(7,startX, startY, space)
+		setTimeout(() => {
+			format.reset()
+		}, 900);
+	}, 2000);
+	setTimeout(() => {
+		format.setColorV2()
+		format.drawDigit(6,startX, startY, space)
+		setTimeout(() => {
+			format.reset()
+		}, 900);
+	}, 3000);
+	setTimeout(() => {
+		format.setColorV2()
+		format.drawDigit(5,startX, startY, space)
+		setTimeout(() => {
+			format.reset()
+		}, 900);
+	}, 4000);
+	setTimeout(() => {
+		format.setColorV2()
+		format.drawDigit(4,startX, startY, space)
+		setTimeout(() => {
+			format.reset()
+		}, 900);
+	}, 5000);
+	setTimeout(() => {
+		format.setColorV2()
+		format.drawDigit(3,startX, startY, space)
+		setTimeout(() => {
+			format.reset()
+		}, 900);
+	}, 6000);
+	setTimeout(() => {
+		format.setColorV2()
+		format.drawDigit(2,startX, startY, space)
+		setTimeout(() => {
+			format.reset()
+		}, 900);
+	}, 7000);
+	setTimeout(() => {
+		format.setColorV2()
+		format.drawDigit(1,startX, startY, space)
+		setTimeout(() => {
+			format.reset()
+		}, 900);
+	}, 8000);
+	setTimeout(() => {
+		format.setColorV2()
+		format.drawDigit(0,startX, startY, space)
+		setTimeout(() => {
+			format.reset()
+		}, 900);
+	}, 9000);
 	
+	return x+60
+}
 
+let format = new Formation()
+	for(let i = 0 ;i<60;i++){
+		format.addDrone(drones[i])
+	}
+
+	format.setFormation(500,500,10000,10)
+	format.setColorV2()
+	format.drawText('R',100,100,10)
 
 
 

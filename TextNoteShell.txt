@@ -11,6 +11,16 @@
 	'Strobe': strobeShell, hãy chỉnh starlife +2000 và starLife+0.4 nếu muốn nó nhấp nháy lâu hơn và có thể chỉnh strobe color	
 	'Willow': willowShell
 
+	Flower':flowerShell, hình hoa
+	'HearthShell':hearthShell, hình trái tim
+	'Wave':waveShell, hình dạng sóng
+	'Smiley':smileyShell, hình mặt cuoiwf
+	'Cat':catShell,
+	'Fish':fishShell,
+	'Snow':snowShell,
+	'Bird':birdShell,
+	'Lotus':lotusShell,
+	'Butterfly':butterflyShell,
 --------------------------------------------------
 
 /**
@@ -32,7 +42,17 @@
  * floral: //hiệu ứng nổ các pháo nhỏ nhiều màu hoa
  * crackle: //hiệu ứng nổ các pháo nhỏ lili 1 màu vàngg
 * strobe: //hiệu ứng lấp lánh
+*smiley: //tạo mặt cười
+*hearth: //hiệu ứng trái tim
+*snow
+*fish
+*cat
+*bird
+*lotus
+*butterfly
+
  */
+-----------------------------------------------------------------------------
 playMusic(path) Phát nhạc
 testShell()
 ------------------------------
@@ -52,8 +72,10 @@ seqRandomShell,//900+600*random+4600:0(fallingLeaves)
 	
 	vietNamV1Seq,(main)
 -------------------------------------------------------
- 	seqShellAllInOne(left, right) bắn 5 lần 5 pháo 1 lúc trong khoảng
- 	seqShellRandomForTime(count=10), banứ ngẫu nhiên vị trí 
+shell='Crysanthemum'
+ 	seqShellAllInOne(left, right,shell='Crysanthemum', count=3,time=50)  bắn 5 lần 5 pháo 1 lúc trong khoảng
+ 	seqShellAllInOne(left, right,shell, count=3,time=50) banứ ngẫu nhiên vị trí 
+	reatFiveShell(left, right,shell)
 -------------------------------------------------------
 	seqTripleRingShell(position,height),//3 quả ring cùng 1 vị trí
 	seqTripleV2(position,height),//1250 //tạo 2 quả horsle sau đó là 2 quả crysantheum
