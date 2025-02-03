@@ -25,6 +25,128 @@ const MAX_WIDTH = 7680;
 const MAX_HEIGHT = 4320;
 const GRAVITY = 0.9; // Acceleration in px/s
 let simSpeed = 1;
+const digits={
+	1: [
+        "0011100",
+        "0011100",
+		"0011100",
+		"0011100",
+        "0011100",
+		"0011100",
+		"0011100",
+        "0011100",
+		"0011100",
+		"0011100",
+    ],
+    0: [
+        "1111111",
+        "1111111",
+        "1100011",
+        "1100011",
+        "1100011",
+        "1100011",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111"
+    ],
+    2: [
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "1111111",
+        "1111111",
+        "1100000",
+        "1100000",
+        "1111111",
+        "1111111"
+    ],
+    3: [
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "1111111",
+        "1111111"
+    ],
+    4: [
+        "1100011",
+        "1100011",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011"
+    ],
+    5: [
+        "1111111",
+        "1111111",
+        "1100000",
+        "1100000",
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "1111111",
+        "1111111"
+    ],
+    6: [
+        "1111111",
+        "1111111",
+        "1100000",
+        "1100000",
+        "1111111",
+        "1111111",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111"
+    ],
+    7: [
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011",
+        "0000011"
+    ],
+    8: [
+        "1111111",
+        "1111111",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111"
+    ],
+    9: [
+        "1111111",
+        "1111111",
+        "1100011",
+        "1100011",
+        "1111111",
+        "1111111",
+        "0000011",
+        "0000011",
+        "1111111",
+        "1111111"
+    ]
+}
 const letters = {
 	A: [
         "00100",
@@ -285,10 +407,8 @@ const letters = {
         "10000",
         "11111",
         "00000"
-    ]
-};
-const digits = {
-    1: [
+    ],
+	1: [
         "111",
         "111",
         "111",
@@ -410,6 +530,7 @@ const digits = {
     ]
 };
 
+
 function getDefaultScaleFactor() {
 	if (IS_MOBILE) return 0.9;
 	if (IS_HEADER) return 0.75;
@@ -438,13 +559,14 @@ const SKY_LIGHT_NORMAL = 2;
 
 const COLOR = {
 	Red: '#ff0043',
-	Green: '#14fc56',
-	Blue: '#1e7fff',
-	Purple: '#e60aff',
-	Gold: '#ffbf36',
-	White: '#ffffff'
 
-	// Pink:'#FFC0CB'
+	Blue: '#1e7fff',
+	Gray:'#C0C0C0',
+	
+	White: '#ffffff',
+	Orange:'#FFA500',
+	Gold: '#ffbf36',
+
 
 };
 // 	/**
@@ -624,10 +746,11 @@ class Formation {
 	 * Đổi màu cho tất cả drone của formation
 	 * @param {*} color 
 	 */
-	setColor(color){
+	setColor(color,pistilColor=COLOR.White){
 
 		this.drones.forEach(drone=>{
 			this.fadeColor(drone, color, COLOR.White,120);
+			
 		})
 	}
 	
@@ -713,19 +836,53 @@ class Formation {
  * @param {*} color Màu đích
  * @param {*} timeGap Khoảng cách thời gian giữa các lần đổi màu (ms)
  */
-async setColorV2(color, timeGap=0.7) {
+async setColorV2(color, timeGap=0.7,pistilColor=COLOR.White) {
 	// Hàm delay đơn giản
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 	color = color??getRandomColor()
 	// Thay đổi màu lần lượt cho từng drone
-	for (let i = 0; i < this.drones.length; i++) {
+	for (let i = 0; i < this.drones.length-2; i++) {
 		const drone = this.drones[i];
+		const drone1v1 = this.drones[i+1];
+		const drone1v2 = this.drones[i+2];
 		// Gọi hàm đổi màu với hiệu ứng
-		this.fadeColor(drone, color, COLOR.White, 120);
+		this.fadeColor(drone, color, pistilColor, 120);
+		this.fadeColor(drone1v1, '#000000', '#000000', 120);
+		this.fadeColor(drone1v2, '#000000','#000000', 120);
 
 		// Đợi trước khi chuyển sang drone tiếp theo
 		await delay(timeGap);
 	}
+}
+async setColorV3(color1, timeGap=0.7) {
+	// Hàm delay đơn giản
+	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+	color1 = color1??getRandomColor()
+
+	let half = this.drones.length/2
+	// Thay đổi màu lần lượt cho từng drone
+	for (let i = 0; i < half-2; i++) {
+		const drone1 = this.drones[i];
+		const drone1v1 = this.drones[i+1];
+		const drone1v2 = this.drones[i+2];
+		const drone2 = this.drones[i+half]
+		const drone2v1 = this.drones[i+1+half];
+		const drone2v2 = this.drones[i+2+half];
+
+
+		// Gọi hàm đổi màu với hiệu ứng
+		this.fadeColor(drone1, color1, COLOR.White, 120);
+		this.fadeColor(drone1v1, '#000000', '#000000', 120);
+		this.fadeColor(drone1v2, '#000000','#000000', 120);
+		this.fadeColor(drone2, color1, COLOR.White, 120);
+		this.fadeColor(drone2v1, '#000000', '#000000', 120);
+		this.fadeColor(drone2v2, '#000000','#000000', 120);
+		
+		// Đợi trước khi chuyển sang drone tiếp theo
+		await delay(timeGap);
+	}
+	
+
 }
 	/**
 	 * Tạo hiệu ứng đổi màu ngẫu nhiên
@@ -881,7 +1038,7 @@ async setColorV2(color, timeGap=0.7) {
 	 * @param {*} deltaX - tọa độ x thêm vào
 	 * @param {*} deltaY -	tọa độ y thêm vào
 	 */
-	setCircleFormationV3( tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900,deltaX = 0, deltaY = 0 ) {
+	setCircleFormationV3({tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6,check=1, speed = Math.PI / 900,deltaX = 0, deltaY = 0 }={} ) {
 		let formationLifetime = this.formationLifetime;
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
@@ -913,7 +1070,7 @@ async setColorV2(color, timeGap=0.7) {
 			this.centerY += offsetY;
 	
 			this.drones.forEach((drone, index) => {
-				const angle = angleStep * index + rotationAngle; // Góc quay cho mỗi drone
+				const angle = angleStep * index + rotationAngle*check; // Góc quay cho mỗi drone
 				const x = this.radius * Math.cos(angle); // Tọa độ X trên vòng tròn
 				const y = this.radius * Math.sin(angle); // Tọa độ Y trên vòng tròn
 	
@@ -947,7 +1104,7 @@ async setColorV2(color, timeGap=0.7) {
 	 * @param {*} deltaX - tọa độ x thêm vào
 	 * @param {*} deltaY -	tọa độ y thêm vào
 	 */
-	setCircleFormationV3c5( tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900,deltaX = 0, deltaY = 0 ) {
+	setCircleFormationV3c5({tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900,deltaX = 0, deltaY = 0}={} ) {
 		let formationLifetime = this.formationLifetime;
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
@@ -994,9 +1151,12 @@ async setColorV2(color, timeGap=0.7) {
 				drone.y = this.centerY + transformedY ;
 				
 				// Tạo hiệu ứng "độ sâu" bằng cách thay đổi kích thước hoặc màu sắc dựa trên `depth`
-				drone.radius = drone.baseRadius*depth; // Kích thước thay đổi theo độ sâu
+				drone.radius = drone.baseRadius * depth>0?drone.baseRadius * depth:drone.baseRadius * depth*-1; // Kích thước thay đổi theo độ sâu
 				// drone.color = depth > 0 ? "rgba(255, 0, 0, 1)" : "rgba(0, 0, 255, 0.8)"; // Màu sắc thay đổi theo độ sâu
-			});
+				
+				
+			})
+			;
 	
 			// Gọi lại hàm cập nhật liên tục
 			requestAnimationFrame(update);
@@ -1011,7 +1171,7 @@ async setColorV2(color, timeGap=0.7) {
 	 * @param {*} tiltAngleY - độ nghiêng Y
 	 * @param {*} speed 
 	 */
-	setCircleFormationV1( tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900) {
+	setCircleFormationV1( {tiltAngleX = Math.PI / 2, tiltAngleY = Math.PI / 2, speed = Math.PI / 900}={}) {
 		let formationLifetime = this.formationLifetime;
 		let time = 0; // Biến thời gian để tính góc xoay
 		const angleStep = (2 * Math.PI) / this.drones.length; // Khoảng cách giữa các drone trên vòng tròn
@@ -1281,10 +1441,10 @@ async setColorV2(color, timeGap=0.7) {
 		requestAnimationFrame(updateFormation);
 	}
 	
-	setHeartFormation(centerX, centerY, size) {
+	setHeartFormation(centerX=100, centerY=100, size=100) {
 		const nums = this.drones.length; // Số lượng drone
 		const heartPoints = []; // Danh sách tọa độ của hình trái tim
-
+		console.log('hello')
 		// Công thức parametric cho hình trái tim
 		// x = 16 * sin³(t), y = 13 * cos(t) - 5 * cos(2t) - 2 * cos(3t) - cos(4t)
 		// Scale theo `size` và di chuyển về `centerX, centerY`
@@ -1341,7 +1501,7 @@ async setColorV2(color, timeGap=0.7) {
 					this.drones[droneIndex].x = startX + col * spacing;
 					this.drones[droneIndex].y = startY + row * spacing;
 					droneIndex++;
-					console.log(droneIndex)
+					
 				}
 			}
 		}
@@ -1411,9 +1571,13 @@ let maxH = window.innerHeight;
 // Khởi tạo các drone
 // create drone
 const drones = [];
-for (let i = 0; i < 500	; i++) {
-	drones.push(new Drone(0, 0, 3.5, 0, 0,COLOR.Red,200000000));
-}
+//colors
+let colors =[COLOR.Gold,COLOR.Red,COLOR.Blue,COLOR.Gold,
+	COLOR.Red,COLOR.Blue,COLOR.Gold,
+	COLOR.Red,COLOR.Blue,COLOR.Gold,COLOR.Gold
+	
+	
+]
 
 
 // function seqDrone(){
@@ -1966,11 +2130,11 @@ const crysanthemumShell = (size = 1) => {
 		pistil,
 		pistilColor,
 		streamers,
-		flower:Math.random()<0.2
-		,smiley:Math.random()<0.2 //tạo mặt cười
-		,hearth:Math.random()<0.2 //hiệu ứng trái tim
-		,snow:Math.random()<0.2
-		,lotus:Math.random()<0.2
+		flower:false
+		,smiley:false //tạo mặt cười
+		,hearth:false//hiệu ứng trái tim
+		
+		
 		
 	};
 };
@@ -2329,7 +2493,19 @@ const ringShell = (size = 1) => {
 		pistilColor: makePistilColor(color),
 		glitter: !pistil ? 'light' : '',
 		glitterColor: color === COLOR.Gold ? COLOR.Gold : COLOR.White,
-		streamers: Math.random() < 0.3
+		streamers: Math.random() < 0.3,
+		snow:false,
+		fish:false,
+		lotus:false,
+		hearth:false,
+		wave:false,
+		flower:false,
+		bird:false,
+		cat:false,
+		butterfly:false,
+				
+		
+
 	};
 	// return Object.assign({}, defaultShell, config);
 };
@@ -2447,6 +2623,18 @@ function randomFastShell() {
 		}
 	}
 	return shellTypes[shellName];
+}
+function getRandomShell(){
+	const isRandom = shellNameSelector() === 'Random';
+	let shellName = isRandom ? randomShellName() : shellNameSelector();
+	if (isRandom) {
+		while (fastShellBlacklist.includes(shellName)) {
+			shellName = randomShellName();
+		}
+	}
+	
+	let shell = new Shell({...shellTypes[shellName](1)})
+	return shell;
 }
 
 
@@ -3222,7 +3410,7 @@ function testMusic(){
 	let shell = new Shell(shellTypes['Crysanthemum'](2));
 	shell.launch(0.5,0.5)
 }
-async function seqSparkDownAll(left, right, hight,coutShell=10,time=100){
+async function seqSparkDownAll(left, right, hight,coutShell=10,time=100,check=true){
 	let timen =time
 	//Fix lại left right
 	// left = left*maxW
@@ -3233,27 +3421,28 @@ async function seqSparkDownAll(left, right, hight,coutShell=10,time=100){
 	let shell = new Shell(shellTypes['Crysanthemum'](6));
 	shell.color=COLOR.Gold
 	while(i<coutShell){
-		
 		await new Promise(resolve => setTimeout(resolve, timen));
 		let x = left + Math.random() * (right - left);
-		left-=20
-		right+=20
 		let height =0.4+ Math.random()*0.2;
-		
 		let random = Math.random()*50
-		shell.launchV3(x,hight+random,height);
-		timen+=100;
+		for(let j= 0;j<2;j++){
+			shell.launchV3(x,hight+random,height,undefined,check);
+		}
+		
+		timen+=10;
 	
 		i++;
 
 	}
 }
-async function seqSparkDown(left, right, hight,cout=10,time=1000){
+async function seqSparkDown(left, right, hight,cout=20,time=1000,check=true){
 	let i = 0;
 	
 	while(i<cout){
 		await new Promise(resolve => setTimeout(resolve, time));
-		seqSparkDownAll(left, right,hight, 30, 50)
+		left-=20
+		right+=20
+		seqSparkDownAll(left, right,hight, 10, 10,check)
 		i++
 	}
 }
@@ -3376,22 +3565,22 @@ async function seqShellShortRightToLeft(count, position, time) {
 	}, timen - 15);
 }
 
-function seqShellMidHeight(time) {
-	seqShellHeightRightToLeft(5, 0.66, time)
-	seqShellHeightLeftToRight(5, 1 - 0.64, time)
+function seqShellMidHeight(time,cout=5) {
+	seqShellHeightRightToLeft(cout, 0.66, time)
+	seqShellHeightLeftToRight(cout, 1 - 0.64, time)
 	setTimeout(() => {
 		const size = getRandomShellSize()
 		seqTripleRingShell(0.5, 0.5, size.size * 1.7)
 	}, time);
 }
-function seqShellMidShort(time) {
+function seqShellMidShort(time,cout) {
 	setTimeout(() => {
 		const size = getRandomShellSize()
-		size.size = 5;
+		size.size = 3;
 		seqTripleRingShell(0.5, 0.5, size.size * 1.3)
 	}, time);
-	seqShellShortRightToLeft(5, 0.66, time * 0.05)
-	seqShellShortLeftToRight(5, 1 - 0.64, time * 0.05)
+	seqShellShortRightToLeft(cout, 0.66, time * 0.05)
+	seqShellShortLeftToRight(cout, 1 - 0.64, time * 0.05)
 
 }
 function seqShellLeft(time) {
@@ -3410,7 +3599,7 @@ function seqShellRight(time) {
 }
 async function seqSparkLeft(left, right, height, count_shell=15) {
 	const shell = new Shell(shellTypes['Crysanthemum'](6))
-	let spread = (right - left) / count_shell;
+	let spread = Math.abs(right - left) / count_shell;
 	let time = 50;
 	while (left <= right) {
 		await new Promise(resolve => setTimeout(resolve, 50));
@@ -3426,7 +3615,7 @@ async function seqSpark(left, right,height=0,posistionX=0,countSpark =10,huong=1
 	let vt = (huong==1)?left:right;
 
 
-	let shell = new Shell({...shellTypes['Floral'],color:getRandomColor(),streamers:true})
+	let shell = new Shell({...shellTypes['Floral'](3),color:getRandomColor(),streamers:true})
 	if(huong==1){
 		while(vt<=right){
 			await new Promise(resolve => setTimeout(resolve, time));
@@ -3445,7 +3634,6 @@ async function seqSpark(left, right,height=0,posistionX=0,countSpark =10,huong=1
 		}
 	}
 		
-	
 }
 
 async function seqSparkCount(left, right,count=2,height,posistionX=0,countSpark =15,wait=100, huong=1){
@@ -3538,7 +3726,7 @@ async function seqShellFastFull(position, height) {
 function seqDoubleCrysanthemum(x, y) {
 	const size = getRandomShellSize();
 	const shell1 = new Shell({
-		...shellTypes['Crysanthemum'](6),
+		...shellTypes['Crysanthemum'](3),
 		pistil: 1
 
 	});
@@ -3561,12 +3749,31 @@ function seqDoubleCrysanthemum(x, y) {
 
 
 }
-function seqDoubleShell(x,y,shell){
+function seqDoubleShell(x,y,shell, {strobe, crackle,ghost, floral}={}){
+	shell = shell??getRandomShell()
+	shell.strobe = strobe?true:false;
+	shell.crackle = crackle?true:false;
+	shell.ghost = ghost?true:false
+	shell.floral=floral?true:false
 	shell.launch(x,y)
-	shell.size*= 0.7
+	shell.size*= 0.4
 	setTimeout(() => {
 		shell.launch(Math.abs(1-x),y)
 	}, 300);
+}
+function seqTripleShell(x, y, shell, midShell, {strobe, crackle,ghost, floral}={}){
+	midShell=midShell??getRandomShell()
+	seqDoubleShell(x,y,shell, strobe, crackle,ghost, floral)
+	setTimeout(() => {
+		midShell.launch(0.5,y+0.3)
+	}, 500);
+	
+}
+function seqQuarShell(x,y,shell,shell2,{strobe, crackle,ghost, floral}={}){
+	seqDoubleShell(x,y,shell, strobe, crackle,ghost, floral)
+	setTimeout(() => {
+		seqDoubleShell(x+0.2,y+0.3,shell2, strobe, crackle,ghost, floral)
+	}, 500);
 }
 function seqTripleV2(x, y) {
 	const size = getRandomShellSize();
@@ -3673,12 +3880,14 @@ async function seqSparkHalfLeft(position, height1, count, time=50) {
 		timen += 80 * 0.05;
 	}
 }
-function creatFiveShell(left, right,shell,color) {
-	let spread = (right - left) / 5;
+function creatFiveShell(left, right,shell,color,hight=-0.3) {
+
+	let spread = Math.abs(right - left) / 5;
 	while (left <= right) {
 		let number = 0.01 + Math.random() * 0.01
+		shell=shell??getRandomShell()
 		shell.color=color??getRandomColor();
-		shell.launch(left + number, -0.3 + number)
+		shell.launch(left + number, hight + number)
 		left += spread;
 	}
 }
@@ -3691,12 +3900,12 @@ function creatFiveShell(left, right,shell,color) {
  * @param {*} count 
  * @param {*} time 
  */
-async function seqShellAllInOne(left, right,shell,color, count=3,time=50) {
+async function seqShellAllInOne(left, right,shell,color, count=3,time=50,hight=-0.3) {
 	let i = 0;
 
 	while (i < count) {
 		await new Promise(resolve => setTimeout(resolve, time));
-		creatFiveShell(left, right,shell,color)
+		creatFiveShell(left, right,shell,color,hight)
 	
 		i++
 	}
@@ -3736,7 +3945,7 @@ function seqSparkHalfTrip(position, time) {
 	seqSparkHalfLeft(position, 1 + (position > 0.5 ? position : -position), 5, time)
 	setTimeout(() => {
 		seqSparkHalfRight(position, 0.5 + (position > 0.5 ? position : -position), 5, time)
-		shell.launch(position, 0.3)
+		
 	}, time + 550);
 	setTimeout(() => {
 		seqSparkHalfLeft(position, 1 + (position > 0.5 ? position : -position), 5, time)
@@ -3867,7 +4076,7 @@ function seqRandomShellPosition(left, right) {
 	}
 }
 function seqRandomSparkPosition(left, right) {
-	const spread = (right - left) / 10;
+	const spread = Math.abs(right - left) / 10;
 	let x = left;
 	let goc = -3
 	while (x <= right) {
@@ -3975,15 +4184,18 @@ async function seqShellRandomForTime(count=5,hight=0.4, shell,color){
 	
 	let i = 0;
 	let time = 50;
+	
 	while(i<count){
 		await new Promise(resolve => setTimeout(resolve, time));
 		let vt = Math.random();
+		shell = shell??getRandomShell()
 		shell.color=color??getRandomColor()
 		shell.launch(vt,hight*Math.random())
 		i++
 		
 	}
 }
+
 function monodySeq(){
 
 	playMusic("Music/monody_complete.mp3");
@@ -4309,6 +4521,19 @@ function startSequence2() {
 	// skyFallSeq();
 	// testMusic();
 	// creatFiveShell(0.3,0.5,'Cat')
+	setTimeout(() => {
+		// 
+		seqDroneFull()
+		setTimeout(() => {
+			seqDroneCountDownWithCircle()
+			seqDroneStrobe()
+		}, 20000);
+		setTimeout(() => {
+			seqDroneHappyNewYear()
+		}, 34000);
+	 
+	// 
+	}, 4000);
 
 }
 
@@ -5638,10 +5863,10 @@ class Shell {
 
 		comet.onDeath = comet => this.burst(comet.x, comet.y);
 		if(this.fallingLeaves){
-			Math.random()<0.7?playMusic('Music/burst4.mp3'):playMusic('Music/lift6.mp3');
+			
 			airDrag = 1
 			
-		}else if(this.ring||this.strobe){
+		}else if(this.floral){
 			setTimeout(() => {
 				airDrag = 0.8
 			}, 7000);
@@ -6491,22 +6716,27 @@ if (IS_HEADER) {
  * @param {*} speed 
  * @returns 
  */
-function seqDroneBom(k,centerX, centerY, radius2,formationLifetime=10000,color=COLOR.Blue, pistilColor=COLOR.White, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/3, speed = Math.PI / 900){
-	
+function seqDroneBom(centerX, centerY, radius2,formationLifetime=10000,{color=COLOR.Blue,size=3, pistilColor=COLOR.White, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/3, speed = Math.PI / 900}={}){
+	let mmm = drones.length
+	let k =0;
+	let soluong = 480*radius2/125;
+	for(let i=0;i<soluong;i++){
+		drones.push(new Drone(-1,-1,size,0,0,COLOR.Blue,formationLifetime))
+	}
 	let formation = new Formation();
 	let formation3 = new Formation();
 	let formation4 = new Formation();
 	let formation2 = new Formation();
-	let soluong = 480*radius2/125;
+	
 	for(let i = 0;i<soluong; i++){
 		if(i<soluong/8){
-			formation2.addDrone(drones[i+k]);
+			formation2.addDrone(drones[i+k+mmm]);
 		}else if (i<soluong/4){
-			formation3.addDrone(drones[i+k]);
+			formation3.addDrone(drones[i+k+mmm]);
 		}else if (i<soluong*3/4){	
-			formation4.addDrone(drones[i+k]);
+			formation4.addDrone(drones[i+k+mmm]);
 		}else {
-			formation.addDrone(drones[i+k]);
+			formation.addDrone(drones[i+k+mmm]);
 		}		
 	}
 	formation.setFormation(centerX, centerY,formationLifetime,radius2/1.67);
@@ -6514,26 +6744,32 @@ function seqDroneBom(k,centerX, centerY, radius2,formationLifetime=10000,color=C
 	formation3.setFormation(centerX, centerY,formationLifetime,radius2);
 	formation4.setFormation(centerX, centerY,formationLifetime,radius2/1.97);
 
-	formation.setColor(color);
-	formation2.setColor(color);
-	formation3.setColor(color);
-	formation4.setRandomColorV2(formationLifetime,pistilColor)
+
+
 
 	formation.setRadiusDrone(1.5)
 	formation4.setRadiusDrone(1.5)
 
 	formation2.setReduceSize(-1);
 	formation3.setReduceSize(-1);
+	formation.setRandomColorV2(formationLifetime,COLOR.White,undefined,0.9)
+	formation4.setRandomColorV2(formationLifetime,COLOR.White,undefined,0.9)
 
 
-	formation2.setCircleFormationV3(formationLifetime, tiltAngleX , tiltAngleY, speed = Math.PI / 900);
-	formation3.setCircleFormationV3(formationLifetime, -tiltAngleX, -tiltAngleY, speed = Math.PI / 900);
+	formation2.setCircleFormationV3({ tiltAngleX:tiltAngleX ,tiltAngleY: tiltAngleY, speed : Math.PI / 900});
+	formation3.setCircleFormationV3({ tiltAngleX:-tiltAngleX,tiltAngleY: -tiltAngleY, speed : Math.PI / 900});
 	
-	formation4.setSphereFormation(formationLifetime, tiltAngleX, tiltAngleY, speed = Math.PI / 900);
-	formation.setSphereFormation(formationLifetime, -tiltAngleX, -tiltAngleY, speed = Math.PI / 900);
+	formation4.setSphereFormation();
+	formation.setSphereFormation();
+	setTimeout(() => {
+		formation.setRandomColorV2()
+		formation2.setRandomColorV2()
+		formation3.setRandomColorV2()
+		formation4.setRandomColorV2()
+		
+	}, formationLifetime-2000);
 	
-	
-	return k + soluong;
+	return 
 }
 /**
  * Tạo ufo xay tròn ngang 
@@ -6544,8 +6780,12 @@ function seqDroneBom(k,centerX, centerY, radius2,formationLifetime=10000,color=C
  * @param {*} color - màu của đội hình
  * @param {*} formationLifetime - thời gian tồn tại của đội hình
  */
-function seqDroneUFO(k,x=maxW/2, y=maxH/2-250,agn=1, radius = 300, color=COLOR.Blue, formationLifetime=10000){
-	
+function seqDroneUFO(formationLifetime=10000,x=maxW/2, y=maxH/2-350,{agn=1, radius = 300, color=COLOR.Blue,speed=Math.PI/900,mer,merColor,size=3,laplanh=false}={}){
+	let mmm = drones.length
+	let k=0
+	for(let i=0;i<380;i++){
+		drones.push(new Drone(-1, -1, size, 0, 0,COLOR.Blue,formationLifetime));
+	}
 	let formation1 =new Formation();
 	let formation2 =new Formation();
 	let formation3 =new Formation();
@@ -6555,19 +6795,19 @@ function seqDroneUFO(k,x=maxW/2, y=maxH/2-250,agn=1, radius = 300, color=COLOR.B
 	let soluong =  380 ;
 	for(let i = 0;i<soluong; i++){
 		if(i<soluong*3/19){
-			formation1.addDrone(drones[i+k]);
+			formation1.addDrone(drones[i+k+mmm]);
 		}
 		else if(i<soluong*3*2/19){
-			formation5.addDrone(drones[i+k]);
+			formation5.addDrone(drones[i+k+mmm]);
 		}
 		else if(i<soluong*10/19){
-			formation4.addDrone(drones[i+k]);
+			formation4.addDrone(drones[i+k+mmm]);
 		}
 		else if(i<soluong*14/19){
-			formation2.addDrone(drones[i+k]);
+			formation2.addDrone(drones[i+k+mmm]);
 		}
 		else{
-			formation3.addDrone(drones[i+k]);
+			formation3.addDrone(drones[i+k+mmm]);
 		}
 
 	}
@@ -6586,13 +6826,33 @@ function seqDroneUFO(k,x=maxW/2, y=maxH/2-250,agn=1, radius = 300, color=COLOR.B
 	formation4.setFormation(x, y+15,formationLifetime, radius+25)
 	formation5.setFormation(x, y+30,formationLifetime, radius)
 	
-	formation1.setCircleFormationV2(agn,undefined,Math.PI/900);
-	formation2.setCircleFormationV2(agn,undefined,Math.PI/900);
-	formation3.setCircleFormationV2(agn,undefined,Math.PI/900);
-	formation4.setCircleFormationV2(agn,1,Math.PI/900);
-	formation5.setCircleFormationV2(agn,1,Math.PI/900);
+	formation1.setCircleFormationV2(agn,undefined,speed);
+	formation2.setCircleFormationV2(agn,undefined,speed);
+	formation3.setCircleFormationV2(agn,undefined,speed);
+	formation4.setCircleFormationV2(agn,1,speed);
+	formation5.setCircleFormationV2(agn,1,speed);
+	if(mer){
+		seqDroneColorMer(formation1,merColor,formationLifetime)
+		seqDroneColorMer(formation2,merColor,formationLifetime)
+		seqDroneColorMer(formation3,merColor,formationLifetime)
+		seqDroneColorMer(formation4,merColor,formationLifetime)
+		seqDroneColorMer(formation5,merColor,formationLifetime)
+	}
+	if(laplanh){
+		formation1.setRandomColorV2(formationLifetime,undefined,undefined,0.95)
+		formation2.setRandomColorV2(formationLifetime,undefined,undefined,0.95)
+		formation3.setRandomColorV2(formationLifetime,undefined,undefined,0.95)
+		formation4.setRandomColorV2(formationLifetime,undefined,undefined,0.95)
+		formation5.setRandomColorV2(formationLifetime,undefined,undefined,0.95)
+	}
+	setTimeout(() => {
+		formation1.setRandomColorV2()
+		formation2.setRandomColorV2()
+		formation3.setRandomColorV2()
+		formation4.setRandomColorV2()
+		formation5.setRandomColorV2()
+	}, formationLifetime-2000);
 
-	return k+soluong;
 
 }
 /**
@@ -6873,13 +7133,13 @@ function seqDroneFlagVN(x, startX=100, startY=100, width=100, height=100, time=2
  * @param {*} time 
  * @param {*} hz 
  */
-async function seqDroneColorMer(formation, time=10000, hz=100){
+async function seqDroneColorMer(formation,color, time=10000, hz=100){
 	let elapsedTime = 0; // Thời gian đã  qua
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 	let cou = formation.lenght;
 	while (elapsedTime < time) {
 		// Thay đổi màu sắc đội hình tuần tự
-		await formation.setColorV2(getRandomColor(),cou*20);
+		await formation.setColorV2(color,hz);
 
 		// Chờ trước khi thực hiện lần tiếp theo
 		await delay(hz);
@@ -6887,19 +7147,29 @@ async function seqDroneColorMer(formation, time=10000, hz=100){
 		// Tăng thời gian đã trôi qua
 		elapsedTime += hz;
 	}
+	setTimeout(() => {
+		return
+	}, time);
 }
 
 
 
 
 function skyFallSeq(){
-	let k = 1000;
-	let x = resetDrones(k)
-	x = seqDroneUFO(0,maxW/2,maxH/2-300,0.5,400,COLOR.Blue,40000);
-	seqSparkDown(maxW/2-400,maxW/2+400,maxH/2-300,5)
-	console.log(x)
-	// playMusic('Music/skyfall.mp3');
+	
+	
+	// 
+	let shell=new Shell({...shellTypes['Falling Leaves'](5)})
+	let floral = new Shell({...shellTypes['Floral'](1)})
+	let falling = new Shell({...shellTypes['Falling Leaves'](1)})
+	seqDroneTextSkyFall(8000)
 	setTimeout(() => {
+		let formartion = droneCreateFormation(70,2000,2)
+		formartion.setRandomColorV2(3000,COLOR.White)
+	}, 8001);
+	playMusic('Music/skyfall.mp3');
+	setTimeout(() => {
+		floral.launch(0.5,0.5)
 		seqTripleRingShell(0.5,0.5,3)
 	}, 8000);
 	setTimeout(() => {
@@ -6909,151 +7179,655 @@ function skyFallSeq(){
 		}, 1000);
 	}, 13000);
 	setTimeout(() => {
-		seqDoubleCrysanthemum(0.3,0.5)
-		setTimeout(() => {
-			seqDoubleCrysanthemum(0.7,0.5)
-		}, 1000);
+		let shell = new Shell({...shellTypes['Wave'](4),streamers:true})
+		seqDoubleShell(0.35,0.5,shell)
 	}, 20000);
 	setTimeout(() => {
-		seqDoubleCrysanthemum(0.3,0.5)
-		setTimeout(() => {
-			seqDoubleCrysanthemum(0.7,0.5)
-		}, 1000);	
+		let shell = new Shell({...shellTypes['Hearth'](3),strobe:true})
+		seqDoubleShell(0.2,0.5,shell)
 	}, 24000);
 	setTimeout(() => {
-		
+		let shell = new Shell({...shellTypes['Fish'](3),glitter:true})
+		seqDoubleShell(0.35,0.5,shell)
 	}, 25000);
 	setTimeout(() => {
-		shell.launch(0.3,0.5)
+		seqTripleRingShell(0.5,0.5)
+		setTimeout(() => {
+			let shell1 = new Shell({...shellTypes['Crysanthemum'](5),strobe:true})
+			let shell2 = new Shell({...shellTypes['Hearth'](3),strobe:true})
+			seqTripleShell(0.1,0.3,shell2,shell1,{strobe:true,crackle:true})
+		}, 3000);
 	}, 28000);
 	setTimeout(() => {
-		
-		seqTripleRingShell(0.5,0.5,3)
+		let shell = new Shell({...shellTypes['Snow'](3),strobe:true})
+		seqTripleShell(0.1,0.3,shell)
 	}, 33000);
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
+		seqTripleShell(0.1,0.3,new Shell({...shellTypes['Strobe'](3),crackle:true}))
 	}, 38000);
 	setTimeout(() => {
-		seqDoubleCrysanthemum(0.3,0.5)
-		setTimeout(() => {
-			seqDoubleCrysanthemum(0.7,0.5)
-		}, 1000);
+		let shell = new Shell({...shellTypes['Lotus'](5),strobe:true})
+		seqTripleShell(0.15,0.3,undefined,shell,{crackle:true})
 	}, 41000);
 	setTimeout(() => {
-		seqDoubleCrysanthemum(0.3,0.5)
+		let shell = new Shell({...shellTypes['Crysanthemum'](5),strobe:true})
+		let shell2=new Shell({...shellTypes['Horse Tail'](2),strobe:true})
+		seqTripleShell(0.2,0.3,shell2,shell)
 		setTimeout(() => {
-			seqDoubleCrysanthemum(0.7,0.5)
-		}, 1000);
+			seqTripleShell(0.25,0.3,undefined,undefined,{strobe:true})
+		}, 4000);
+		setTimeout(() => {
+			seqTripleShell(0.3,0.3,undefined,undefined,{floral:true})
+		}, 8000);
 	}, 44000);
 	setTimeout(() => {
-		shell.launch(0.3,0.5)
+		let shell = new Shell({...shellTypes['Snow'](5),strobe:true,crackle:true})
+		seqTripleShell(0.35,0.3,new Shell({...shellTypes['Horse Tail'](2),strobe:true}),shell)
 	}, 51000);
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
+		seqQuarShell(0.1,0.5)
 	}, 55000);
 	setTimeout(() => {
-		seqDoubleCrysanthemum(0.3,0.5)
-		setTimeout(() => {
-			seqDoubleCrysanthemum(0.7,0.5)
-		}, 1000);
+		let shell = new Shell({...shellTypes['Crysanthemum'](5),strobe:true,crackle:true})
+		let shell2=new Shell({...shellTypes['Floral'](2),strobe:true})
+		seqTripleShell(0.1,0.2,shell2,shell)
 	}, 60000);
 	let i = 1;
 	setTimeout(() => {
 		seqTripleRingShell(0.5,0.5,3)
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Fish'](2),strobe:true,crackle:true})
+			seqQuarShell(0.1,0,shell)
+		}, 3000);
+		setTimeout(() => {
+			seqQuarShell(0.2,0)
+		},7000);
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Wave'](4),strobe:true,crackle:true})
+			seqQuarShell(0.3,0,shell)
+		}, 10000);
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Crysanthemum'](0.43),strobe:true,crackle:true})
+			seqTripleShell(0.3,0,shell)
+		}, 15000);
 	}, 60000+4000);
 	setTimeout(() => {
-		seqDoubleCrysanthemum(0.3,0.5)
+		let shell = new Shell({...shellTypes['Smiley'](5),strobe:true,crackle:true})
+		let shell2=new Shell({...shellTypes['Snow'](2),crackle:true})
+		seqTripleShell(0.1,0.2,shell2,shell)
 		setTimeout(() => {
-			seqDoubleCrysanthemum(0.7,0.5)
-		}, 1000);
+			seqQuarShell(0.2,-0.3)
+		},2000);
 	}, 60000+16000);
+	//skyfalll nhipj1 spark
 	setTimeout(() => {
-		shell.launch(0.5,0.5)
+		let shell = new Shell({...shellTypes['Falling Leaves'](2)})
+		shell.launch(0.5,-0.5)
+		
 	}, 60000+22000);
 	setTimeout(() => {
-		
+		seqSparkLeft(0,0.6,-0.3,20)
+		setTimeout(() => {
+			seqSparkRight(0.4,1,-0.7,20)
+		}, 2000);
+		setTimeout(() => {
+			seqSparkFull(0,1,15,0)
+		}, 5000);
 	}, 60000+25000);
 	setTimeout(() => {
-		seqDoubleCrysanthemum(0.3,0.5)
+		seqTripleRingShell(0.5,0.3,2)
 		setTimeout(() => {
-			seqDoubleCrysanthemum(0.7,0.5)
+			let shell = new Shell({...shellTypes['Floral'](4)})
+			seqTripleShell(0.2,0.4,shell)
 		}, 1000);
+		floral.launch(-1,0.5)
 	}, 60000+27000);
 	setTimeout(() => {
-		seqDoubleCrysanthemum(0.3,0.5)
+		let shell2 = new Shell({...shellTypes['Falling Leaves'](2)})
+		shell2.launch(0.5,-0.5)
+		let shell = new Shell({...shellTypes['Horse Tail'](2)})
+		seqTripleShell(0.25,0.4,shell)
 		setTimeout(() => {
 			seqDoubleCrysanthemum(0.7,0.5)
 		}, 1000);
+		setTimeout(() => {
+			seqSparkRight(0,0.5,-0.7,20)
+			seqSparkLeft(0.5,1,-0.3,20)
+		}, 2000);
+		floral.launch(-1,0.5)
 	}, 60000+30000);
 	setTimeout(() => {
 		seqDoubleCrysanthemum(0.3,0.5)
 		setTimeout(() => {
 			seqDoubleCrysanthemum(0.7,0.5)
 		}, 1000);
+		setTimeout(() => {
+		}, 2000);
+		seqSparkRight(0.4,1,-0.7,20)
+		setTimeout(() => {
+			seqSparkLeft(0,0.6,-0.3,20)
+		}, 2000);
+		setTimeout(() => {
+			seqSparkFull(0,1,10,0)
+		}, 5000);
 	}, 60000+35000);
 	setTimeout(() => {
-		shell.launch(0.3,0.5)
-	}, 60000+38000);
+		new Shell({...shellTypes['Falling Leaves'](4)}).launch(0.3,-0.5)
+		
+	}, 60000+36000);
 	setTimeout(() => {
+		setTimeout(() => {
+			for(let i =0;i<5;i++){
+				seqSpark(0.1,0.9,-0.3,undefined,20,0)
+				seqSpark(0.1,0.9,-0.2,undefined,20,1)		
+			}
+		}, 3000);
 		shell.launch(0.5,0.5)
+		floral.launch(0.5,0.1)
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Ring'](4),strobe:true})
+			seqDoubleShell(0.3,-0.2,shell)
+
+		}, 5000);
+		setTimeout(() => {
+			shell = new Shell({...shellTypes['Bird'](4),strobe:true,color:COLOR.Blue})
+			seqQuarShell(0.2,-0.2,shell,new Shell({...shellTypes['Crysanthemum'](5),crackle:true,pistil:true}))
+		}, 7000);
 	}, 60000+41000);
 	setTimeout(() => {
-		shell.launch(0.8,0.5)
+		seqTripleRingShell(0.5,0.5,3)
+		setTimeout(() => {
+			seqDoubleShell(0.3,0.4,new Shell({...shellTypes['Hearth'](3),crossette:true}))
+		}, 3000);
+		setTimeout(() => {
+			seqTripleShell(0.2,0.1,new Shell({...shellTypes['Smiley'](3),crossette:true}))
+		}, 5000);
+		setTimeout(() => {
+			seqDoubleShell(0.2,0.1)
+		}, 7000);
 	}, 60000+49000);
+	//hết cao nhịp 1
 	i =2;
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
+		seqDoubleShell(0.25,0.4,undefined,{strobe:true})
+		setTimeout(() => {
+			seqDoubleShell(0.1,0.1)
+		}, 2000);
 	}, 60000*2+2000);
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
-	}, 60000*2+21000);
+		seqDoubleShell(0.25,0.4,undefined,{strobe:true})
+
+	}, 60000*2+6000);
+	
+	setTimeout(() => {
+		falling.launch(0.5,0.1)
+		seqSparkLeft(0,0.9,-0.2,20)
+		setTimeout(() => {
+			seqSparkRight(0.1,1,-0.7,20)
+		}, 1800);
+		setTimeout(() => {
+			seqTripleShell(0.25,-0.1,new Shell({...shellTypes['Floral'](3)}),new Shell({...shellTypes['Smiley'](4),strobe:true}))
+		}, 3000);
+	}, 60000*2+11000);
+	setTimeout(() => {
+		seqDoubleShell(0.25,0.4,undefined,{strobe:true,crackle:true})
+		setTimeout(() => {
+			seqQuarShell(0.3,-0.3,new Shell({...shellTypes['Snow'](2)}),new Shell({...shellTypes['Crackle'](2)}))
+		}, 3000);
+		floral.launch(-1,0.1)
+	}, 60000*2+17000);
+	
+	
 	setTimeout(() => {
 		seqTripleRingShell(0.5,0.5,3)
+		setTimeout(() => {
+			seqShellAllInOne(0.3,0.7,new Shell({...shellTypes['Crysanthemum'](2)}),undefined,1,600,-0.3)
+			setTimeout(() => {
+				seqShellAllInOne(0.25,0.75,new Shell({...shellTypes['Crysanthemum'](3)}),undefined,1,600,-0.2)
+			}, 600);
+			setTimeout(() => {
+				seqShellAllInOne(0.2,0.8,new Shell({...shellTypes['Crysanthemum'](4)}),undefined,1,600,-0.1)
+			}, 1200);
+			setTimeout(() => {
+				seqShellAllInOne(0.15,0.85,new Shell({...shellTypes['Crysanthemum'](5)}),undefined,1,600,0)
+			}, 1800);
+		}, 2800);
+		setTimeout(() => {
+			seqTripleV2(0.1,0.5)
+			seqTripleV2(0.9,0.5)
+		}, 3000);
+	}, 60000*2+20000);
+	setTimeout(() => {
+		shell = new Shell({...shellTypes['Falling Leaves'](6)})
+		shell.launch(0.5,-0.5)
+	}, 60000*2+24000);
+
+	//skyfall nhịp 2 drone cir v3c5
+	setTimeout(() => {
+		seqShellRandomForTime(4,-0.3)
+		setTimeout(() => {
+		}, 3000);
 	}, 60000*2 +27000);
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
-	}, 60000*2 +30000);
+		shell = new Shell({...shellTypes['Falling Leaves'](2)})
+		shell.launch(0.5,-0.3)
+		seqShellHeightLeftToRight(10,10)
+		seqSparkLeft(0,0.5,-0.3,20)
+		setTimeout(() => {
+			setTimeout(() => {
+				seqShellHeightRightToLeft(10,10)
+			}, 1000);
+			seqSparkRight(0.5,1,-0.7,20)
+		}, 3000);
+		floral.launch(-1,0.1)
+	}, 60000*2 +28500);
+	
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
-	}, 60000*2 +55000);
+		seqShellAllInOne(0.3,0.7,undefined,undefined,3,1000)
+		shell = new Shell({...shellTypes['Falling Leaves'](1)})
+		shell.launch(0.5,-0.2)
+	}, 60000*2+33000);
 	setTimeout(() => {
-		seqTripleRingShell(0.5,0.5,3)
-	}, 60000*3 +6000);
+		setTimeout(() => {
+			seqShellMidHeight(100,10)
+			setTimeout(() => {
+				seqShellMidHeight(100,10)
+			}, 6000);
+		}, 35000);
+		setTimeout(() => {
+			shell = new Shell({...shellTypes['Falling Leaves'](4)})
+			shell.launch(0.5,-0.2)
+			seqSparkFullTime(0.1,0.9,-0.3,-0.3,20,10)
+			setTimeout(() => {
+				seqSparkFullTime(0.1,0.9,0.4,-0.7,20,10)
+				
+				floral.launch(-1,0.5)
+			}, 500);
+			setTimeout(() => {
+				seqSparkFullTime(0.1,0.9,0,0.2,20,10)
+			}, 1000);
+		}, 39000);
+		setTimeout(() => {
+			seqShellAllInOne(0,1,undefined,undefined,3,1000)
+		}, 40000);
+		setTimeout(() => {
+			seqDoubleCrysanthemum(0.3,0)
+			setTimeout(() => {
+				seqDoubleCrysanthemum(0.7,0)
+			}, 1000);
+			setTimeout(() => {
+				seqShellMidHeight(10,10)
+			}, 3000);
+		}, 42000);
+		//skyfall nhpj2
+		setTimeout(() => {
+			for(let i = 0 ;i <6;i++){
+				seqSpackMidShortToHeight(0.5)
+			}
+			setTimeout(() => {
+				for(let i = 0 ;i <6;i++){
+					seqSpackMidShortToHeight(0.5)
+				}
+			}, 1000);
+			
+			setTimeout(() => {
+				falling.launch(-1,0)
+				seqSparkHalfLeft(0.2,0.6,5,200)
+				setTimeout(() => {
+					seqSparkHalfLeft(0.8,1.3,5,200)
+					
+				}, 400);
+				setTimeout(() => {
+					seqSparkHalfRight(0.8,0.5,5,200)
+				},800);
+				setTimeout(() => {
+					seqSparkHalfRight(0.2,0.4,5,200)
+				},800);
+				floral.launch(-1,0.5)
+			}, 2000);
+			
+			setTimeout(() => {
+				seqShellRandomForTime(20,0)
+			}, 4000);
+		}, 45000);
+		setTimeout(() => {
+			setTimeout(() => {
+				for(let i =0;i<4;i++){
+					seqSparkHalfTrip(0.2,1000)
+					seqSparkHalfTrip(0.8,1000)	
+				}
+			}, 1000);
+			setTimeout(() => {
+				seqSparkFullTime(0.1,0.9,0,0.2,20,7)
+			}, 3000);
+			setTimeout(() => {
+				seqShellRandomForTime(10,-0.2,new Shell({...shellTypes['Hearth'](2),strobe:true}))
+			}, 3000);
+		}, 51000);
+		setTimeout(() => {
+			seqShellRandomForTime(10,-0.3,new Shell({...shellTypes['Crossette'](3),color:COLOR.Gold}))
+		}, 55000);//nghỉ
+	}, 60000*2);
 	setTimeout(() => {
+		setTimeout(() => {
+			falling.launch(-1,-0.4)
+			seqSparkFullTime(0.1,0.9,0,0.2,20,7)
+			setTimeout(() => {
+				seqDoubleShell(0.3,-0.1,new Shell({...shellTypes['Crysanthemum'](3),crackle:true}))
+				seqSparkFullTime(0,0.5,-0.3,0,30,10)
+			}, 3000);
+			setTimeout(() => {
+				seqSparkFullTime(0.5,1,-0.3,0,30,10)
+			}, 3700);
+		}, 1000);
+		setTimeout(() => {
+			seqSparkFullTime(0,1,-0.3,0,30,10)
+			seqDoubleShell(0.3,-0.1,new Shell({...shellTypes['Snow'](3),crossette:true}))
+		}, 7000);
+		setTimeout(() => {
+			seqSparkFullTime(0,1,-0.3,0,30,10)
+			seqQuarShell(0.2,-0.1)
+			setTimeout(() => {
+				seqTripleShell(0.2,0,new Shell({...shellTypes['Crackle'](3)}),new Shell({...shellTypes['Ring'](3), bird:true}))
+				seqDoubleShell(0.3,-0.1,new Shell({...shellTypes['Snow'](3),crossette:true}))
+			}, 3000);
+			floral.launch(-1,0)
+		}, 8000);
+		setTimeout(() => {
+			seqSparkFullTime(0,1,-0.3,0,30,5)
+			seqSparkFullTime(0,1,-0.7,-0.35,15,10)
+			seqSparkFullTime(0,1,-0.3,0.34,15,10)
+		}, 14000);
+		setTimeout(() => {
+			seqTripleShell(0.2,0,new Shell({...shellTypes['Floral'](3)}),undefined,{floral:true})
+		}, 17000);
+		setTimeout(() => {
+			seqDoubleShell(0.3,0.1,new Shell({...shellTypes['Fish'](3)}),{strobe:true})
+		}, 20000);
+		setTimeout(() => {
+			seqTripleShell(0.350,0.2,new Shell({...shellTypes['Smiley'](3)}),{strobe:true})
+		}, 23000);
+		setTimeout(() => {
+			seqQuarShell(0.32,0.3,new Shell({...shellTypes['Flower'](3)}),{strobe:true})
+		}, 25000);
+		setTimeout(() => {
+			seqTripleShell(0.31,0.2,new Shell({...shellTypes['Strobe'](3)}),{strobe:true})
+		}, 27000);
+		setTimeout(() => {
+			seqQuarShell(0.35,0.1,new Shell({...shellTypes['Crysanthemum'](3)}),new Shell({...shellTypes['Strobe'](3)}))
+			setTimeout(() => {
+				seqShellMidHeight(10,10)
+			}, 3000);
+			setTimeout(() => {
+				seqShellMidShort(10,10)
+			}, 6000);
+			setTimeout(() => {
+				seqShellMidHeight(10)
+			}, 9000);
+		}, 31000);
+		setTimeout(() => {
+			seqQuarShell(0.37,-0.1,undefined,undefined,{strobe:true})
+		}, 41000);//tăng nhịp
+		setTimeout(() => {
+			falling.launch(-1,-0.5)
+			for(let i=0;i<10;i++){
+				seqSparkFull(0,1,40)	
+			}
+			seqDoubleShell(0.25,0.3,undefined,{strobe:true})
+			setTimeout(() => {
+				seqTripleShell(0.15,0,undefined,undefined,{strobe:true})
+			}, 500);
+			
+			floral.launch(0.5,-0.2)
+			seqShellHeightLeftToRight(10)
+			setTimeout(() => {
+				seqShellHeightRightToLeft(10)
+			}, 600);
+			setTimeout(() => {
+				seqShellHeightLeftToRight(5)
+			}, 1200);
+			setTimeout(() => {
+				seqShellHeightRightToLeft(5)
+			}, 1500);
+			
+		}, 43000);
+		setTimeout(() => {
+			falling.launch(-0.5,0)
+			seqShellAll(0.1,0.9,-0.4,1,10,1300)
 		
-	}, 60000*3 +17000);
+		}, 44000);
+		setTimeout(() => {
+		seqDroneUFO(36000,maxW/2,maxH/2-370,{size:5,mer:true,agn:0.5,radius:400})
+			floral.launch(0.2,0)
+			floral.launch(0.8,0)
+		}, 46000);
+		setTimeout(() => {
+			
+			setTimeout(() => {
+				seqTripleShell(0.31,0.2,new Shell({...shellTypes['Strobe'](3)}),{strobe:true})
+			}, 2000);
+			seqDoubleShell(0.25,0.3,undefined,{strobe:true})
+			setTimeout(() => {
+				seqTripleShell(0.15,0,undefined,undefined,{strobe:true})
+			}, 500);
+			setTimeout(() => {
+				seqQuarShell(0.31,0.2,new Shell({...shellTypes['Crysanthemum'](4)}),{strobe:true})
+			}, 5000);
+		}, 48000);
+		setTimeout(() => {
+			seqDoubleShell(0.25,0.3,undefined,{strobe:true})
+			setTimeout(() => {
+				seqTripleShell(0.15,0,undefined,undefined,{strobe:true})
+			}, 500);
+		seqSparkDown(maxW/2-200,maxW/2+200,maxH/2-370,20,1000)	
+			creatFiveShellV2(0.2,maxH/2-370,new Shell({...shellTypes['Bird'](0.6),pistil:false}))
+		}, 52000);
+		//skyfall
+		setTimeout(() => {
+			seqSparkMidLeftWithRight(count=1)
+			seqSparkFullTime(0,1,-0.3,0,30,4)
+			seqSparkFullTime(0,1,-0.7,-0.35,15,4)
+			seqSparkFullTime(0,1,-0.3,0.34,15,5)
+		}, 55000);
+		//trống 14s
+		setTimeout(() => {	
+			seqSparkMidLeftWithRight(count=1)
+			creatFiveShellV2(0.3,maxH/2-370,new Shell({...shellTypes['Bird'](0.6),pistil:false}))
+			seqDoubleShell(0.25,0.3,undefined,{strobe:true})
+			setTimeout(() => {
+				seqTripleShell(0.15,0,undefined,undefined,{strobe:true})
+			}, 500);
+			seqDoubleShell(0.3,0,new Shell({...shellTypes['Cat'](0.5)}))
+			setTimeout(() => {
+				seqDoubleShell(0.2,0,new Shell({...shellTypes['Floral'](4)}))
+			}, 3000);
+			setTimeout(() => {
+				seqTripleShell(0.1,0,new Shell({...shellTypes['Snow'](3),strobe:true}))
+			}, 6000);
+			setTimeout(() => {
+				seqQuarShell(0.2,0,new Shell({...shellTypes['Lotus'](1)}))
+			}, 9000);
+			setTimeout(() => {
+				seqDoubleShell(0.3,0,new Shell({...shellTypes['Crossette'](3)}))
+			}, 12000);
+		}, 58000);//skyfall
+	}, 60000*3);
 	setTimeout(() => {
-		
-	}, 60000*3 +38000);
-	setTimeout(() => {
-		
-	}, 60000*3 +44000);
-	setTimeout(() => {
-		
-	}, 60000*3 +55000);
-	setTimeout(() => {
-		
-	}, 60000*4 +10000);
-	setTimeout(() => {
-		
-	}, 60000*4 +23000);
-	setTimeout(() => {
-		
-	}, 60000*4 +36000);
+		setTimeout(() => {
+			seqDoubleShell(0.25,0.3,undefined,{strobe:true})
+			setTimeout(() => {
+				seqTripleShell(0.15,0,undefined,undefined,{strobe:true})
+			}, 500);
+			seqShellRandomForTime(5,-0.4,new Shell({...shellTypes['Crossette'](0.5)}),COLOR.Gold)	
+			seqShellAllInOne(0.0,1,new Shell({...shellTypes['Crysanthemum'](2)}),undefined,2,200);
+		}, 2000);
+		setTimeout(() => {
+			
+			seqSparkMidLeftWithRight(count=1)
+			setTimeout(() => {
+				seqTripleShell(0.31,0.2,new Shell({...shellTypes['Strobe'](3)}),{strobe:true})
+				seqShellAllInOne(0.4,1,new Shell({...shellTypes['Crysanthemum'](2)}),undefined,2,200);
+			}, 2000);
+			setTimeout(() => {
+				seqQuarShell(0.31,0.2,new Shell({...shellTypes['Wave'](4),streamers:true}),{strobe:true})
+				seqShellAllInOne(0,0.6,new Shell({...shellTypes['Crysanthemum'](2)}),undefined,2,200);
+			}, 5000);
+			seqShellRandomForTime(5,-0.4,new Shell({...shellTypes['Strobe'](0.5)}),COLOR.Gold)	
+		}, 6000);
+		setTimeout(() => {
+			seqDoubleShell(0.25,0.3,undefined,{strobe:true})
+			setTimeout(() => {
+				seqTripleShell(0.15,0,undefined,undefined,{strobe:true})
+			}, 500);
+			seqShellAllInOne(0,1,new Shell({...shellTypes['Crysanthemum'](2)}),undefined,2,200);
+			seqSparkFullTime(0,1,-0.3,0,30,3)
+			seqSparkFullTime(0,1,-0.7,-0.35,15,4)
+			seqSparkFullTime(0,1,-0.3,0.34,15,5)
+			setTimeout(() => {
+				for(let i=0;i<4;i++){
+					seqSparkHalfMid(0.2,0.7,7,3)
+					seqSparkHalfMid(0.8,0.7,7,3)
+				}
+			}, 2000);
+			setTimeout(() => {
+				seqSparkMidLeftWithRight(count=1)
+				seqShellAllInOne(0.4,1,new Shell({...shellTypes['Wave'](2),strobe:true}),undefined,2,200);
+				seqTripleShell(0.31,0.2,new Shell({...shellTypes['Birth'](3)}),{strobe:true})
+			}, 2000);
+			setTimeout(() => {
+				seqDoubleShell(0.25,0.3,undefined,{strobe:true})
+			setTimeout(() => {
+				seqTripleShell(0.15,0,undefined,undefined,{strobe:true})
+			}, 500);
+				seqQuarShell(0.31,0.2,new Shell({...shellTypes['Hearh'](4)}),{strobe:true})
+				seqShellAllInOne(0,0.6,new Shell({...shellTypes['Bỉth'](2)}),undefined,2,200);
+			}, 5000);
+		}, 7000);
+		setTimeout(() => {
+			seqShellRandomForTime(10,-0.2,new Shell({...shellTypes['Butterfly'](1)}),COLOR.Gold)	
+		}, 10000);//dạo nền
+		setTimeout(() => {
+			setTimeout(() => {
+				seqTripleShell(0.31,0.2,new Shell({...shellTypes['Strobe'](3)}),{strobe:true})
+			}, 2000);
+	
+			setTimeout(() => {
+				seqShellAllInOne(0.35,0.65,new Shell({...shellTypes['Smiley'](2)}),undefined,2,600,-0.2)
+				seqQuarShell(0.31,0.2,new Shell({...shellTypes['Crysanthemum'](4)}),{strobe:true})
+			}, 5000);
+			seqShellRandomForTime(10,-0.3,new Shell({...shellTypes['Smiley'](3),strobe:true}),COLOR.Gold)	
+			seqShellRandomForTime(10,-0.5,new Shell({...shellTypes['Butterfly'](1)}),COLOR.Gold)	
+		}, 14000);
+		setTimeout(() => {
+			seqSparkMidLeftWithRight(count=1)
+			seqDoubleShell(0.25,0.3,undefined,{strobe:true})
+			seqShellAllInOne(0.35,0.65,new Shell({...shellTypes['Floral'](2)}),undefined,2,600,-0.2)
+			setTimeout(() => {
+				seqTripleShell(0.15,0,undefined,undefined,{strobe:true})
+			}, 500);
+			seqShellRandomForTime(10,-0.1,new Shell({...shellTypes['Hearth'](2),strobe:true}))	
+			seqShellRandomForTime(20,-0.3,new Shell({...shellTypes['Butterfly'](1)}),COLOR.Gold)	
+			setTimeout(() => {
+				for(let i=0;i<4;i++){
+					seqSparkHalfMid(0.2,0.7,7,3)
+					seqSparkHalfMid(0.8,0.7,7,3)
+					seqSparkHalfMid(0.5,0.7,7,3)
+					setTimeout(() => {
+						seqShellAllInOne(0.35,0.65,new Shell({...shellTypes['Crysanthemum'](2)}),undefined,2,600,-0.2)
+					}, 1000);
+				}
+			}, 2000);
+		}, 18000);
+		setTimeout(() => {
+			seqSparkFull(0,1,2)
+			setTimeout(() => {
+				seqShellHeightLeftToRight(20)
+			}, 2000);
+			setTimeout(() => {
+				seqShellHeightRightToLeft(20)
+			}, 3000);
+			setTimeout(() => {
+				seqShellHeightLeftToRight(15)
+				seqShellAllInOne(0.2,1,new Shell({...shellTypes['Hearth'](1)}),undefined,2,200);
+			}, 4000);
+			setTimeout(() => {
+				seqShellHeightRightToLeft(15)
+			}, 5000);
+			setTimeout(() => {
+				seqShellHeightLeftToRight(10)
+				
+			}, 6000);
+			setTimeout(() => {
+				seqShellHeightRightToLeft(10)
+			}, 7000);
+			setTimeout(() => {
+				seqShellMidHeight(10,10)
+			}, 8000);
+		}, 23000);//dạo nền tổng
+		setTimeout(() => {
+			falling.launch(-1,0)
+			seqShellAllInOne(0.4,1,new Shell({...shellTypes['Birth'](2)}),undefined,2,200);
+			seqShellRandomForTime(10,0.2)
+			for(let i = 0;i<6;i++){
+				seqSparkFull(0,1,3)
+			}
+		}, 27000);
+		setTimeout(() => {
+			
+			seqSparkFull(0,1,2)
+			seqShellRandomForTime(10,0.2)
+			seqShellAllInOne(0.4,1,new Shell({...shellTypes['Wave'](2)}),undefined,2,200);
+		}, 29000);
+		setTimeout(() => {
+			for(let i = 0;i<6;i++){
+				seqSparkFull(0,1,2)
+				seqShellRandomForTime(10,0.2)
+				seqShellAllInOne(0.4,1,new Shell({...shellTypes['Birth'](2)}),undefined,2,200);
+			}
+		}, 31000);
+		setTimeout(() => {
+			seqDroneText('Thanks',7000,200,150,{mer:true,merColor:COLOR.Blue})
+			seqDroneText('For',7000,650,260,{mer:true,merColor:COLOR.Red})
+			seqDroneText('Watching',7000,800,450,{mer:true,mercolor:COLOR.Blue})
+			seqShellAllInOne(0.4,1,new Shell({...shellTypes['Hearth'](2)}),undefined,2,200);
+			seqSparkFull(0,1,2)
+			let for1 = droneCreateFormation(50,7000)
+			for1.setFormation(1,1,7000,100)
+
+			for1.setRandomColorV2(7000,undefined,undefined,	0)
+			for1.setHeartFormation(300,350,5)
+			let for2 = droneCreateFormation(50,7000)
+			
+
+			for2.setRandomColorV2(7000,undefined,undefined,	0)
+			for2.setHeartFormation(maxW/2+300,300,5)
+			seqShellRandomForTime(10,0.2)
+		}, 36000);//hết
+	}, 60000*4);
+
+
+	
 }
-// let x = 0;
-// // seqDroneGalaxy(x)
-// let form = new Formation();
-// for(let i = 0; i<50;i++){
-// 	form.addDrone(drones[100+i]);
-// }
-// form.setFormation(500,500,100000,50);
-// // form.setRectangleFormation(200,100,80,40)
-// form.setHeartFormation(100,200,5)
-// form.setRandomColorV2(100000,COLOR.White,undefined,0.5)
-// form.setCircleFormationV1()
 
 
+/**
+ * Tạo formation 
+ * @param {*} soluong -số lượng drone cần
+ * @param {*} life - thời gian sống
+ * @param {*} size - kích cỡ drone
+ * @returns 1 formation
+ */
+function droneCreateFormation(soluong,life=10000, size=3){
+	let mmm = drones.length
+	for(let i=0;i<soluong;i++){
+		drones.push(new Drone(-1,-1,size,0,0,COLOR.Yellow,life))
+	}
+	let form = new Formation()
+	for(let i =0; i<soluong;i++){
+		form.addDrone(drones[i+mmm])
+	}
+	return form
+}
 
 /**
  * Đếm người 10-9
@@ -7063,22 +7837,23 @@ function skyFallSeq(){
  * @param {*} space 
  * @returns 
  */
-function seqDroneCountDown(x,startX, startY, space){
-	let format = new Formation()
-	for(let i = 0 ;i<60;i++){
-		format.addDrone(drones[i+x])
-	}
+function seqDroneCountDown(startX, startY, space){
+	
+	let format= droneCreateFormation(60,10000,3.5)
 
 	format.setFormation(500,500,10000,10)
-	format.setColorV2()
+	let i=0;
+	format.setColorV2(colors[i])
+	i++
 	format.drawDigit(9,startX, startY, space)
-
+	
 	setTimeout(() => {
 		format.reset()
 		
 	}, 900);
 	setTimeout(() => {
-		format.setColorV2()
+		format.setColorV2(colors[i])
+		i++;
 		format.drawDigit(8,startX, startY, space)
 		setTimeout(() => {
 			format.reset()
@@ -7086,76 +7861,413 @@ function seqDroneCountDown(x,startX, startY, space){
 		
 	}, 1000);
 	setTimeout(() => {
-		format.setColorV2()
+		format.setColorV2(colors[i])
+		i++;
 		format.drawDigit(7,startX, startY, space)
 		setTimeout(() => {
 			format.reset()
 		}, 900);
 	}, 2000);
 	setTimeout(() => {
-		format.setColorV2()
+		format.setColorV2(colors[i])
+		i++;
 		format.drawDigit(6,startX, startY, space)
 		setTimeout(() => {
 			format.reset()
 		}, 900);
 	}, 3000);
 	setTimeout(() => {
-		format.setColorV2()
+		format.setColorV2(colors[i])
+		i++;
 		format.drawDigit(5,startX, startY, space)
 		setTimeout(() => {
 			format.reset()
 		}, 900);
 	}, 4000);
 	setTimeout(() => {
-		format.setColorV2()
+		format.setColorV2(colors[i])
+		i++;
 		format.drawDigit(4,startX, startY, space)
 		setTimeout(() => {
 			format.reset()
 		}, 900);
 	}, 5000);
 	setTimeout(() => {
-		format.setColorV2()
+		format.setColorV2(colors[i])
+		i++;
 		format.drawDigit(3,startX, startY, space)
 		setTimeout(() => {
 			format.reset()
 		}, 900);
 	}, 6000);
 	setTimeout(() => {
-		format.setColorV2()
+		format.setColorV2(colors[i])
+		i++;
 		format.drawDigit(2,startX, startY, space)
 		setTimeout(() => {
 			format.reset()
 		}, 900);
 	}, 7000);
 	setTimeout(() => {
-		format.setColorV2()
+		format.setColorV2(colors[i])
+		i++;
 		format.drawDigit(1,startX, startY, space)
 		setTimeout(() => {
 			format.reset()
 		}, 900);
 	}, 8000);
 	setTimeout(() => {
-		format.setColorV2()
+		format.setColorV2(colors[i])
+		i++;
 		format.drawDigit(0,startX, startY, space)
 		setTimeout(() => {
 			format.reset()
 		}, 900);
 	}, 9000);
 	
-	return x+60
+	return 
+}
+function seqDroneTextSkyFall(time=55000){
+	for(let i=0;i<800;i++){
+		drones.push(new Drone(-1, -1, 3.5, 0, 0,COLOR.Blue,time));
+	}
+	let formations = Array(15).fill().map(() => new Formation());
+
+	let i = 0;
+	while(i<12){
+		for(let  j = 0;j<60;j++){
+			formations[i].addDrone(drones[j + i * 60])
+		}
+		i++;
+	}
+	
+	for(let i = 0;i<5;i++){
+		formations[12].addDrone(drones[i+720])
+	}
+	
+	formations.forEach(formartion=>{
+		
+		formartion.setFormation(0,0,50000,10000)
+	})
+	let x=maxW/2-320
+	let y=0
+	formations[0].drawLetter('s',100+x,100+y,10)
+	formations[1].drawLetter('k',170+x,100+y,10)
+	formations[2].drawLetter('y',240+x,100+y,10)
+	formations[12].setLineFormation(303+x,130+y,5)
+	formations[3].drawLetter('f',340+x,100+y,10)
+	formations[4].drawLetter('a',410+x,100+y,10)
+	formations[5].drawLetter('l',480+x,100+y,10)
+	formations[6].drawLetter('l',550+x,100+y,10)
+
+	formations[7].drawLetter('a',800+x-maxH/2,210+y,10)
+	formations[8].drawLetter('d',870+x-maxH/2,210+y,10)
+	formations[9].drawLetter('e',940+x-maxH/2,210+y,10)
+	formations[10].drawLetter('l',1010+x-maxH/2,210+y,10)
+	formations[11].drawLetter('a',1080+x-maxH/2,210+y,10)
+	formations.forEach(formartion=>{
+		seqDroneColorMer(formartion,COLOR.Blue,time-3000)
+	})
+	setTimeout(() => {
+		formations.forEach(formation=>{
+			formation.setRandomColorV2(3000,COLOR.White,undefined,0.9)
+		})
+	}, time-2000);
+
+}
+function seqDroneDrawYear(text, time=50000, startX=100, startY=100,{space=10,color=COLOR.Red, mer,merColor}={}){
+	let mmm = drones.length
+	let len = text.length;
+	for(let i=0;i<len*60;i++){
+		drones.push(new Drone(-1, -1, 3.5, 0, 0,'#000033',time));
+	}
+	let formations = Array(len).fill().map(() => new Formation());
+	let i = 0;
+	while(i<len){
+		for(let  j = 0;j<60;j++){
+			formations[i].addDrone(drones[j + i * 60+mmm])
+		}
+		i++;
+	}
+	formations.forEach(formartion=>{
+		formartion.setFormation(0,0,50000,10000)
+	})
+	formations.forEach((formation,index)=>{
+		formation.setFormation(-1,-1,time,undefined)
+		formation.setColorV2(color,7)
+		formation.drawDigit(text[index],startX+100*index,startY,space)
+	})
+	if(mer){
+		formations.forEach((formation)=>{
+			seqDroneColorMer(formation,merColor)
+		})
+	}
+}
+function seqDroneText(text, time=50000, startX=100, startY=100,{space=10,color=COLOR.Red, mer,merColor}={}){
+	let mmm = drones.length
+	let len = text.length;
+	for(let i=0;i<len*45;i++){
+		drones.push(new Drone(-1, -1, 3.5, 0, 0,'#003300',time));
+	}
+	
+	let formations = Array(len).fill().map(() => new Formation());
+	let i = 0;
+	while(i<len){
+		for(let  j = 0;j<45;j++){
+			formations[i].addDrone(drones[j + i * 45+mmm])
+		}
+		i++;
+	}
+	formations.forEach(formartion=>{
+		
+		formartion.setFormation(0,0,50000,10000)
+	})
+	formations.forEach((formation,index)=>{
+		formation.setFormation(-1,-1,time,undefined)
+		formation.setColorV2(color,7)
+		formation.drawLetter(text[index],startX+70*index,startY,space)
+	})
+	if(mer){
+		formations.forEach((formation)=>{
+			seqDroneColorMer(formation,merColor)
+		})
+	}
+}
+// setTimeout(() => {
+// 	seqTripleShell(0.2,0.1)
+// }, 700);
+
+// seqSparkLeft(0,0.6,-0.3,20)
+// setTimeout(() => {
+// 	seqSparkRight(0.4,1,-0.7,20)
+// }, 2000);
+
+
+// seqShellMidHeight(10,10)
+
+
+
+function seqSparkFullTime(x1,x2, y,nghieng=0,countShell=7,count=4){
+	let mm = Math.abs(x1-x2)/countShell;
+	
+	while(x1<x2){
+		let shell  = getRandomShell()
+		for(let i=0;i<count;i++){
+			shell.launchV2(x1,y,nghieng)
+		}
+		x1+=mm
+	}
+		
 }
 
-let format = new Formation()
-	for(let i = 0 ;i<60;i++){
-		format.addDrone(drones[i])
+
+async function seqShellAll(x, y,hight,size,count,wait=1000){
+	let i= 0;
+	while(i<count){
+		await new Promise(resolve => setTimeout(resolve, wait));
+		let shell =getRandomShell()
+		shell.size = size
+		shell.crackle=false
+		seqShellAllInOne(x,y,shell)
+		seqShellRandomForTime(3+Math.random()*4,hight,shell)
+		i++;
 	}
+}
+/**
+ * Tạo nổ tại vị trí x, y
+ * @param {*} x 
+ * @param {*} y 
+ * @param {*} shell 
+ * @param {*} cout 
+ * @param {*} color 
+ */
+function creatFiveShellV2(x,y,shell,cout=10,color) {
+	let maxx = Math.abs(1-x);
+	let spread = Math.abs(maxx - x) / cout;
+	
+	while (x <= maxx) {
+		let number = 10 + Math.random() * 10
+		shell=shell??getRandomShell()
+		shell.color=color??getRandomColor();
+		shell.burst(x*maxW + number, y)
+		x += spread;
+	}
+}
 
-	format.setFormation(500,500,10000,10)
-	format.setColorV2()
-	format.drawText('R',100,100,10)
+// seqSparkDown(0,maxW,maxH,20,1000,false)
+// seqShellAllInOne(0.4,1,new Shell({...shellTypes['Crysanthemum'](2)}),undefined,2,200);
+// seqShellAllInOne(0.35,0.65,new Shell({...shellTypes['Smiley'](2)}),undefined,2,600,-0.2)
 
 
+function seqSparkMidLeftWithRight(count=1){
+	let position = 0.5
+	for(let i =0 ;i<count;i++){
+		seqSparkLeft(position+0.05,1,-0.3)
+		seqSparkRight(0.,position-0.05,-0.86)
+	}
+	
+}
+// seqDroneTextSkyFall(5000)
 
+function seqDroneCountDownWithCircle(x=maxW/2-20,y=maxH/2){
+
+	let soluong = 40
+	seqDroneCountDown(x,y,7)
+	let formCircle = Array(4).fill()
+	soluong =30
+	formCircle = formCircle.map(() => {
+		const form = droneCreateFormation(soluong, 10000, 5);
+		soluong += 10;
+		return form; // Trả về giá trị để gán vào mảng mới
+	});
+	let radius = 90
+	formCircle.forEach(form=>{
+		form.setFormation(x+20,y+40,11000,radius)
+		radius+=30	
+	})
+
+	// form.setRectangleFormation(200,100,80,40)
+	// form.setHeartFormation(100,200,5)
+	// form.setRandomColorV2(100000,COLOR.White,undefined,0.5)
+	formCircle[2].setFormation(x+20,y+40,11000,170)
+	formCircle[1].setCircleFormationV3({tiltAngleX:Math.PI/2,tiltAngleY:Math.PI/2,speed:1/3000,check:-1})
+	formCircle[2].setCircleFormationV3({tiltAngleX:Math.PI/2,tiltAngleY:Math.PI/2,speed:1/3000})
+	let hz = 1000/45
+	formCircle[2].setColor('#003333')
+	let i = 0; // Bắt đầu từ index được cung cấp
+// Sử dụng hàm
+	const iterations = 10; // Số lần lặp
+	const delay = 1000; // Độ trễ giữa các lần thay đổi màu (ms)
+
+	
+    for (let step = 0; step < iterations; step++) {
+        setTimeout(() => {
+            // Thay đổi màu sắc cho formCircle[1] và formCircle[2]
+            formCircle[1].setColorV3(colors[i % colors.length], hz); // Đảm bảo không vượt quá mảng `colors`
+            formCircle[2].setColorV2('#003333', 20);
+            i++; // Tăng index màu
+        }, step * delay); // Thời gian chờ tăng dần
+    }
+	
+		
+}
+function seqDroneStrobe(x=maxW/2-20,y=maxH/2-50,time=10500){
+	let soluong= 100
+	let formStrobe = Array(4).fill().map(()=>droneCreateFormation(soluong+=50,time,2))
+	formStrobe[0].setRectangleFormation(x-100,y-200,200,190)
+	formStrobe[1].setRectangleFormation(x-200,y-300,400,190)
+	formStrobe[2].setRectangleFormation(x-300,y-300,700,190)
+	formStrobe[3].setRectangleFormation(x-650,y-300,maxW-200,190)
+	formStrobe.forEach(form=>{
+		form.setRandomColorV2(time,undefined,undefined,1)
+	})
+	formStrobe[0].setRandomColorV2(undefined,undefined,undefined,0.99)
+	setTimeout(() => {
+		formStrobe[1].setRandomColorV2(undefined,undefined,undefined,0.96)
+	}, 2000);
+	setTimeout(() => {
+		formStrobe[2].setRandomColorV2(undefined,undefined,undefined,0.97)
+	}, 4000);
+	setTimeout(() => {
+		formStrobe[3].setRandomColorV2(undefined,undefined,undefined,0.9)
+	}, 7000);
+}
+function seqShellFullAllRand(time=50000){
+	
+	playMusic('Music/lift6.mp3')
+	seqShellAllInOne(0,1,undefined,undefined,10,500)
+	seqShellRandomForTime(10,undefined,undefined,undefined)
+	let delay = 1500;
+	for(let i= 0;i<50;i++){
+		setTimeout(() => {
+			seqShellAllInOne(0,1,undefined,undefined,5,500,-0.4+Math.random()*0.2)
+			seqShellRandomForTime(5,-0.4+Math.random()*0.2,undefined,undefined)
+		}, delay*i);
+	}
+	for(let i =1;i<50;i++){
+		setTimeout(() => {
+			seqDoubleShell(0.2+Math.random()*0.2,0.2+Math.random()*0.3)
+		}, 1000*i);
+	}
+	for(let i = 0;i<33;i++){
+		setTimeout(() => {
+			seqTripleShell(0.1+Math.random()*0.3,0.2+Math.random()*0.3)
+			Math.random<0.5?playMusic('Music/lift6.mp3'):playMusic('Music/lift4.mp3')
+		}, 1500*i);
+	}
+	for(let i= 0 ;i<5;i++){
+		setTimeout(() => {
+			seqSparkLeft(0,0.6,-0.3,20)
+		setTimeout(() => {
+			seqSparkRight(0.4,1,-0.7,20)
+		}, 2000);
+		setTimeout(() => {
+			seqSparkFull(0,1,1,0)
+		}, 5000);
+		}, 10000*i);
+	}
+	for(let i=0;i<50;i++){
+		setTimeout(() => {
+			seqTripleRingShell(0.15+Math.random()*0.3,0,2)
+		}, i*1000);
+	}
+}
+function seqDroneFull(){
+	let form1 = Array(7).fill().map(()=>droneCreateFormation(60,10000,3))
+	let radius=100
+	form1.forEach(form=>{
+		form.setFormation(maxW/2,maxH/2,5000,radius+=16)
+		form.setCircleFormationV3()
+		seqDroneColorMer(form,COLOR.Blue,1000,100)
+	})
+	let form = droneCreateFormation(100,5000,2)
+	form.setFormation(maxW/2,maxH/2,8000,70)
+	form.setSphereFormation()
+	seqDroneBom(maxW/2-400,maxH/2+200,70,5000)
+	seqDroneBom(maxW/2+400,maxH/2-200,70,5000)
+	setTimeout(() => {
+		form1.forEach(form=>{
+			form.setRandomColorV2()
+		})
+	}, 2000);
+	setTimeout(() => {
+		seqDroneUFO(10000,undefined,undefined,{mer:1})
+	}, 7000);
+	setTimeout(() => {
+		seqSparkDown(maxW/2-300,maxW/2+300,maxH/2-300,16,500)
+
+	}, 7000);
+	
+}
+function seqDroneHappyNewYear(){
+	let time1 = 45000
+	let x =200
+	
+	
+	seqDroneText('happy',time1,100+x,100,{space:10,color:COLOR.Red})
+	seqDroneText('new',time1,500+x,100,{space:10,color:COLOR.Red})
+	seqDroneText('year',time1,750+x,100,{space:10,color:COLOR.Red})
+	seqDroneDrawYear('2025',time1,maxW/2-170,maxH/2-170,{color:COLOR.Red})
+	let formCircle = Array(4).fill().map(()=>droneCreateFormation(60,time1,2))	
+	formCircle[0].setFormation(maxW/2,maxH/2-150,time1,300)
+	formCircle[0].setCircleFormationV3c5({tiltAngleX:Math.PI/2,tiltAngleY:Math.PI/8,speed:0.001})
+	formCircle[1].setFormation(maxW/2,maxH/2-150,time1,300)
+	formCircle[1].setCircleFormationV3c5({tiltAngleX:Math.PI/2,tiltAngleY:-Math.PI/8,speed:0.001})	
+	seqDroneBom(maxW/2+550,maxH/2-350,25,time1)
+	seqDroneBom(maxW/2-550,maxH/2-300,25,time1)
+
+	;
+	
+	setTimeout(() => {
+		seqShellFullAllRand()
+	}, 500);
+		
+	
+	
+	
+}
+
+seqDroneHappyNewYear()
 
 
 

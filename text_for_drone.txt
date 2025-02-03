@@ -47,16 +47,35 @@ setCircleFormationV2(agn=0,check=1,speed = Math.PI / 600, tiltAngle = -Math.PI /
 -------------
 setCircleFormationV3( tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900,deltaX = 0, deltaY = 0 )
 ->Tạo đội hình xuay tròn 3D với tốc độ di chuyển
+for (let i = 0; i < 500	; i++) {
+	drones.push(new Drone(0, 0, 3.5, 0, 0,COLOR.Red,200000000));
+}
 
+setCircleFormationV3c5({tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI /
 setHeartFormation(centerX, centerY, size) 
 setRectangleFormation(startX, startY, width, height) 
 ---------------------------------------------------------------------------
+ Function ngoài reset 
+resetDrones(x)
+
+-----------------------------------------------
 function bên ngoài  class
 
 function seqFormationMove(formation,centerX, centerY, radius, formationLifetime=100000, tiltAngleX = Math.PI / 2.1, tiltAngleY = Math.PI / 3.6, speed = Math.PI / 900)
 ->> làm cho formation xoay tròn
+ seqFormationCircle(formation,centerX, centerY,radius,formationLifetime,speed = Math.PI / 600,agn=0,check=1, tiltAngle = -Math.PI / 2.05)
 
-seqColorMer(formation, time=10000, hz=100) //Đổi màu lần lượt liên tục
+
+seqDroneColorMer(formation, time=10000, hz=100) //Đổi màu lần lượt liên tục
+seqDroneCountDown(x,startX, startY, space)
+
+seqDroneUFO(k,x=maxW/2, y=maxH/2-250,agn=1, radius = 300, color=COLOR.Blue, formationLifetime=10000)
+
+seqDroneBom(k,centerX, centerY, radius2,formationLifetime=10000,color=COLOR.Blue, pistilColor=COLOR.White, tiltAngleX =Math.PI/2, tiltAngleY =Math.PI/3, speed = Math.PI / 900)
+
+//Tạo 
+seqDroneText(text, time=50000, startX=100, startY=100,space=10,color=COLOR.Red, mer,merColor)
+
 
 
 

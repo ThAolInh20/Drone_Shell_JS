@@ -7,18 +7,18 @@
 	'Ghost': ghostShell,
 	'Horse Tail': horsetailShell,
 	'Palm': palmShell,
-	'Ring': ringShell,
-	'Strobe': strobeShell, hãy chỉnh starlife +2000 và starLife+0.4 nếu muốn nó nhấp nháy lâu hơn và có thể chỉnh strobe color	
+	'Ring': ringShell, ->>kết thúc airdrag =1
+	'Strobe': strobeShell,>>kết thúc airdrag =1 hãy chỉnh starlife +2000 và starLife+0.4 nếu muốn nó nhấp nháy lâu hơn và có thể chỉnh strobe color	
 	'Willow': willowShell
 
 	Flower':flowerShell, hình hoa
 	'HearthShell':hearthShell, hình trái tim
 	'Wave':waveShell, hình dạng sóng
 	'Smiley':smileyShell, hình mặt cuoiwf
-	'Cat':catShell,
+	'Cat':	catShell,
 	'Fish':fishShell,
 	'Snow':snowShell,
-	'Bird':birdShell,
+	'Bird':birdShell, //bắn đường rẽ xuống
 	'Lotus':lotusShell,
 	'Butterfly':butterflyShell,
 --------------------------------------------------
@@ -72,10 +72,15 @@ seqRandomShell,//900+600*random+4600:0(fallingLeaves)
 	
 	vietNamV1Seq,(main)
 -------------------------------------------------------
-shell='Crysanthemum'
- 	seqShellAllInOne(left, right,shell='Crysanthemum', count=3,time=50)  bắn 5 lần 5 pháo 1 lúc trong khoảng
+shell=new Shell(........) Phải khai báo hàng thật đấy
+ 	seqShellRandomForTime(count=5, shell)
+
+
  	seqShellAllInOne(left, right,shell, count=3,time=50) banứ ngẫu nhiên vị trí 
+	
 	reatFiveShell(left, right,shell)
+
+creatFiveShellV2(x,y,shell,cout=10,color) bắn bắt đàu từ x(0->1), độ cao y(0->maxH)
 -------------------------------------------------------
 	seqTripleRingShell(position,height),//3 quả ring cùng 1 vị trí
 	seqTripleV2(position,height),//1250 //tạo 2 quả horsle sau đó là 2 quả crysantheum
@@ -87,10 +92,12 @@ shell='Crysanthemum'
 	vị trí đầu mặc định là 0.1 và 0.9
 	seqShellHeightLeftToRight(count, time)//cao dàn từ trái sang phải và bắt đầu bên trái
 	seqShellHeightRightToLeft(count, time)//cao dần từ phải sang trái và bắt đầu từ bên phải
+	seqshellmidheight(time)//2 bên tăng dần vào giữa
 -------------------------------------------------------
 	//>>position là vị trí bắt đầu 
 	seqShellShortLeftToRight(count,position, time)// thấp dần từ trái sang phải và bắt đầu bên trái //
 	seqShellShortRightToLeft(count,position, time)//Thấp dần từ phải sang trái và bắt đầu từ bên phải
+	seqshellmidshort(time)//2 bên giảm dần vào giữa
 -------------------------------------------------------
 	///>>position càng cao thị vị trí bắn càng thấp
 	seqSparkHalfLeft(position,height,count, time)//tạo các tia lửa theo vòng cung từ trái qua phải ..//vị trí tâm,vị trí dừng, số lượng tia trong nửa hình tròn, tần suất bắn)
@@ -107,15 +114,18 @@ shell='Crysanthemum'
 	seqSparkLeft(left, right,height)//bắn các tia từ trái sang phải và nghiêng sang phải//height -0.3 là độ cao 
 	seqSparkRight(left, right,height)//bắn các tia từ phải sang trái và nghiêng sang trái //height -0.7
 	seqSparkFull(left, right,count=2, wait = 900) //bắn tia từ left->right với count lần và mỗi lần cách nhau wait
+	
+	seqSparkMidLeftWithRight(count=1) bắn các tia sang 2 bên lấy 0.5 làm giữa
+	seqSparkFullTime(x1,x2, y,nghieng=0,countShell=7,count=4)//bắn cùng lúc từ x1->x2, độ cai y, nghiêng 
 -cùng hệ--------------------------------------------------
-	seqSpark(left, right,height=0,posistionX=0,countSpark =10 , huong=1) bắn cùng lúc countspack từ left->right cao height, huong=1 từ left->right, 
+	12:38 AM 1/23/202512:38 AM 1/23/2025(left, right,height=0,posistionX=0,countSpark =10 , huong=1) bắn cùng lúc countspack từ left->right cao height, huong=1 từ left->right, 
 
-	seqSparkCount(left, right,count=2,height=0,posistionX=0,countSpark =10 , wait =100) với count lần bắn cùng lúc countspack từ left->right cao height với tần suất mỗi wait
+	
 	
 	seqSparkCount(left, right,count=2,height,posistionX=0,countSpark =15,wait=100) bắn liên tục 15 pháo độ nghiêng
 ==>>>   seqSpackMidAll(mid) bắn liên tục 2 bên vào giữa
 ---------------------------------------------------------- 
-	left,right hight cơ số maxW, maxH
+	left,right hight cơ số maxW, maxH tạo spark rơi xuống 
 	seqSparkDownAll(left, right, hight,coutShell=10,time=100) tạo 1 lần  dãy spark trong khoảng left, right,trong khoảng 0 -> maxW, hight(maxH)
 	seqSparkDown(left, right, hight,cout=10,time=1000) tạo spark liên tục với cout lần, mỗi lần 1000s
 ------------------------------------------------------ 

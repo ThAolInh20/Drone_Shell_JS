@@ -1,6 +1,7 @@
 # Bỏ qua file video lớn
 *.mp4
 *.txt
+*.mp3
 
 # Bỏ qua thư mục build hoặc node_modules
 build/
