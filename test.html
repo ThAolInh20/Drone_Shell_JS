@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ngôi sao 3D</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+        }
+        canvas {
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="canvas" width="500" height="500"></canvas>
+
+<script>
+    function drawStar(ctx, cx, cy, radius, arms, angleOffset) {
+        const angleStep = Math.PI / arms; // Chia đều góc giữa các cánh sao
+        ctx.beginPath();
+        
+        for (let i = 0; i < 2 * arms; i++) {
+            const angle = i * angleStep + angleOffset;
+            const r = i % 2 === 0 ? radius : radius / 2; // Cánh sao dài và ngắn thay phiên
+            const x = cx + r * Math.cos(angle);
+            const y = cy + r * Math.sin(angle);
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+
+        ctx.closePath();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'white';
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fill();
+    }
+
+    function draw3DStar() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const radius = 100;
+        const arms = 5;
+        
+        // Xoay ngôi sao 3D bằng cách thay đổi góc
+        const angleOffset = Math.random() * Math.PI;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);  // Xóa canvas trước khi vẽ lại
+
+        // Vẽ ngôi sao với các hiệu ứng ngẫu nhiên
+        drawStar(ctx, cx, cy, radius, arms, angleOffset);
+    }
+
+    // Vẽ ngôi sao 3D mỗi 3s
+    setInterval(draw3DStar, 3000);
+</script>
+
+</body>
+</html>

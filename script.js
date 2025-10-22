@@ -1,30 +1,10 @@
 'use strict';
+// import{digits,letters} from './drone_text.js'
 console.clear();
 let airDrag =0.8;
 // This is a prime example of what starts out as a simple project
 // and snowballs way beyond its intended size. It's a little clunky
 // reading/working on this single file, but here it is anyways :)
-
-const IS_MOBILE = window.innerWidth <= 640;
-const IS_DESKTOP = window.innerWidth > 800;
-const IS_HEADER = IS_DESKTOP && window.innerHeight < 300;
-// Detect high end devices. This will be a moving target.
-const IS_HIGH_END_DEVICE = (() => {
-	const hwConcurrency = navigator.hardwareConcurrency;
-	if (!hwConcurrency) {
-		return false;
-	}
-	// Large screens indicate a full size computer, which often have hyper threading these days.
-	// So a quad core desktop machine has 8 cores. We'll place a higher min threshold there.
-	const minCount = window.innerWidth <= 1024 ? 4 : 8;
-	return hwConcurrency >= minCount;
-})();
-// Prevent canvases from getting too large on ridiculous screen sizes.
-// 8K - can restrict this if needed
-const MAX_WIDTH = 7680;
-const MAX_HEIGHT = 4320;
-const GRAVITY = 0.9; // Acceleration in px/s
-let simSpeed = 1;
 const digits={
 	1: [
         "0011100",
@@ -530,6 +510,27 @@ const letters = {
     ]
 };
 
+
+const IS_MOBILE = window.innerWidth <= 640;
+const IS_DESKTOP = window.innerWidth > 800;
+const IS_HEADER = IS_DESKTOP && window.innerHeight < 300;
+// Detect high end devices. This will be a moving target.
+const IS_HIGH_END_DEVICE = (() => {
+	const hwConcurrency = navigator.hardwareConcurrency;
+	if (!hwConcurrency) {
+		return false;
+	}
+	// Large screens indicate a full size computer, which often have hyper threading these days.
+	// So a quad core desktop machine has 8 cores. We'll place a higher min threshold there.
+	const minCount = window.innerWidth <= 1024 ? 4 : 8;
+	return hwConcurrency >= minCount;
+})();
+// Prevent canvases from getting too large on ridiculous screen sizes.
+// 8K - can restrict this if needed
+const MAX_WIDTH = 7680;
+const MAX_HEIGHT = 4320;
+const GRAVITY = 0.9; // Acceleration in px/s
+let simSpeed = 1;
 
 function getDefaultScaleFactor() {
 	if (IS_MOBILE) return 0.9;
@@ -2132,7 +2133,8 @@ const crysanthemumShell = (size = 1) => {
 		streamers,
 		flower:false
 		,smiley:false //tạo mặt cười
-		,hearth:false//hiệu ứng trái tim
+		,hearth:false //hiệu ứng trái tim
+		,star:false
 		
 		
 		
@@ -4045,7 +4047,7 @@ async function VietNamFlagFrame(left, right) {
 	}
 	position = left
 	while (position <= right) {
-		VietNamFlagOneShell(position, -0.6, 2.5);
+		VietNamFlagOneShell(position, 0.4, 2.5);
 		position += spread;
 		console.log("ngang Thấp:")
 		console.log(position)
@@ -4060,7 +4062,7 @@ async function VietNamFlagShell(left, right, time, count) {
 		let random = 0.05 + Math.random() * 0.05;
 		VietNamFlagFrame(left + random, right - random);
 		hehe++;
-		timen += 900
+		// timen += 900
 	}
 }
 function seqRandomShellPosition(left, right) {
@@ -4170,13 +4172,15 @@ function VietNamFlag() {
 		VietNamFlagStar(5)
 	}, 750);
 }
+function seqShellVietNamFlag() {
+	VietNamFlagShell(0.23, 0.77, 1250, 7)
+	// setTimeout(() => {
+	// 	VietNamFlagStar(5)
+	// }, 750);
+}
 function testShell(x, y){
 	let timen = 500;
 	seqShellRandomForTime(10)
-	
-	
-	
-	
 	;
 	
 }
@@ -4514,6 +4518,7 @@ function startSequence2() {
 			return 6000;
 		}
 	}
+	// chỗ bắn
 	// vietNamV1Seq();
 	//testShell(0.5, 0.5);
 	// monodySeq();
@@ -4521,19 +4526,19 @@ function startSequence2() {
 	// skyFallSeq();
 	// testMusic();
 	// creatFiveShell(0.3,0.5,'Cat')
-	setTimeout(() => {
-		// 
-		seqDroneFull()
-		setTimeout(() => {
-			seqDroneCountDownWithCircle()
-			seqDroneStrobe()
-		}, 20000);
-		setTimeout(() => {
-			seqDroneHappyNewYear()
-		}, 34000);
+	// setTimeout(() => {
+	// 	// 
+	// 	seqDroneFull()
+	// 	setTimeout(() => {
+	// 		seqDroneCountDownWithCircle()
+	// 		seqDroneStrobe()
+	// 	}, 20000);
+	// 	setTimeout(() => {
+	// 		seqDroneHappyNewYear()
+	// 	}, 34000);
 	 
-	// 
-	}, 4000);
+	// // 
+	// }, 4000);
 
 }
 
@@ -5428,6 +5433,7 @@ function createSnowflakeBurst(count, particleFactory, arms = 10, randomness = 0.
         particleFactory(angle, size);
     }
 }
+
 function createFishBurst(count, particleFactory, scale =20, randomness = 0.7) {
 	const randomRotation = Math.random() * Math.PI * 2; // Góc xoay ngẫu nhiên
 	scale*=Math.random()
@@ -5540,6 +5546,26 @@ function createCatBurst(count, particleFactory, scale = 10, randomness = 0.1) {
     }
 }
 
+function createStarBurst(count,particleFactory, arms = 5) {
+    const outerRadius = 1.0;
+    const innerRadius = 0.5;
+    const totalPoints = arms * 2; // mỗi cánh có 2 điểm: đỉnh ngoài và trong
+    const angleStep = (Math.PI * 2) / totalPoints;
+
+    for (let i = 0; i < totalPoints; i++) {
+        const angle = i * angleStep;
+        const isOuter = i % 2 === 0;
+        const radius = isOuter ? outerRadius : innerRadius;
+
+        const x = radius * Math.cos(angle);
+        const y = radius * Math.sin(angle);
+
+        particleFactory(x, y, 0);
+    }
+}
+
+	
+	
 function createBurstRectangle(count, particleFactory, width = 10, height = 5, startAngle = 0, arcLength = PI_2) {
 	// Calculate the number of particles per row
 	// Create an array to store random positions
@@ -5807,7 +5833,7 @@ class Shell {
 		}
 	}
 
-	launch(position, launchHeight) {
+	launch(position, launchHeight, thisNgieng = 0 ) {
 		const width = stageW;
 		const height = stageH;
 		// Distance from sides of screen to keep shells.
@@ -5822,19 +5848,24 @@ class Shell {
 		const launchX = position * (width - hpad * 2) + hpad;
 		const launchY = height;
 		const burstY = minHeight - (launchHeight * (minHeight - vpad));
-		const launchDistance = launchY - burstY;
+		// const launchDistance = launchY - burstY;
+		const rand = Math.random()
+		const positionX =thisNgieng *(rand < 0.5 ? -0.7 * rand : 0.7 * rand) 
+		// console.log(positionX)
+		const launchDistance = launchY - burstY ;
 		// Using a custom power curve to approximate Vi needed to reach launchDistance under gravity and air drag.
 		// Magic numbers came from testing.
 		const launchVelocity = Math.pow(launchDistance * 0.04, 0.64);
 
-		const comet = this.comet = Star.add(
+		const comet = this.comet = Star.addV2(
 			launchX,
 			launchY,
 			typeof this.color === 'string' && this.color !== 'random' ? this.color : COLOR.White,
 			Math.PI,
 			launchVelocity * (this.horsetail ? 1.2 : 1),
 			// Hang time is derived linearly from Vi; exact number came from testing
-			launchVelocity * (this.horsetail ? 100 : 400)
+			launchVelocity * (this.horsetail ? 100 : 400),
+			positionX,
 		);
 
 		// making comet "heavy" limits air drag
@@ -6235,6 +6266,10 @@ class Shell {
 				createSnowflakeBurst(this.starCount, starFactory)
 				check =0;
 			}
+			if(this.star){
+				createStarBurst(this.starCount, starFactory)
+				check =0;
+			}
 			if(this.fish){
 				createFishBurst(this.starCount, starFactory)
 				check =0;
@@ -6425,7 +6460,8 @@ const Star = {
 		instance.prevX = x;
 		instance.prevY = y;
 		instance.color = color;
-		instance.speedX = speedOffX || 0;//góc bay theo chiều x
+		 instance.speedX = (speedOffX || 0) ;//góc bay theo chiều x
+		console.log(speedOffX);
 		instance.speedY = Math.cos(angle) * speed + (speedOffY || 0);//góc bay theo chiều y
 		instance.life = life;
 		instance.fullLife = life;
@@ -8049,7 +8085,6 @@ function seqDroneText(text, time=50000, startX=100, startY=100,{space=10,color=C
 
 function seqSparkFullTime(x1,x2, y,nghieng=0,countShell=7,count=4){
 	let mm = Math.abs(x1-x2)/countShell;
-	
 	while(x1<x2){
 		let shell  = getRandomShell()
 		for(let i=0;i<count;i++){
@@ -8059,6 +8094,17 @@ function seqSparkFullTime(x1,x2, y,nghieng=0,countShell=7,count=4){
 	}
 		
 }
+// function seqSparkFullTimeV2(x1,x2, y,nghieng=0,color="Red",countShell=7,count=4){
+// 	let mm = Math.abs(x1-x2)/countShell;
+// 	while(x1<x2){
+// 		let shell  = 
+// 		for(let i=0;i<count;i++){
+// 			shell.launchV2(x1,y,nghieng)
+// 		}
+// 		x1+=mm
+// 	}
+		
+// }
 
 
 async function seqShellAll(x, y,hight,size,count,wait=1000){
@@ -8260,14 +8306,18 @@ function seqDroneHappyNewYear(){
 	
 	setTimeout(() => {
 		seqShellFullAllRand()
-	}, 500);
-		
-	
-	
-	
+	}, 500);	
 }
 
-seqDroneHappyNewYear()
+// seqDroneHappyNewYear()
 
+function seqSparkRedRectangle(x, y, width,height,count){
+	
+}
+let shell1= new Shell({...shellTypes['Crysanthemum'](3),star:true})
+shell1.launch(0.5,0,1)
+// seqSparkFullTime(0.3,0.7,0,0)
+// seqShellVietNamFlag()
 
+skyFallSeq()
 

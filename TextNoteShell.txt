@@ -1,3 +1,5 @@
+//"chỗ bắn" (tìm cái này để tìm chỗ gọi hàm bắn)
+
 
 	'Crackle': crackleShell,
 	'Crossette': crossetteShell,
@@ -152,9 +154,9 @@ size{ size//kích cỡ,
   ----------------------------------------------------
 shell.{
 busrt(x, y) //x>>min0->
-launch(position, launchHeight) vị trí và độ cao giữa màn hình là 0
+launch(position, launchHeight,thisNghieng=0) vị trí và độ cao giữa màn hình là 0, thisNghieng =1 thi nghieng rando
 
-launchV2(position, launchHeight,PitionX(góc nghiêng bắn) -10 ->10
+launchV2(position, launchHeight,PositionX(góc nghiêng bắn) -1 ->1
 
 
 //x, y theo tọa độ của chính--> maxW, maxH= 500, 600 ấy
