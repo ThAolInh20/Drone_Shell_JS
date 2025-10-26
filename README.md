@@ -1,16 +1,15 @@
-# 🚀 shell_drone_js
-## 🎯 Introduction
-This is a small project primarily using JavaScript to create drone and firework objects. 🎆🚁
-
-## 🎯 Goals
-The project aims to evolve into software for Android 📱 and PC 💻, allowing non-coders to interact and edit effortlessly.
-
-## 📚 Reference Sources
+# shell_drone_js
+## Giới thiệu
+Dự án nhằm phát triển 1 hệ thống mô phỏng trình diễn drone và pháo hoa.
+## Mục tiêu
+Phát triển 1 hệ thống gồm: chỉnh sửa, thiết kế, mô phỏng cho trình diễn drone và pháo hoa.
+## Tiến độ hiện tại:
+Mô phỏng trình diễn thông qua code trực tiếp.
+## Hướng dẫn cài đặt:
+ - Clone repo.
+ - Click index.html để chạy.
+## Tham khảo
  * Shell:
 🔗 Source link: https://codepen.io/codetaolao/pen/WNyazLK
-
- * Drone:
-🤖 ChatGPT
-
-## 📩 Contact
+## Contact
  * Email: aotrame@gmail.com
