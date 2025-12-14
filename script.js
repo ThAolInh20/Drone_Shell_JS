@@ -764,8 +764,7 @@ class FormationV2{
 		this.centerX=null;
 		this.centerY=null;
 		this.radius=null;
-
-
+		this.targetFormation = null;
 	}
 	/**
 	 * Thêm drone vào formation
@@ -783,6 +782,19 @@ class FormationV2{
 			this.drones.push(drones[mmm+i])
 		}
 	}
+	setSize(size=3){
+		this.drones.forEach(drone=>{
+			drone.radius = size;
+		})
+	}
+	setTargetFormation(positions){
+		this.targetFormation = positions;
+	}
+	// setDie(){
+	// 	drones.forEach(drone=>{
+	// 		drone.life = 0;
+	// 	})
+	// }
 	/**
 	 * Đổi màu cho tất cả drone của formation
 	 * @param {*} color 
@@ -793,8 +805,30 @@ class FormationV2{
 			
 		})
 	}
+	/**
+	 * Chuyển đổi màu lần lượt với khoảng cách thời gian giữa các drone
+	 * @param {*} color Màu đích
+	 * @param {*} timeGap Khoảng cách thời gian giữa các lần đổi màu (ms)
+	 */
+	async setColorV2(color, timeGap=0.7,pistilColor=COLOR.White) {
+		// Hàm delay đơn giản
+		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+		color = color??getRandomColor()
+		// Thay đổi màu lần lượt cho từng drone
+		for (let i = 0; i < this.drones.length-2; i++) {
+			const drone = this.drones[i];
+			const drone1v1 = this.drones[i+1];
+			const drone1v2 = this.drones[i+2];
+			// Gọi hàm đổi màu với hiệu ứng
+			this.fadeColor(drone, color, pistilColor, 120);
+			this.fadeColor(drone1v1, '#000000', '#000000', 120);
+			this.fadeColor(drone1v2, '#000000','#000000', 120);
 
-
+			// Đợi trước khi chuyển sang drone tiếp theo
+			await delay(timeGap);
+		}
+	}
+	
 	/**
 	 * Tạo hiệu ứng đổi màu ngẫu nhiên
 	 * @param {*} interval - tần suất đổi màu
@@ -828,7 +862,7 @@ class FormationV2{
 	 * @param {*} colorStrobe - màu nhấp nháy
 	 */
 	setRandomColorV2(duration = 2000000,colorStrobe = null,interval = 64, troll = 0.9) {
-		const color = this.drones[1].color
+		const color = this.drones[0]?.color ?? 'white';
 		// Lưu màu ban đầu
 		const updateColors = () => {
 			const shuffledDrones = [...this.drones].sort(() => Math.random() - troll);
@@ -879,19 +913,20 @@ class FormationV2{
 	/**
 	 * Vẽ ký tự số
 	 * @param {*} digit - số 2
-	 * @param {*} startX - vị trí bắt đầu x
-	 * @param {*} startY - vị trí bắt đầu y
+	 * @param {*} startW - vị trí bắt đầu x
+	 * @param {*} startH - vị trí bắt đầu y
 	 * @param {*} spacing - khoảng cách giữa các drone
 	 */
-	drawDigit(digit, startX, startY, spacing) {
+	drawDigit(digit, startW, startH, spacing) {
 		const matrix = digits[digit]; // Lấy ma trận của số
 		let droneIndex = 0;
 		for (let row = 0; row < matrix.length; row++) {
+			if (!this.drones[droneIndex]) break;
 			for (let col = 0; col < matrix[row].length; col++) {
 				if (matrix[row][col] === '1') {
 					// Đặt drone tại vị trí tương ứng
-					this.drones[droneIndex].x = startX + col * spacing;
-					this.drones[droneIndex].y = startY + row * spacing;
+					this.drones[droneIndex].x = startW + col * spacing;
+					this.drones[droneIndex].y = startH + row * spacing;
 					droneIndex++;
 					
 				}
@@ -918,11 +953,11 @@ class FormationV2{
 	/**
 	 * vẽ kí tư chữ
 	 * @param {*} letter - chữ 'a'
-	 * @param {*} startX 
-	 * @param {*} startY 
+	 * @param {*} startW 
+	 * @param {*} startH 
 	 * @param {*} spacing 
 	 */
-	drawLetter(letter, startX, startY, spacing) {
+	drawLetter(letter, startW, startH, spacing) {
 		letter = letter.toUpperCase()
 		const matrix = letters[letter]; // Lấy ma trận của ký tự
 		let droneIndex = 0;
@@ -930,13 +965,127 @@ class FormationV2{
 			for (let col = 0; col < matrix[row].length; col++) {
 				if (matrix[row][col] === '1') {
 					// Đặt drone tại vị trí tương ứng
-					this.drones[droneIndex].x = startX + col * spacing;
-					this.drones[droneIndex].y = startY + row * spacing;
+					this.drones[droneIndex].x = startW + col * spacing;
+					this.drones[droneIndex].y = startH + row * spacing;
 					droneIndex++;
 				}
 			}
 		}
 		
+	}
+	distance(a, b) {
+		return Math.hypot(a.x - b.x, a.y - b.y);
+	}
+	mapDronesToTargets() {
+		const availableDrones = [...this.drones];
+		const mappings = [];
+
+		this.targetFormation.forEach(target => {
+			let nearestIndex = -1;
+			let minDist = Infinity;
+
+			availableDrones.forEach((drone, index) => {
+				const d = Math.hypot(drone.x - target.x, drone.y - target.y);
+				if (d < minDist) {
+					minDist = d;
+					nearestIndex = index;
+				}
+			});
+
+			if (nearestIndex !== -1) {
+				mappings.push({
+					drone: availableDrones[nearestIndex],
+					target
+				});
+				availableDrones.splice(nearestIndex, 1); // không dùng lại
+			}
+		});
+
+		return {
+			used: mappings,
+			unused: availableDrones
+		};
+	}
+	/**
+	 * Hàm di chuyển drone đến vị trí đội hình mục tiêu theo đường đi ngắn nhất
+	 * @param {*} duration 
+	 * @returns 
+	 */
+	moveToFormationV2(duration = 2000) {
+		if (!this.targetFormation) return;
+
+		const { used, unused } = this.mapDronesToTargets();
+		const startTime = performance.now();
+
+		const startMap = new Map();
+		this.drones.forEach(d => {
+			startMap.set(d, { x: d.x, y: d.y });
+		});
+
+		const parkX = stageW / 2;
+		const parkY = stageH / 2;
+
+		const animate = (now) => {
+			const t = Math.min((now - startTime) / duration, 1);
+
+			// Drone có target
+			used.forEach(({ drone, target }) => {
+				const start = startMap.get(drone);
+				drone.x = start.x + (target.x - start.x) * t;
+				drone.y = start.y + (target.y - start.y) * t;
+			});
+
+			// Drone thừa
+			unused.forEach(drone => {
+				const start = startMap.get(drone);
+				drone.x = start.x + (parkX - start.x) * t;
+				drone.y = start.y + (parkY - start.y) * t;
+				drone.color = 'black';
+				drone.pistilColor = 'rgba(0,0,0,0)';
+			});
+
+			if (t < 1) requestAnimationFrame(animate);
+		};
+
+		requestAnimationFrame(animate);
+	}
+	/**
+	 * Hàm di chuyển drone đến vị trí đội hình mục tiêu đơn giản theo thứ tự
+	 * @param {*} duration 
+	 * @returns 
+	 */
+	moveToFormationV1(duration = 2000) {
+		if (!this.targetFormation) return;
+
+		const startTime = performance.now();
+		const startPositions = this.drones.map(d => ({ x: d.x, y: d.y }));
+
+		const parkX = stageW/2; // vùng đậu drone thừa
+		const parkY = stageH/2;
+
+		const animate = (now) => {
+			const t = Math.min((now - startTime) / duration, 1);
+
+			this.drones.forEach((drone, i) => {
+				const start = startPositions[i];
+				const target = this.targetFormation[i];
+
+				if (target) {
+					drone.x = start.x + (target.x - start.x) * t;
+					drone.y = start.y + (target.y - start.y) * t;
+				} else {
+					// drone thừa → bay đi + tắt màu
+					drone.x = start.x + (parkX - start.x) * t;
+					drone.y = start.y + (parkY - start.y) * t;
+					drone.color = 'black';
+					drone.pistilColor = 'rgba(0,0,0,0)';
+				}
+			});
+
+			if (t < 1) requestAnimationFrame(animate);
+		};
+
+		requestAnimationFrame(animate);
 	}
 }
 
@@ -4848,6 +4997,7 @@ function handleResize() {
 // Compute initial dimensions
 handleResize();
 
+// const scaleFactor2 = scaleFactorSelector()
 window.addEventListener('resize', handleResize);
 
 
@@ -8544,12 +8694,31 @@ function seqDroneHappyNewYear(){
 // skyFallSeq()
 
 let formation1 = new FormationV2()
-formation1.addDrones(60)
+formation1.addDrones(60,4)
 // formation1.setFormation(500,500,10000,10)
-formation1.drawDigit(8,500,500,10)
+formation1.drawDigit(8,stageW/2,stageH/2,10)
 formation1.setColor(COLOR.Red)
-formation1.setRandomColorV2()
-console.log("hello"+formation1.drones.length)
+
+const nextFormation = [];
+for (let i = 0; i < formation1.drones.length; i++) {
+    nextFormation.push({
+        x: 300 + i * 10,
+        y: 300
+    });
+}
+formation1.setTargetFormation(nextFormation);
+setTimeout(() => {
+	formation1.moveToFormationV1(10000);
+}, 2000);
+setTimeout(() => {
+	
+}, 4000);
+
+// formation1.setRandomColorV2()
+
+
+// formation1.
+
 
 
 
