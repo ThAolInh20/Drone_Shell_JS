@@ -3,6 +3,12 @@
 *.txt
 *.mp3
 *.xlsx
+*.csv
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
 
 # Bỏ qua thư mục build hoặc node_modules
 build/

@@ -763,8 +763,9 @@ class FormationV2 {
         this.drones = [];
         this.targetFormation = null;
 
+		this.colorAnimator = new FormationColorAnimator();
         this.movement = new FormationMovement();
-        this.colorEffect = new FormationColorEffect();
+        // this.colorEffect = new FormationColorEffect();
     }
 
     addDrones(n, size, life = 1000000) {
@@ -781,25 +782,63 @@ class FormationV2 {
         this.drones.forEach(d => d.radius = size);
     }
 
-    setTargetFormation(positions) {
-        this.targetFormation = positions;
-    }
+    setTargetFormation(positions = []) {
+		this.targetFormation = positions.map(p => ({
+			x: p.x,
+			y: p.y,
+			color: p.color ?? null,
+			pistilColor: p.pistilColor ?? null,
+			id: p.id ?? null
+		}));
+	}
+	
 
     moveV1(duration = 2000) {
-        this.movement.moveByIndex(
-            this.drones,
-            this.targetFormation,
-            duration
-        );
-    }
+		if (!this.targetFormation) return;
 
-    moveV2(duration = 2000) {
-        this.movement.moveByNearest(
-            this.drones,
-            this.targetFormation,
-            duration
-        );
-    }
+
+
+		this.movement.moveByNearest(
+			this.drones,
+			purePositions,
+			duration
+		);
+	}
+
+    moveV2(
+    duration = 2000,
+    waveSequence = []
+) {
+    // clear wave cũ nếu có
+    this.colorAnimator?.stop();
+    this.colorAnimator = new FormationColorAnimator();
+
+    this.movement.moveByNearest(
+        this.drones,
+        this.targetFormation,
+        duration,
+        (used) => {
+            // 🔥 MOVE XONG → GIỮ NGUYÊN MÀU HIỆN TẠI
+
+            let delay = 0;
+
+            waveSequence.forEach(wave => {
+                setTimeout(() => {
+                    this.colorAnimator.directionalWave(used, {
+                        direction: wave.direction,
+                        speed: wave.speed ?? 3,
+                        width: wave.width ?? 80,
+                        interval: wave.interval ?? 16,
+                        after: wave.after ?? 'keep' // 🔥 giữ màu trước
+                    });
+                }, delay);
+
+                delay += wave.delayAfter ?? 3000;
+            });
+        }
+    );
+}
+
 
     /**
 	 /**
@@ -827,9 +866,9 @@ class FormationV2 {
             const drone1v1 = this.drones[i+1];
             const drone1v2 = this.drones[i+2];
             // Gọi hàm đổi màu với hiệu ứng
-            this.fadeColor(drone, color, pistilColor, 120);
-            this.fadeColor(drone1v1, '#000000', '#000000', 120);
-            this.fadeColor(drone1v2, '#000000','#000000', 120);
+            FormationV2.fadeColor(drone, color, pistilColor, 120);
+            FormationV2.fadeColor(drone1v1, '#000000', '#000000', 120);
+            FormationV2.fadeColor(drone1v2, '#000000','#000000', 120);
 
             // Đợi trước khi chuyển sang drone tiếp theo
             await delay(timeGap);
@@ -900,7 +939,7 @@ class FormationV2 {
         }, duration);
         
     }
-    fadeColor(drone, targetColor, targetPistilColor, duration) {
+    static fadeColor(drone, targetColor, targetPistilColor, duration) {
 
 		// if (drone._fading) return;   // 🔒 chặn fade chồng
 		drone._fading = true;
@@ -1006,115 +1045,421 @@ class FormationMovement {
         requestAnimationFrame(animate);
     }
 
-    moveByNearest(drones, targets, duration) {
-		if (!targets || targets.length === 0) return;
+    moveByNearest(drones, targets, duration, onComplete) {
+    if (!targets || targets.length === 0) return;
 
-		const { used, unused } = this.mapNearest(drones, targets);
+    const { used, unused } = this.mapNearest(drones, targets);
 
-		const start = new Map();
-		drones.forEach(d => start.set(d, { x: d.x, y: d.y }));
+    const start = new Map();
+    drones.forEach(d => start.set(d, { x: d.x, y: d.y }));
 
-		const px = stageW / 2;
-		const py = stageH / 2;
-		const t0 = performance.now();
+    const px = stageW / 2;
+    const py = stageH / 2;
+    const t0 = performance.now();
 
-		const animate = (now) => {
-			const raw = Math.min((now - t0) / duration, 1);
-			const t = this.easeInOut(raw);
+    let finished = false;
 
-			// drone có target
-			used.forEach(({ drone, target }) => {
-				const s = start.get(drone);
-				drone.x = s.x + (target.x - s.x) * t;
-				drone.y = s.y + (target.y - s.y) * t;
-			});
+    const animate = (now) => {
+        const raw = Math.min((now - t0) / duration, 1);
+        const t = this.easeInOut(raw);
 
-			// drone dư → về tâm + tắt màu
-			unused.forEach(d => {
-				const s = start.get(d);
-				d.x = s.x + (px - s.x) * t;
-				d.y = s.y + (py - s.y) * t;
-				d.color = 'black';
-				d.pistilColor = 'rgba(0,0,0,0)';
-			});
+        used.forEach(({ drone, target }) => {
+            const s = start.get(drone);
+            drone.x = s.x + (target.x - s.x) * t;
+            drone.y = s.y + (target.y - s.y) * t;
+        });
 
-			if (raw < 1) requestAnimationFrame(animate);
+        unused.forEach(drone => {
+            const s = start.get(drone);
+            drone.x = s.x + (px - s.x) * t;
+            drone.y = s.y + (py - s.y) * t;
+            drone.color = 'black';
+            drone.pistilColor = 'rgba(0,0,0,0)';
+        });
+
+        if (raw === 1 && !finished) {
+            finished = true;
+            onComplete?.(used, unused);
+            return;
+        }
+
+        if (raw < 1) requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
+}
+
+
+	
+	
+}
+
+class FormationColorAnimator {
+  constructor() {
+    this.timer = null;
+    this.running = false;
+  }
+
+  stop() {
+    this.running = false;
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+  }
+
+  /**
+   * SEQUENCE 1: quét lần lượt (giống code cũ)
+   * 1 sáng – 2 tắt
+   */
+  scan(used, {
+    timeGap = 5,
+    fadeDuration = 120
+  } = {}) {
+    this.stop();
+    this.running = true;
+
+    let i = 0;
+
+    const step = () => {
+      if (!this.running || i >= used.length) return;
+
+      const { drone, target } = used[i];
+
+      FormationV2.fadeColor(
+        drone,
+        target.color,
+        target.pistilColor ?? COLOR.White,
+        fadeDuration
+      );
+
+      if (used[i + 1]) {
+        FormationV2.fadeColor(
+          used[i + 1].drone,
+          'black',
+          'rgba(0,0,0,0)',
+          fadeDuration
+        );
+      }
+
+      if (used[i + 2]) {
+        FormationV2.fadeColor(
+          used[i + 2].drone,
+          'black',
+          'rgba(0,0,0,0)',
+          fadeDuration
+        );
+      }
+
+      i++;
+      this.timer = setTimeout(step, timeGap);
+    };
+
+    step();
+  }
+
+  /**
+   * SEQUENCE 2: từ tâm lan ra
+   */
+  radial(used, cx, cy, {
+		timeGap = 8,
+		fadeDuration = 120
+	} = {}) {
+		this.stop();
+		this.running = true;
+
+		const sorted = [...used].sort(
+		(a, b) =>
+			Math.hypot(a.target.x - cx, a.target.y - cy) -
+			Math.hypot(b.target.x - cx, b.target.y - cy)
+		);
+
+		let i = 0;
+
+		const step = () => {
+		if (!this.running || i >= sorted.length) return;
+
+		const { drone, target } = sorted[i];
+
+		FormationV2.fadeColor(
+			drone,
+			target.color,
+			target.pistilColor ?? COLOR.White,
+			fadeDuration
+		);
+
+		i++;
+		this.timer = setTimeout(step, timeGap);
 		};
 
-		requestAnimationFrame(animate);
+		step();
 	}
-}
-class FormationColorEffect {
-    constructor() {
-        this.timers = [];
-    }
+directionalWave(
+  used,
+  {
+    direction = 'ltr',   // 'ltr' | 'rtl' | 'ttb' | 'btt'
+    speed = 3,
+    width = 80,
+    interval = 16,
+    after = 'keep'       // 🔥 'keep' | 'black'
+  } = {}
+) {
+  if (!Array.isArray(used) || used.length === 0) return;
 
-    clear() {
-        this.timers.forEach(t => clearInterval(t));
-        this.timers = [];
-    }
+  this.stop();
+  this.running = true;
 
-    solid(drones, color, pistil) {
-        drones.forEach(d => {
-            d.color = color;
-            d.pistilColor = pistil;
+  // xác định trục & chiều
+  let axis, sign;
+  switch (direction) {
+    case 'ltr': axis = 'x'; sign = +1; break;
+    case 'rtl': axis = 'x'; sign = -1; break;
+    case 'ttb': axis = 'y'; sign = +1; break;
+    case 'btt': axis = 'y'; sign = -1; break;
+    default: axis = 'x'; sign = +1;
+  }
+
+  let min = Infinity, max = -Infinity;
+  used.forEach(({ target }) => {
+    min = Math.min(min, target[axis]);
+    max = Math.max(max, target[axis]);
+  });
+
+  let wavePos = sign > 0 ? min - width : max + width;
+
+  const step = () => {
+    if (!this.running) return;
+
+    let anyActive = false;
+
+    used.forEach(({ drone, target }) => {
+      const d = target[axis] - wavePos;
+      const dist = Math.abs(d);
+
+      // 🌊 ĐANG TRONG SÓNG
+      if (dist < width) {
+        const intensity = 1 - dist / width;
+        drone.color = target.color;
+        drone.pistilColor = `rgba(255,255,255,${intensity})`;
+        anyActive = true;
+      }
+
+      // 🚫 KHÔNG set gì khi CHƯA TỚI
+      // 👉 giữ nguyên màu cũ
+    });
+
+    wavePos += speed * sign;
+
+    const done =
+      sign > 0
+        ? wavePos > max + width
+        : wavePos < min - width;
+
+    if (!done || anyActive) {
+      this.timer = setTimeout(step, interval);
+    } else {
+      // 🔚 SAU KHI SÓNG ĐI QUA
+      if (after === 'black') {
+        used.forEach(({ drone }) => {
+          drone.color = 'black';
+          drone.pistilColor = 'rgba(0,0,0,0)';
         });
+      }
+      this.running = false;
     }
+  };
 
-    wave(drones, color, interval) {
-        let i = 0;
-        const timer = setInterval(() => {
-            drones.forEach((d, idx) => {
-                d.color = idx === i ? color : 'black';
-                d.pistilColor = 'rgba(0,0,0,0)';
-            });
-            i = (i + 1) % drones.length;
-        }, interval);
-        this.timers.push(timer);
-    }
-
-    random(drones, interval) {
-        const timer = setInterval(() => {
-            drones.forEach(d => {
-                d.color = Math.random() > 0.7 ? getRandomColor() : 'black';
-            });
-        }, interval);
-        this.timers.push(timer);
-    }
+  step();
 }
+
+
+
+  /**
+   * SEQUENCE 3: trái → phải (theo X)
+   */
+  leftToRight(used, {
+    timeGap = 6,
+    fadeDuration = 120
+  } = {}) {
+    this.stop();
+    this.running = true;
+
+    const sorted = [...used].sort(
+      (a, b) => a.target.x - b.target.x
+    );
+
+    let i = 0;
+
+    const step = () => {
+      if (!this.running || i >= sorted.length) return;
+
+      const { drone, target } = sorted[i];
+
+      FormationV2.fadeColor(
+        drone,
+        target.color,
+        target.pistilColor ?? COLOR.White,
+        fadeDuration
+      );
+
+      i++;
+      this.timer = setTimeout(step, timeGap);
+    };
+
+    step();
+  }
+
+  /**
+   * SEQUENCE 4: random reveal
+   */
+  random(used, {
+    timeGap = 10,
+    fadeDuration = 120
+  } = {}) {
+    this.stop();
+    this.running = true;
+
+    const shuffled = [...used].sort(() => Math.random() - 0.5);
+    let i = 0;
+
+    const step = () => {
+      if (!this.running || i >= shuffled.length) return;
+
+      const { drone, target } = shuffled[i];
+
+      FormationV2.fadeColor(
+        drone,
+        target.color,
+        target.pistilColor ?? COLOR.White,
+        fadeDuration
+      );
+
+      i++;
+      this.timer = setTimeout(step, timeGap);
+    };
+
+    step();
+  }
+}
+
+
 class FormationPattern {
-
+	static makePoint({
+		id = null,
+		x,
+		y,
+		color = null,
+		pistilColor = null
+		}) {
+		return { id, x, y, color, pistilColor };
+	}
     static fromMatrix(matrix, x, y, spacing) {
-        const pos = [];
-        matrix.forEach((row, r) => {
-            [...row].forEach((c, col) => {
-                if (c === '1') {
-                    pos.push({
-                        x: x + col * spacing,
-                        y: y + r * spacing
-                    });
-                }
-            });
-        });
-        return pos;
-    }
+		const pos = [];
+		matrix.forEach((row, r) => {
+			[...row].forEach((c, col) => {
+			if (c === '1') {
+				pos.push(
+				this.makePoint({
+					x: x + col * spacing,
+					y: y + r * spacing
+				})
+				);
+			}
+			});
+		});
+		return pos;
+	}
+	
 
     static line(n, x, y, spacing) {
-        return Array.from({ length: n }, (_, i) => ({
-            x: x + i * spacing,
-            y
-        }));
-    }
+		return Array.from({ length: n }, (_, i) =>
+			this.makePoint({
+			x: x + i * spacing,
+			y
+			})
+		);
+	}
 
     static circle(n, cx, cy, r) {
-        return Array.from({ length: n }, (_, i) => {
-            const a = (i / n) * Math.PI * 2;
-            return {
-                x: cx + Math.cos(a) * r,
-                y: cy + Math.sin(a) * r
-            };
-        });
-    }
+		return Array.from({ length: n }, (_, i) => {
+			const a = (i / n) * Math.PI * 2;
+			return this.makePoint({
+			x: cx + Math.cos(a) * r,
+			y: cy + Math.sin(a) * r
+			});
+		});
+	}
+	 // 🔥 CSV URL → POINTS (CÓ MÀU)
+	static async fromCSVUrl(url, opts = {}) {
+		const res = await fetch(url);
+		if (!res.ok) {
+			throw new Error(`Cannot load CSV: ${url}`);
+		}
+		const csvText = await res.text();
+		return this.fromCSVWithColor(csvText, opts);
+	}
+
+	// 🔁 CSV TEXT → POINTS
+	static fromCSVWithColor(
+	csvText,
+	{
+		offsetX = 0,
+		offsetY = 0,
+		scale = 1,
+		autoCenter = true
+	} = {}
+	) {
+	const lines = csvText
+		.split(/\r?\n/)
+		.map(l => l.trim())
+		.filter(l => l.length > 0);
+
+	const dataLines = lines.slice(1);
+	const points = [];
+
+	for (const line of dataLines) {
+		const parts = line.split(',');
+		if (parts.length < 6) continue;
+
+		const id = Number(parts[0]);
+		const x = Number(parts[1]);
+		const y = Number(parts[2]);
+		const r = Number(parts[3]);
+		const g = Number(parts[4]);
+		const b = Number(parts[5]);
+
+		if (Number.isNaN(x) || Number.isNaN(y)) continue;
+
+		points.push({ id, x, y, r, g, b });
+	}
+
+	// auto-center
+	let cx = 0, cy = 0;
+	if (autoCenter && points.length > 0) {
+		let minX = Infinity, maxX = -Infinity;
+		let minY = Infinity, maxY = -Infinity;
+
+		points.forEach(p => {
+		minX = Math.min(minX, p.x);
+		maxX = Math.max(maxX, p.x);
+		minY = Math.min(minY, p.y);
+		maxY = Math.max(maxY, p.y);
+		});
+
+		cx = (minX + maxX) / 2;
+		cy = (minY + maxY) / 2;
+	}
+
+	// 🔥 MAP RA TARGET (ĐẢO Y)
+	return points.map(p => ({
+		id: p.id,
+		x: (p.x - cx) * scale + offsetX,
+		y: offsetY - (p.y - cy) * scale, // ✅ FIX NGƯỢC Y
+		color: `rgb(${p.r},${p.g},${p.b})`,
+		pistilColor: COLOR.White
+	}));
+	}
+
 }
 class FormationAnimator {
     constructor(formation) {
@@ -1213,6 +1558,58 @@ class FormationAnimator {
 
 		animate(performance.now());
 	}
+	/**
+	 * Tạo sóng đều không gian
+	 * @param {*} wavelength - bước sóng
+	 * @param {*} amplitude - biên độ
+	 * @param {*} speed - tốc độ
+	 * @param {*} follow - độ bám theo vị trí mục tiêu
+	 */
+	spaceWave({
+		amplitude = 6,
+		wavelength = 80,   // càng lớn → sóng càng dài
+		speed = 0.004,
+		follow = 0.08,
+		axis = 'x'         // 'x' | 'y'
+		} = {}) {
+		this.stop();
+		this.snapshot();
+
+		const drones = this.formation.drones;
+		this.running = true;
+		const start = performance.now();
+
+		const animate = (now) => {
+			if (!this.running) return;
+
+			const t = (now - start) * speed;
+
+			drones.forEach((drone, i) => {
+			const base = this.basePositions[i];
+			const p = axis === 'x' ? base.x : base.y;
+
+			// phase theo không gian
+			const phase = (p / wavelength) * Math.PI * 2 + t;
+			const offset = Math.sin(phase) * amplitude;
+
+			let targetX = base.x;
+			let targetY = base.y;
+
+			if (axis === 'x') {
+				targetY = base.y + offset;
+			} else {
+				targetX = base.x + offset;
+			}
+
+			drone.x += (targetX - drone.x) * follow;
+			drone.y += (targetY - drone.y) * follow;
+			});
+
+			this.rafId = requestAnimationFrame(animate);
+		};
+
+		animate(performance.now());
+		}
 	selfRotate({
         speed = 0.002,
         radius = 3
@@ -1375,7 +1772,8 @@ class Formation {
 		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 		color = color??getRandomColor()
 		// Thay đổi màu lần lượt cho từng drone
-		for (let i = 0; i < this.drones.length-2; i++) {
+		for (let i = 0; i < this.drones.length-
+			2; i++) {
 			const drone = this.drones[i];
 			const drone1v1 = this.drones[i+1];
 			const drone1v2 = this.drones[i+2];
@@ -8875,46 +9273,41 @@ function seqDroneHappyNewYear(){
 
 const formation = new FormationV2();
 
-formation.addDrones(80, 3);
-
+formation.addDrones(1000, 3);
+const l = formation.drones.length/2;
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+async function loadCSVFormation() {
+  const targets = await FormationPattern.fromCSVUrl(
+  "draw/haui.csv",
+  {
+    offsetX: stageW / 2,
+    offsetY: stageH / 2,
+    scale: 25,
+    autoCenter: true
+  }
+);
 
-async function runFormationTimeline() {
-
-  // 1️⃣ Line → move
-  formation.setTargetFormation(
-    FormationPattern.line(80, stageW / 2, stageH / 2, 10)
-  );
-  formation.moveV2(3000);
-  await sleep(5000);
-
-  // 2️⃣ Circle → move
-  formation.setTargetFormation(
-    FormationPattern.circle(80, stageW / 2, stageH / 2, 200)
-  );
-  formation.moveV2(5000);
-  await sleep(5000);
-
-  // 3️⃣ Rotate
-  const animator = new FormationAnimator(formation);
-  animator.rotateAroundCenter({
-    speed: 0.001,
-    tilt: Math.PI / 3
-  });
-
-  await sleep(4000);
-  animator.stop();
-
-  // 4️⃣ Line lại → move
-  await sleep(1000); // buffer nhỏ tránh chồng state
-  formation.setTargetFormation(
-    FormationPattern.circle(80, stageW / 2, stageH / 2, 150)
-  );
-  formation.moveV2(9000);
-  await sleep(10000);
-  animator.wave()
+formation.setTargetFormation(targets);
+formation.moveV2(3000, [
+    {
+        direction: 'ttb',   // trên → dưới
+        after: 'keep',
+        delayAfter: 4000
+    },
+    {
+        direction: 'rtl',   // phải → trái
+        after: 'keep',
+        delayAfter: 4000
+    }
+]);
+ await sleep(10000);
+ formation.setColorV2({color: COLOR.Red});
 }
-runFormationTimeline();
+
+loadCSVFormation();
+
+
+
 
 
 
