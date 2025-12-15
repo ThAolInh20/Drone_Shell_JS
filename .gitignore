@@ -2,7 +2,7 @@
 *.mp4
 *.txt
 *.mp3
-*.xlxs
+*.xlsx
 
 # Bỏ qua thư mục build hoặc node_modules
 build/
