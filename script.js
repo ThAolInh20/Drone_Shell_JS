@@ -791,13 +791,12 @@ class FormationV2 {
 			id: p.id ?? null
 		}));
 	}
-	
+	move(x,y,duration=2000){
+		this.movement.moveFormationTo(this.drones,x,y,duration);
+	}
 
     moveV1(duration = 2000) {
 		if (!this.targetFormation) return;
-
-
-
 		this.movement.moveByNearest(
 			this.drones,
 			purePositions,
@@ -813,10 +812,13 @@ class FormationV2 {
     this.colorAnimator?.stop();
     this.colorAnimator = new FormationColorAnimator();
 
-    this.movement.moveByNearest(
+    this.movement.moveMagnetic(
         this.drones,
         this.targetFormation,
+	
         duration,
+		
+	
         (used) => {
             // 🔥 MOVE XONG → GIỮ NGUYÊN MÀU HIỆN TẠI
 
@@ -847,10 +849,16 @@ class FormationV2 {
      */
     setColor(color,pistilColor=COLOR.White){
         this.drones.forEach(drone=>{
-            this.fadeColor(drone, color, COLOR.White,120);
+            FormationV2.fadeColor(drone, color, COLOR.White,120);
             
         })
     }
+	setPistilColor(color=COLOR.White){
+		 this.drones.forEach(drone=>{
+            drone.pistilColor = color;
+            
+        })
+	}
     /**
      * Chuyển đổi màu lần lượt với khoảng cách thời gian giữa các drone
      * @param {*} color Màu đích
@@ -979,6 +987,157 @@ class FormationMovement {
 			? 2 * t * t
 			: 1 - Math.pow(-2 * t + 2, 2) / 2;
 	}
+	moveLayeredMorph(drones, targets, duration = 1200, layers = 4, onComplete) {
+		if (!targets || targets.length === 0) return;
+
+		const { used } = this.mapNearest(drones, targets);
+
+		// 📍 tâm formation hiện tại
+		let cx = 0, cy = 0;
+		drones.forEach(d => { cx += d.x; cy += d.y; });
+		cx /= drones.length;
+		cy /= drones.length;
+
+		// sắp theo khoảng cách tới tâm
+		used.sort((a, b) =>
+			this.distance(a.drone, { x: cx, y: cy }) -
+			this.distance(b.drone, { x: cx, y: cy })
+		);
+
+		const layerSize = Math.ceil(used.length / layers);
+		const start = new Map();
+		used.forEach(u => start.set(u.drone, { x: u.drone.x, y: u.drone.y }));
+
+		const t0 = performance.now();
+
+		const animate = (now) => {
+			const elapsed = now - t0;
+
+			used.forEach((u, i) => {
+			const layer = Math.floor(i / layerSize);
+			const delay = (layer / layers) * duration;
+			const localT = Math.min(Math.max((elapsed - delay) / (duration / layers), 0), 1);
+			const t = this.easeInOut(localT);
+
+			const s = start.get(u.drone);
+			u.drone.x = s.x + (u.target.x - s.x) * t;
+			u.drone.y = s.y + (u.target.y - s.y) * t;
+			});
+
+			if (elapsed < duration * 1.1) {
+			requestAnimationFrame(animate);
+			} else {
+			onComplete?.();
+			}
+		};
+
+		requestAnimationFrame(animate);
+	
+	}
+
+	moveExplodeRegroup(drones, targets, explodeRadius = 200, duration = 1600, onComplete) {
+		const { used } = this.mapNearest(drones, targets);
+
+		let cx = 0, cy = 0;
+		drones.forEach(d => { cx += d.x; cy += d.y; });
+		cx /= drones.length;
+		cy /= drones.length;
+
+		const start = new Map();
+		drones.forEach(d => start.set(d, { x: d.x, y: d.y }));
+
+		const t0 = performance.now();
+
+		const animate = (now) => {
+			const raw = Math.min((now - t0) / duration, 1);
+
+			if (raw < 0.5) {
+			// 💥 explode
+			const t = this.easeInOut(raw * 2);
+			drones.forEach(d => {
+				const s = start.get(d);
+				const a = Math.atan2(s.y - cy, s.x - cx);
+				d.x = s.x + Math.cos(a) * explodeRadius * t;
+				d.y = s.y + Math.sin(a) * explodeRadius * t;
+			});
+			} else {
+			// 🧲 regroup
+			const t = this.easeInOut((raw - 0.5) * 2);
+			used.forEach(u => {
+				const s = start.get(u.drone);
+				u.drone.x =
+				(s.x + Math.cos(Math.atan2(s.y - cy, s.x - cx)) * explodeRadius) * (1 - t)
+				+ u.target.x * t;
+				u.drone.y =
+				(s.y + Math.sin(Math.atan2(s.y - cy, s.x - cx)) * explodeRadius) * (1 - t)
+				+ u.target.y * t;
+			});
+			}
+
+			if (raw < 1) requestAnimationFrame(animate);
+			else onComplete?.();
+		};
+
+		requestAnimationFrame(animate);
+	}
+
+	moveMagnetic(drones, targets, duration = 1200, onComplete) {
+  if (!targets || targets.length === 0) return;
+
+  const { used, unused } = this.mapNearest(drones, targets);
+
+  const start = new Map();
+  drones.forEach(d => start.set(d, { x: d.x, y: d.y }));
+
+  const maxDist = Math.max(...used.map(u => u.dist)) || 1;
+
+  const px = stageW / 2;
+  const py = stageH / 2;
+  const t0 = performance.now();
+
+  let finished = false;
+
+  const animate = (now) => {
+    const elapsed = now - t0;
+
+    // 🧲 USED → magnetic pull
+    used.forEach(u => {
+      const s = start.get(u.drone);
+
+      const weight = u.dist / maxDist; // xa → nhanh
+      const localT = Math.min(
+        elapsed / (duration * (0.4 + 0.6 * weight)),
+        1
+      );
+      const t = this.easeInOut(localT);
+
+      u.drone.x = s.x + (u.target.x - s.x) * t;
+      u.drone.y = s.y + (u.target.y - s.y) * t;
+    });
+
+    // 🚫 UNUSED → bay về tâm + tắt
+    unused.forEach(drone => {
+      const s = start.get(drone);
+      const t = Math.min(elapsed / duration, 1);
+
+      drone.x = s.x + (px - s.x) * t;
+      drone.y = s.y + (py - s.y) * t;
+      drone.color = 'black';
+      drone.pistilColor = 'rgba(0,0,0,0)';
+    });
+
+    if (elapsed < duration) {
+      requestAnimationFrame(animate);
+    } else if (!finished) {
+      finished = true;
+      // ✅ y hệt moveByNearest
+      onComplete?.(used, unused);
+    }
+  };
+
+  requestAnimationFrame(animate);
+}
+
     mapNearest(drones, targets) {
 		const freeTargets = [...targets];
 		const used = [];
@@ -1087,6 +1246,49 @@ class FormationMovement {
     };
 
     requestAnimationFrame(animate);
+}
+moveFormationTo(drones, x2, y2, duration = 1000, onComplete) {
+  if (!Array.isArray(drones) || drones.length === 0) return;
+
+  // 📍 tính tâm hiện tại của formation
+  let cx = 0, cy = 0;
+  drones.forEach(d => {
+    cx += d.x;
+    cy += d.y;
+  });
+  cx /= drones.length;
+  cy /= drones.length;
+
+  const dx = x2 - cx;
+  const dy = y2 - cy;
+
+  // lưu vị trí ban đầu
+  const start = new Map();
+  drones.forEach(d => start.set(d, { x: d.x, y: d.y }));
+
+  const t0 = performance.now();
+  let finished = false;
+
+  const animate = (now) => {
+    const raw = Math.min((now - t0) / duration, 1);
+    const t = this.easeInOut(raw);
+
+    drones.forEach(drone => {
+      const s = start.get(drone);
+      drone.x = s.x + dx * t;
+      drone.y = s.y + dy * t;
+    });
+
+    if (raw === 1 && !finished) {
+      finished = true;
+      onComplete?.();
+      return;
+    }
+
+    if (raw < 1) requestAnimationFrame(animate);
+  };
+
+  requestAnimationFrame(animate);
 }
 
 
@@ -1256,17 +1458,21 @@ directionalWave(
         : wavePos < min - width;
 
     if (!done || anyActive) {
-      this.timer = setTimeout(step, interval);
+  this.timer = setTimeout(step, interval);
+} else {
+  // 🔚 SAU KHI SÓNG ĐI QUA
+  used.forEach(({ drone, target }) => {
+    drone.color = target.color;
+
+    if (after === 'keep') {
+      drone.pistilColor = COLOR.White; // ⭐ giữ lõi sáng
     } else {
-      // 🔚 SAU KHI SÓNG ĐI QUA
-      if (after === 'black') {
-        used.forEach(({ drone }) => {
-          drone.color = 'black';
-          drone.pistilColor = 'rgba(0,0,0,0)';
-        });
-      }
-      this.running = false;
+      drone.pistilColor = COLOR.White;
     }
+  });
+
+  this.running = false;
+}
   };
 
   step();
@@ -5836,8 +6042,8 @@ function render(speed) {
 		const gradient = mainCtx.createRadialGradient(drone.x, drone.y, drone.radius * 0.3, drone.x, drone.y, drone.radius);
 		gradient.addColorStop(0, drone.pistilColor); // Màu sáng ở trung tâm
 
-		gradient.addColorStop(0.4, drone.color); // Màu chính của drone
-		gradient.addColorStop(0.8,'rgba(55, 52, 50, 0)' );
+		gradient.addColorStop(0.5, drone.color); // Màu chính của drone
+		gradient.addColorStop(0.9,'rgba(0,0,0)' );
 		// gradient.addColorStop(0.66,'rgba(163, 153, 145, 0)' ); // Màu tối ở viền ngoài
 		// gradient.addColorStop(0.7,'rgba(169, 151, 138, 0)' );
 
@@ -9282,26 +9488,39 @@ async function loadCSVFormation() {
   {
     offsetX: stageW / 2,
     offsetY: stageH / 2,
-    scale: 25,
+    scale: 20,
     autoCenter: true
   }
 );
 
 formation.setTargetFormation(targets);
-formation.moveV2(3000, [
+formation.moveV2(6000, [
     {
         direction: 'ttb',   // trên → dưới
         after: 'keep',
         delayAfter: 4000
     },
+   
+]);
+ await sleep(8000);
+ const targets2 = await FormationPattern.fromCSVUrl(
+  "draw/drago.csv",
+  {
+    offsetX: 300,
+    offsetY: 300,
+    scale: 20,
+    autoCenter: true
+  }
+);
+formation.setTargetFormation(targets2);
+formation.moveV2(6000, [
     {
-        direction: 'rtl',   // phải → trái
+        direction: 'ttb',   // trên → dưới
         after: 'keep',
         delayAfter: 4000
-    }
+    },
+   
 ]);
- await sleep(10000);
- formation.setColorV2({color: COLOR.Red});
 }
 
 loadCSVFormation();
