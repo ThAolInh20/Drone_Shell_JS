@@ -764,7 +764,9 @@ class FormationV2 {
         this.targetFormation = null;
 
 		this.colorAnimator = new FormationColorAnimator();
+		this.colorEffect = new FormationColorEffect();
         this.movement = new FormationMovement();
+		 this._lastUsed = null;
         // this.colorEffect = new FormationColorEffect();
     }
 
@@ -804,42 +806,84 @@ class FormationV2 {
 		);
 	}
 
-    moveV2(
-    duration = 2000,
-    waveSequence = []
-) {
-    // clear wave cũ nếu có
-    this.colorAnimator?.stop();
-    this.colorAnimator = new FormationColorAnimator();
+    moveV2(duration = 2000, onComplete) {
+		if (!this.targetFormation) return;
 
-    this.movement.moveMagnetic(
-        this.drones,
-        this.targetFormation,
-	
-        duration,
+		this.movement.moveMagnetic(
+			this.drones,
+			this.targetFormation,
+			duration,
+			(used) => {
+				this._lastUsed = used; // ✅ CHỐT mapping
+				onComplete?.();
+			}
+			
+		);
+	}
+	/**
+	 * Hàm đổi màu theo targetFormation
+	 * @param {*} mode : 'instant' | 'scan' | 'radial' | 'row' | 'column' | 'random' | 'wave'
+	 * @param {*} fade : thời gian chuyển màu
+	 * @param {*} timeGap : khoảng cách thời gian giữa các drone
+	 * @param {*} direction :áp dụng cho wave 'ltr' | 'rtl' | 'ttb' | 'btt'
+	 * 
+	 * @returns 
+	 */
+	applyTargetColor({
+		mode = 'instant', // 'instant' | 'scan' | 'radial' | 'row' | 'column' | 'random' | 'wave'
+		fade = 120,
+		timeGap = 6,
+		direction = 'ltr' // 'ltr' | 'rtl' | 'ttb' | 'btt'
+	} = {}) {
+
+		const used = this._lastUsed;
+    	if (!used || !used.length) return;
 		
-	
-        (used) => {
-            // 🔥 MOVE XONG → GIỮ NGUYÊN MÀU HIỆN TẠI
+		
+  
 
-            let delay = 0;
+		// const { used } = this.movement.mapNearest(
+		// 	this.drones,
+		// 	this.targetFormation
+		// );
 
-            waveSequence.forEach(wave => {
-                setTimeout(() => {
-                    this.colorAnimator.directionalWave(used, {
-                        direction: wave.direction,
-                        speed: wave.speed ?? 3,
-                        width: wave.width ?? 80,
-                        interval: wave.interval ?? 16,
-                        after: wave.after ?? 'keep' // 🔥 giữ màu trước
-                    });
-                }, delay);
+		// if (!used.length) return;	
 
-                delay += wave.delayAfter ?? 3000;
-            });
-        }
-    );
-}
+		switch (mode) {
+			case 'instant':
+				this.colorEffect.instant(used, { fade });
+				break;
+
+			case 'scan':
+				this.colorEffect.scan(used, { fade, timeGap });
+				break;
+
+			case 'radial':
+				this.colorEffect.radial(used, { fade, timeGap });
+				break;
+
+			case 'row':
+				this.colorEffect.row(used, { fade, timeGap });
+				break;
+
+			case 'column':
+				this.colorEffect.column(used, { fade, timeGap });
+				break;
+
+			case 'random':
+				this.colorEffect.random(used, { fade, timeGap });
+				break;
+
+			case 'wave':
+				this.colorEffect.wave(used, {
+					direction,
+					speed: 3,
+					width: 80
+				});
+				break;
+		}
+	}
+
 
 
     /**
@@ -934,7 +978,7 @@ class FormationV2 {
                     const targetColor = isBlack ? "black" : targetColor2;
                     const targetPistilColor = isBlack ? "rgba(55, 52, 50, 0)" : COLOR.White;
     
-                    this.fadeColor(drone, targetColor, targetPistilColor, interval);
+                    FormationV2.fadeColor(drone, targetColor, targetPistilColor, interval);
                 }
             });
         };
@@ -1117,14 +1161,28 @@ class FormationMovement {
 
     // 🚫 UNUSED → bay về tâm + tắt
     unused.forEach(drone => {
-      const s = start.get(drone);
-      const t = Math.min(elapsed / duration, 1);
+    const s = start.get(drone);
+	const t = Math.min(elapsed / duration, 1);
+    // 🔍 tìm used gần nhất
+    let nearest = null;
+    let min = Infinity;
 
-      drone.x = s.x + (px - s.x) * t;
-      drone.y = s.y + (py - s.y) * t;
-      drone.color = 'black';
-      drone.pistilColor = 'rgba(0,0,0,0)';
+    used.forEach(({ target }) => {
+        const d = Math.hypot(s.x - target.x, s.y - target.y);
+        if (d < min) {
+            min = d;
+            nearest = target;
+        }
     });
+
+    if (!nearest) return;
+
+    drone.x = s.x + (nearest.x - s.x) * t;
+    drone.y = s.y + (nearest.y - s.y) * t;
+
+    drone.color = 'black';
+    drone.pistilColor = 'rgba(0,0,0,0)';
+});
 
     if (elapsed < duration) {
       requestAnimationFrame(animate);
@@ -1295,6 +1353,188 @@ moveFormationTo(drones, x2, y2, duration = 1000, onComplete) {
 	
 	
 }
+class FormationColorEffect {
+
+    instant(used, {
+        fade = 120,
+        defaultPistil = COLOR.White
+    } = {}) {
+        used.forEach(({ drone, target }) => {
+            if (!target?.color) return;
+
+            FormationV2.fadeColor(
+                drone,
+                target.color,
+                target.pistilColor ?? defaultPistil,
+                fade
+            );
+        });
+    }
+
+    scan(used, {
+        timeGap = 6,
+        fade = 120
+    } = {}) {
+        let i = 0;
+
+        const step = () => {
+            if (i >= used.length) return;
+
+            const { drone, target } = used[i];
+
+            FormationV2.fadeColor(
+                drone,
+                target.color,
+                target.pistilColor ?? COLOR.White,
+                fade
+            );
+
+            if (used[i + 1]) {
+                FormationV2.fadeColor(
+                    used[i + 1].drone,
+                    'black',
+                    'rgba(0,0,0,0)',
+                    fade
+                );
+            }
+
+            i++;
+            setTimeout(step, timeGap);
+        };
+
+        step();
+    }
+
+    radial(used, {
+        fade = 120,
+        timeGap = 6
+    } = {}) {
+        const cx = used.reduce((s, u) => s + u.target.x, 0) / used.length;
+        const cy = used.reduce((s, u) => s + u.target.y, 0) / used.length;
+
+        const sorted = [...used].sort(
+            (a, b) =>
+                Math.hypot(a.target.x - cx, a.target.y - cy) -
+                Math.hypot(b.target.x - cx, b.target.y - cy)
+        );
+
+        this.scan(sorted, { fade, timeGap });
+    }
+
+    row(used, opts = {}) {
+        const sorted = [...used].sort((a, b) => a.target.y - b.target.y);
+        this.scan(sorted, opts);
+    }
+
+    column(used, opts = {}) {
+        const sorted = [...used].sort((a, b) => a.target.x - b.target.x);
+        this.scan(sorted, opts);
+    }
+
+    random(used, opts = {}) {
+        const shuffled = [...used].sort(() => Math.random() - 0.5);
+        this.scan(shuffled, opts);
+    }
+
+    wave(used, {
+        direction = 'ltr',
+        speed = 3,
+        width = 80,
+        interval = 16,
+        after = 'keep'
+    } = {}) {
+        // dùng lại logic directionalWave bạn đã có
+        this.directionalWave(used, {
+            direction,
+            speed,
+            width,
+            interval,
+            after
+        });
+    }
+	directionalWave(
+		used,
+		{
+			direction = 'ltr',   // 'ltr' | 'rtl' | 'ttb' | 'btt'
+			speed = 3,
+			width = 80,
+			interval = 16,
+			after = 'keep'       // 🔥 'keep' | 'black'
+		} = {}
+		) {
+		if (!Array.isArray(used) || used.length === 0) return;
+
+		this.stop();
+		this.running = true;
+
+		// xác định trục & chiều
+		let axis, sign;
+		switch (direction) {
+			case 'ltr': axis = 'x'; sign = +1; break;
+			case 'rtl': axis = 'x'; sign = -1; break;
+			case 'ttb': axis = 'y'; sign = +1; break;
+			case 'btt': axis = 'y'; sign = -1; break;
+			default: axis = 'x'; sign = +1;
+		}
+
+		let min = Infinity, max = -Infinity;
+		used.forEach(({ target }) => {
+			min = Math.min(min, target[axis]);
+			max = Math.max(max, target[axis]);
+		});
+
+		let wavePos = sign > 0 ? min - width : max + width;
+
+		const step = () => {
+			if (!this.running) return;
+
+			let anyActive = false;
+
+			used.forEach(({ drone, target }) => {
+			const d = target[axis] - wavePos;
+			const dist = Math.abs(d);
+
+			// 🌊 ĐANG TRONG SÓNG
+			if (dist < width) {
+				const intensity = 1 - dist / width;
+				drone.color = target.color;
+				drone.pistilColor = `rgba(255,255,255,${intensity})`;
+				anyActive = true;
+			}
+
+			// 🚫 KHÔNG set gì khi CHƯA TỚI
+			// 👉 giữ nguyên màu cũ
+			});
+
+			wavePos += speed * sign;
+
+			const done =
+			sign > 0
+				? wavePos > max + width
+				: wavePos < min - width;
+
+			if (!done || anyActive) {
+		this.timer = setTimeout(step, interval);
+		} else {
+		// 🔚 SAU KHI SÓNG ĐI QUA
+		used.forEach(({ drone, target }) => {
+			drone.color = target.color;
+
+			if (after === 'keep') {
+			drone.pistilColor = COLOR.White; // ⭐ giữ lõi sáng
+			} else {
+			drone.pistilColor = COLOR.White;
+			}
+		});
+
+		this.running = false;
+		}
+		};
+
+		step();
+		}
+}
+
 
 class FormationColorAnimator {
   constructor() {
@@ -9479,12 +9719,12 @@ function seqDroneHappyNewYear(){
 
 const formation = new FormationV2();
 
-formation.addDrones(1000, 3);
+formation.addDrones(1000, 2);
 const l = formation.drones.length/2;
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 async function loadCSVFormation() {
   const targets = await FormationPattern.fromCSVUrl(
-  "draw/haui.csv",
+  "draw/covn.csv",
   {
     offsetX: stageW / 2,
     offsetY: stageH / 2,
@@ -9493,35 +9733,51 @@ async function loadCSVFormation() {
   }
 );
 
-formation.setTargetFormation(targets);
-formation.moveV2(6000, [
-    {
-        direction: 'ttb',   // trên → dưới
-        after: 'keep',
-        delayAfter: 4000
-    },
-   
-]);
- await sleep(8000);
- const targets2 = await FormationPattern.fromCSVUrl(
-  "draw/drago.csv",
-  {
-    offsetX: 300,
-    offsetY: 300,
-    scale: 20,
-    autoCenter: true
-  }
-);
+	formation.setTargetFormation(targets);
+	formation.moveV2(5000, () => {
+		formation.applyTargetColor();
+	});
+
+
+	await sleep(8000);
+	let targets2 = await FormationPattern.fromCSVUrl(
+	"draw/dra_bg.csv",
+	{
+		offsetX: 300,
+		offsetY: 300,
+		scale: 20,
+		autoCenter: true
+	}
+	);
+// const anime = new FormationColorAnimator(formation);
+
+
+formation.setRandomColorV2({duration:5000})
 formation.setTargetFormation(targets2);
-formation.moveV2(6000, [
-    {
-        direction: 'ttb',   // trên → dưới
-        after: 'keep',
-        delayAfter: 4000
-    },
-   
-]);
+formation.moveV2(5000, () => {
+    formation.applyTargetColor({mode:'row'});
+	// anime.wave()
+});
+await sleep(10000);
+	targets2 = await FormationPattern.fromCSVUrl(
+	"draw/haui.csv",
+	{
+		offsetX: 700,
+		offsetY: 300,
+		scale: 20,
+		autoCenter: true
+	}
+	);
+	formation.setRandomColorV2({duration:5000})
+	formation.setTargetFormation(targets2);
+	formation.moveV2(5000, () => {
+		formation.applyTargetColor({});
+		// anime.wave()
+	});
 }
+
+
+
 
 loadCSVFormation();
 
