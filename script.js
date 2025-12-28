@@ -655,7 +655,7 @@ function parseColor(colorString) {
  */
 class Drone {
 	
-    constructor(x, y, radius=2, speedX =0 , speedY=0, color=COLOR.Blue, life) {
+    constructor(x, y, radius=2, speedX =0 , speedY=0, color='rgba(0,0,0,0)', life) {
         this.x = x *maxW;
         this.y = (1 - y)*maxH;
         this.radius = radius;
@@ -663,10 +663,11 @@ class Drone {
         this.speedX = speedX;
         this.speedY = speedY;
         this.color = color;
-		this.pistilColor = COLOR.White;
+		this.pistilColor = 'rgba(0,0,0,0)';
 		this.baseRadius = radius;
         this.life = life;
 		this.strobeInterval = null;
+		this.is_inFormation = false;
     }
 
     // update(timeStep, speed, gAcc=0) {
@@ -679,52 +680,55 @@ class Drone {
     //     this.speedY += gAcc;
     //     this.life -= timeStep;
     // }
-	// update(timeStep, speed, gAcc = 0, targetX = null, targetY = null) {
-	// 	// Nếu có vị trí mục tiêu, tính hướng di chuyển
-	// 	if (targetX !== null && targetY !== null) {
-	// 		const dx = targetX - this.x; // Khoảng cách đến mục tiêu theo X
-	// 		const dy = targetY - this.y; // Khoảng cách đến mục tiêu theo Y
-	// 		const distance = Math.sqrt(dx * dx + dy * dy); // Khoảng cách tổng
+	update(timeStep, speed, gAcc = 0, targetX = null, targetY = null) {
+		// Nếu có vị trí mục tiêu, tính hướng di chuyển
+		if (targetX !== null && targetY !== null) {
+			const dx = targetX - this.x; // Khoảng cách đến mục tiêu theo X
+			const dy = targetY - this.y; // Khoảng cách đến mục tiêu theo Y
+			const distance = Math.sqrt(dx * dx + dy * dy); // Khoảng cách tổng
 	
-	// 		if (distance > 1) { // Chỉ di chuyển nếu còn xa hơn 1 pixel
-	// 			this.speedX = (dx / distance) * speed; // Tính tốc độ theo hướng X
-	// 			this.speedY = (dy / distance) * speed; // Tính tốc độ theo hướng Y
-	// 		} else {
-	// 			this.speedX = 0; // Đến nơi thì dừng lại
-	// 			this.speedY = 0;
-	// 		}
-	// 	}
-	
-	// 	// // Thêm hiệu ứng lắc lư theo gió
-	// 	// let kk = Math.random() < 0.51 ? -1 : 1;
-	// 	// let hh = Math.random() * kk / 7;
-	// 	// this.x += this.speedX * timeStep + hh; // Cập nhật vị trí X
-	// 	// this.y += this.speedY * timeStep + hh; // Cập nhật vị trí Y
-	
-	// 	// Ảnh hưởng bởi trọng lực
-	// 	this.speedY += gAcc;
-	
-	// 	// Giảm thời gian tồn tại (nếu cần)
-	// 	this.life -= timeStep;
-	// }
-	update(dt) {
-		if (this.targetX === null || this.targetY === null) return;
-
-		const dx = this.targetX - this.x;
-		const dy = this.targetY - this.y;
-		const dist = Math.sqrt(dx*dx + dy*dy);
-
-		if (dist < 1) {
-			this.x = this.targetX;
-			this.y = this.targetY;
-			this.speedX = 0;
-			this.speedY = 0;
-			return;
+			if (distance > 1) { // Chỉ di chuyển nếu còn xa hơn 1 pixel
+				this.speedX = (dx / distance) * speed; // Tính tốc độ theo hướng X
+				this.speedY = (dy / distance) * speed; // Tính tốc độ theo hướng Y
+			} else {
+				this.speedX = 0; // Đến nơi thì dừng lại
+				this.speedY = 0;
+			}
 		}
+	
+		// // Thêm hiệu ứng lắc lư theo gió
+		// let kk = Math.random() < 0.51 ? -1 : 1;
+		// let hh = Math.random() * kk / 7;
+		// this.x += this.speedX * timeStep + hh; // Cập nhật vị trí X
+		// this.y += this.speedY * timeStep + hh; // Cập nhật vị trí Y
+	
+		// Ảnh hưởng bởi trọng lực
+		// this.speedY += gAcc;
+	
+		// Giảm thời gian tồn tại (nếu cần)
+		this.life -= timeStep;
+	}
+	// update(dt) {
+	// 	if (this.targetX === null || this.targetY === null) return;
 
-		// di chuyển đều theo thời gian
-		this.x += this.speedX * dt;
-		this.y += this.speedY * dt;
+	// 	const dx = this.targetX - this.x;
+	// 	const dy = this.targetY - this.y;
+	// 	const dist = Math.sqrt(dx*dx + dy*dy);
+
+	// 	if (dist < 1) {
+	// 		this.x = this.targetX;
+	// 		this.y = this.targetY;
+	// 		this.speedX = 0;
+	// 		this.speedY = 0;
+	// 		return;
+	// 	}
+
+	// 	// di chuyển đều theo thời gian
+	// 	this.x += this.speedX * dt;
+	// 	this.y += this.speedY * dt;
+	// }
+	update(timeStep){
+		this.life-=timeStep
 	}
 	/**
 	 * Thay đổi tốc độ của vật 1->100
@@ -760,6 +764,7 @@ class Drone {
  */
 class FormationV2 {
     constructor() {
+		this.start = null;
         this.drones = [];
         this.targetFormation = null;
 
@@ -772,6 +777,7 @@ class FormationV2 {
 
     addDrones(n, size, life = 1000000) {
         const start = drones.length;
+		this.start = start;
         for (let i = 0; i < n; i++) {
             drones.push(new Drone(0.5, 0, size, 0, 0, COLOR.Yellow, life));
         }
@@ -779,6 +785,9 @@ class FormationV2 {
             this.drones.push(drones[start + i]);
         }
     }
+	removeDrones(){
+		drones.splice(this.start,this.drones.length)
+	}
 
     setSize(size = 3) {
         this.drones.forEach(d => d.radius = size);
@@ -794,6 +803,7 @@ class FormationV2 {
 		}));
 	}
 	move(x,y,duration=2000){
+		
 		this.movement.moveFormationTo(this.drones,x,y,duration);
 	}
 
@@ -893,7 +903,7 @@ class FormationV2 {
      */
     setColor(color,pistilColor=COLOR.White){
         this.drones.forEach(drone=>{
-            FormationV2.fadeColor(drone, color, COLOR.White,120);
+            FormationV2.fadeColor(drone, color, pistilColor,120);
             
         })
     }
@@ -938,6 +948,7 @@ class FormationV2 {
             const shuffledDrones = [...this.drones].sort(() => Math.random() - 0.7); // Trộn ngẫu nhiên mảng drones
     
             // Đổi màu
+
             shuffledDrones.forEach((drone, index) => {
                 if (index < blackCount) {
                     drone.color = "black"; // Màu đen
@@ -986,7 +997,7 @@ class FormationV2 {
         // Thiết lập bộ đếm thời gian
         const effectInterval = setInterval(updateColors, interval);
         setTimeout(() => {
-			this.setColor(COLOR.Blue,COLOR.White);
+			// this.setColor(COLOR.Blue,COLOR.White);
             clearInterval(effectInterval); // Dừng cập nhật màu
         }, duration);
         
@@ -1180,7 +1191,7 @@ class FormationMovement {
     drone.x = s.x + (nearest.x - s.x) * t;
     drone.y = s.y + (nearest.y - s.y) * t;
 
-    drone.color = 'black';
+    drone.color = 'rgba(0,0,0,0)';
     drone.pistilColor = 'rgba(0,0,0,0)';
 });
 
@@ -1372,10 +1383,18 @@ class FormationColorEffect {
     }
 
     scan(used, {
-        timeGap = 6,
+        timeGap = 30,
         fade = 120
     } = {}) {
         let i = 0;
+		used.forEach(({ drone }) => {
+			FormationV2.fadeColor(
+				drone,
+				'rgba(0,0,0,0)',
+				'rgba(0,0,0,0)',           // pistil màu đen
+				fade
+			);
+		});
 
         const step = () => {
             if (i >= used.length) return;
@@ -1406,7 +1425,7 @@ class FormationColorEffect {
     }
 
     radial(used, {
-        fade = 120,
+        fade = 10,
         timeGap = 6
     } = {}) {
         const cx = used.reduce((s, u) => s + u.target.x, 0) / used.length;
@@ -1836,6 +1855,7 @@ class FormationPattern {
 		});
 	}
 	 // 🔥 CSV URL → POINTS (CÓ MÀU)
+
 	static async fromCSVUrl(url, opts = {}) {
 		const res = await fetch(url);
 		if (!res.ok) {
@@ -2968,8 +2988,6 @@ const drones = [];
 let colors =[COLOR.Gold,COLOR.Red,COLOR.Blue,COLOR.Gold,
 	COLOR.Red,COLOR.Blue,COLOR.Gold,
 	COLOR.Red,COLOR.Blue,COLOR.Gold,COLOR.Gold
-	
-	
 ]
 
 
@@ -5846,8 +5864,8 @@ function startSequence() {
 			return seqTwoRandom();
 		}
 		else {
-			const shell = new Shell(crysanthemumShell(shellSizeSelector()));
-			shell.launch(0.5, 0.5);
+			// const shell = new Shell(crysanthemumShell(shellSizeSelector()));
+			// shell.launch(0.5, 0.5);
 			return 2400;
 
 		}
@@ -5892,8 +5910,8 @@ function startSequence2() {
 			return seqTwoRandom();
 		}
 		else {
-			const shell = new Shell(shellTypes['Ghost'](shellSizeSelector()));
-			shell.launch(0.5, 0.5);
+			// const shell = new Shell(shellTypes['Ghost'](shellSizeSelector()));
+			// shell.launch(0.5, 0.5);
 
 			return 2400;
 		}
@@ -6183,10 +6201,11 @@ function update(frameTime, lag) {
 	// //Cập nhật drone
     for (let i = drones.length - 1; i >= 0; i--) {
         const drone = drones[i];
-        drone.update(timeStep, speed, 0);
+        drone.update(timeStep);
         // Hiệu ứng nếu drone chết
         if (!drone.isAlive()) {
             drones.splice(i,1)
+			
         }
     }
 
@@ -9717,71 +9736,316 @@ function seqDroneHappyNewYear(){
 // skyFallSeq()
 
 
-const formation = new FormationV2();
+// const formation = new FormationV2();
 
-formation.addDrones(1000, 2);
-const l = formation.drones.length/2;
-const sleep = (ms) => new Promise(res => setTimeout(res, ms));
-async function loadCSVFormation() {
-  const targets = await FormationPattern.fromCSVUrl(
-  "draw/covn.csv",
-  {
-    offsetX: stageW / 2,
-    offsetY: stageH / 2,
-    scale: 20,
-    autoCenter: true
-  }
-);
+// formation.addDrones(1000, 2);
+// const l = formation.drones.length/2;
+// const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+// async function loadCSVFormation() {
+//   const targets = await FormationPattern.fromCSVUrl(
+//   "draw/covn.csv",
+//   {
+//     offsetX: stageW / 2,
+//     offsetY: stageH / 2,
+//     scale: 20,
+//     autoCenter: true
+//   }
+// );
 
-	formation.setTargetFormation(targets);
-	formation.moveV2(5000, () => {
-		formation.applyTargetColor();
-	});
+// 	formation.setTargetFormation(targets);
+// 	formation.moveV2(5000, () => {
+// 		formation.applyTargetColor();
+// 	});
 
 
-	await sleep(8000);
-	let targets2 = await FormationPattern.fromCSVUrl(
-	"draw/dra_bg.csv",
-	{
-		offsetX: 300,
-		offsetY: 300,
-		scale: 20,
-		autoCenter: true
+// 	await sleep(8000);
+// 	let targets2 = await FormationPattern.fromCSVUrl(
+// 	"image/ngua.csv",
+// 	{
+// 		offsetX: 300,
+// 		offsetY: 300,
+// 		scale: 20,
+// 		autoCenter: true
+// 	}
+// 	);
+// // const anime = new FormationColorAnimator(formation);
+
+
+// formation.setRandomColorV2({duration:5000})
+// formation.setTargetFormation(targets2);
+// formation.moveV2(5000, () => {
+//     formation.applyTargetColor({mode:'row'});
+// 	// anime.wave()
+// });
+// await sleep(10000);
+// 	targets2 = await FormationPattern.fromCSVUrl(
+// 	"image/dragon.csv",
+// 	{
+// 		offsetX: 700,
+// 		offsetY: 300,
+// 		scale: 20,
+// 		autoCenter: true
+// 	}
+// 	);
+// 	formation.setRandomColorV2({duration:5000})
+// 	formation.setTargetFormation(targets2);
+// 	formation.moveV2(5000, () => {
+// 		formation.applyTargetColor({});
+// 		// anime.wave()
+// 	});
+// }
+
+
+
+
+// loadCSVFormation();
+
+function nguaFormation(offx=stageW / 2+600,offy=stageH / 2) {
+	let sleep = (ms) => new Promise(res => setTimeout(res, ms));
+	
+	// ====== FORMATION ======
+	const dau = new FormationV2();
+	const than = new FormationV2();
+	const duoi = new FormationV2();	
+	const chantren_trai = new FormationV2();
+	const chantren_phai = new FormationV2();
+	const chansau_trai = new FormationV2();
+	const chansau_phai = new FormationV2();
+
+	// ====== DRONE COUNT ======
+	dau.addDrones(200, 1);
+	than.addDrones(350, 1);
+	duoi.addDrones(350, 1);
+	chantren_trai.addDrones(150, 1);
+	chantren_phai.addDrones(150, 1);
+	chansau_trai.addDrones(150, 1);
+	chansau_phai.addDrones(150, 1);
+
+	// ====== BASE OFFSET ==f===
+	const baseOffset = {
+		x: offx,
+		y: offy
+	};
+
+	// ====== SCALE ======
+	const scaleBody = 6;
+	const scaleLeg  = 5;
+
+	// ====== SCALE GỐC (MỐC) ======
+	const BASE_SCALE_BODY = 15;
+	const BASE_SCALE_LEG  = 13;
+
+	const bodyRatio = scaleBody / BASE_SCALE_BODY;
+	const legRatio  = scaleLeg / BASE_SCALE_LEG;
+
+	// ====== OFFSET GỐC (KHÔNG PHỤ THUỘC SCALE) ======
+	const offset = {
+		dau:            { x: -500, y: -100 },
+		than:           { x: -250, y: -20 },
+		duoi:           { x: 10,   y: 60 },
+
+		chantren_trai:  { x: -400, y: 150 },
+		chantren_phai:  { x: -490, y: 150 },
+		chansau_trai:   { x: -50,  y: 150 },
+		chansau_phai:   { x: -140, y: 170 }
+	};
+
+	// ====== HELPER ======
+	function buildOptions(partOffset, scale, ratio) {
+		return {
+			offsetX: baseOffset.x + partOffset.x * ratio,
+			offsetY: baseOffset.y + partOffset.y * ratio,
+			scale,
+			autoCenter: true
+		};
 	}
-	);
-// const anime = new FormationColorAnimator(formation);
+	
+	let t = 0;
+	const speed = 0.01;
+	function moveHorseTo(newBaseOffset, duration = 2000) {
 
+		// 1️⃣ tính vector dịch CHUNG
+		baseOffset.x = newBaseOffset.x;
+  		baseOffset.y = newBaseOffset.y;
 
-formation.setRandomColorV2({duration:5000})
-formation.setTargetFormation(targets2);
-formation.moveV2(5000, () => {
-    formation.applyTargetColor({mode:'row'});
-	// anime.wave()
-});
-await sleep(10000);
-	targets2 = await FormationPattern.fromCSVUrl(
-	"draw/haui.csv",
-	{
-		offsetX: 700,
-		offsetY: 300,
-		scale: 20,
-		autoCenter: true
+		// 2️⃣ update baseOffset (state)
+		
+
+		// 3️⃣ move TẤT CẢ theo CÙNG dx, dy
+		dau.move(
+			baseOffset.x + offset.dau.x * bodyRatio,
+			baseOffset.y + offset.dau.y * bodyRatio,
+			duration
+		)
+		than.move(
+			baseOffset.x + offset.than.x * bodyRatio,
+			baseOffset.y + offset.than.y * bodyRatio,
+			duration
+		);
+
 	}
-	);
-	formation.setRandomColorV2({duration:5000})
-	formation.setTargetFormation(targets2);
-	formation.moveV2(5000, () => {
-		formation.applyTargetColor({});
-		// anime.wave()
-	});
+
+	async function loadCSVFormation() {
+
+		const targets_dau = await FormationPattern.fromCSVUrl(
+			"draw/ngua/dau.csv",
+			buildOptions(offset.dau, scaleBody, bodyRatio)
+		);
+		
+
+		const targets_than = await FormationPattern.fromCSVUrl(
+			"draw/ngua/than.csv",
+			buildOptions(offset.than, scaleBody, bodyRatio)
+		);
+	
+
+		const targets_duoi = await FormationPattern.fromCSVUrl(
+			"draw/ngua/duoi.csv",
+			buildOptions(offset.duoi, scaleBody, bodyRatio)
+		);
+
+		const targets_chantren_trai = await FormationPattern.fromCSVUrl(
+			"draw/ngua/chantren_trai.csv",
+			buildOptions(offset.chantren_trai, scaleLeg, legRatio)
+		);
+
+		const targets_chantren_phai = await FormationPattern.fromCSVUrl(
+			"draw/ngua/chantren_phai.csv",
+			buildOptions(offset.chantren_phai, scaleLeg, legRatio)
+		);
+
+		const targets_chansau_trai = await FormationPattern.fromCSVUrl(
+			"draw/ngua/chansau_trai.csv",
+			buildOptions(offset.chansau_trai, scaleLeg, legRatio)
+		);
+
+		const targets_chansau_phai = await FormationPattern.fromCSVUrl(
+			"draw/ngua/chansau_phai.csv",
+			buildOptions(offset.chansau_phai, scaleLeg, legRatio)
+		);
+	
+		// ====== SET TARGET ======
+		dau.setTargetFormation(targets_dau);
+		than.setTargetFormation(targets_than);
+		duoi.setTargetFormation(targets_duoi);
+		chantren_trai.setTargetFormation(targets_chantren_trai);
+		chantren_phai.setTargetFormation(targets_chantren_phai);
+		chansau_trai.setTargetFormation(targets_chansau_trai);
+		chansau_phai.setTargetFormation(targets_chansau_phai);
+
+		// ====== MOVE ======
+		const duration = 10000;
+		dau.setRandomColorV2({ duration :duration});
+		than.setRandomColorV2({ duration :duration });
+		duoi.setRandomColorV2({ duration :duration });
+		chantren_trai.setRandomColorV2({ duration :duration });
+		chantren_phai.setRandomColorV2({ duration :duration });
+		chansau_trai.setRandomColorV2({ duration :duration });
+		chansau_phai.setRandomColorV2({ duration :duration });
+
+		await sleep(1200);
+
+		dau.moveV2(duration, () => dau.applyTargetColor());
+		console.log('dau moved', baseOffset.x + offset.than.x * bodyRatio, baseOffset.y + offset.than.y * bodyRatio);
+		than.moveV2(duration, () => than.applyTargetColor());
+		duoi.moveV2(duration, () => duoi.applyTargetColor());
+		chantren_trai.moveV2(duration, () => chantren_trai.applyTargetColor());
+		chantren_phai.moveV2(duration, () => chantren_phai.applyTargetColor());
+		chansau_trai.moveV2(duration, () => chansau_trai.applyTargetColor());
+		chansau_phai.moveV2(duration, () => chansau_phai.applyTargetColor());
+
+		// ====== START ANIMATION ======
+		await sleep(duration);
+		moveHorseTo({ x: offx, y: offy  }, 5000);
+		
+		
+
+	}
+
+	loadCSVFormation();
+	
+}
+async function nguaFormation2(x=stageW/2+300,y=stageH/2){
+	const formation = new FormationV2();
+	const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+	formation.addDrones(700,1,10000);
+	const targets_full = await FormationPattern.fromCSVUrl(
+			"draw/ngua/full.csv",
+			{
+				offsetX:x,
+				offsetY:y,
+				scale:7,
+
+			}
+		);
+	formation.setTargetFormation(targets_full)
+	formation.setRandomColorV2({duration:10000})
+	
+	formation.moveV2(10000,()=>{
+		formation.applyTargetColor({
+			mode:'scan',
+			fade:120,
+			timeGap:1
+		})
+	})
+	
+	await sleep(11000)
+	formation.move(stageW/2+400,stageH/2,10000)
+
+}
+async function seqDroneHappyNewYear2026(x = stageH/2, y=stageW/2){
+	const h2026 = new FormationV2();
+	const t2026 = new FormationV2();
+	t2026.addDrones(700,2)
+	h2026.addDrones(600,2)
+	let sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+	const target_h2026 = await FormationPattern.fromCSVUrl(
+		'draw/hpn2026.csv',
+		{
+			offsetX:x-70,
+			offsetY:y-80,
+			scale:14
+		}
+	)
+	const target_t2026 = await FormationPattern.fromCSVUrl(
+		'draw/t2026.csv',{
+			offsetX:x,
+			offsetY:y-200,
+			scale:15
+		}
+	)
+	h2026.setTargetFormation(target_h2026)
+	t2026.setTargetFormation(target_t2026)
+	h2026.setRandomColorV2({duration:10000})
+	t2026.setRandomColorV2({duration:10000})
+	h2026.moveV2(10000,()=>{
+		h2026.applyTargetColor(
+			{
+				mode:'scan',
+				timeGap:0.01
+			}
+		)
+	})
+	t2026.moveV2(10000,()=>{
+		t2026.applyTargetColor(
+			{
+				mode:'column',
+				timeGap:0.1
+			}
+		)
+	})
+	await sleep(10000)
+	t2026.removeDrones()
+	console.log(drones.length)
+
+
 }
 
+seqDroneHappyNewYear2026(stageW/2+50,stageH/2-100)
+// nguaFormation2()
 
-
-
-loadCSVFormation();
-
-
+// nguaFormation2(stageW/2+600,stageH/2);
 
 
 
