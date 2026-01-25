@@ -2,6 +2,7 @@
 // import{digits,letters} from './drone_text.js'
 console.clear();
 let airDrag =0.8;
+
 // This is a prime example of what starts out as a simple project
 // and snowballs way beyond its intended size. It's a little clunky
 // reading/working on this single file, but here it is anyways :)
@@ -613,6 +614,7 @@ const INVISIBLE = '_INVISIBLE_';
 
 const PI_2 = Math.PI * 2;
 const PI_HALF = Math.PI * 0.5;
+const PI = Math.PI
 
 // Stage.disableHighDPI = true;
 const trailsStage = new Stage('trails-canvas');
@@ -775,7 +777,7 @@ class FormationV2 {
         // this.colorEffect = new FormationColorEffect();
     }
 
-    addDrones(n, size, life = 1000000) {
+    addDrones(n, size=2, life = 1000000) {
         const start = drones.length;
 		this.start = start;
         for (let i = 0; i < n; i++) {
@@ -806,16 +808,43 @@ class FormationV2 {
 		
 		this.movement.moveFormationTo(this.drones,x,y,duration);
 	}
+	/**
+	 * Di chuyển theo index
+	 * @param {*} duration 
+	 * @returns 
+	 */
+	moveV3(duration=2000,onComplete){
+		if (!this.targetFormation) return;
+		this.movement.moveByIndex(
+			this.drones,
+			this.targetFormation,
+			duration,
+			() => {
+			 // ✅ CHỐT mapping
+				onComplete?.();
+			}
+
+		)
+	}
 
     moveV1(duration = 2000) {
 		if (!this.targetFormation) return;
 		this.movement.moveByNearest(
 			this.drones,
-			purePositions,
-			duration
+			this.targetFormation,
+			duration,
+			(used) => {
+				this._lastUsed = used; // ✅ CHỐT mapping
+				onComplete?.();
+			}
 		);
 	}
-
+	/**
+	 * chuyển đội hình theo target theo kiểu Magnetic
+	 * @param {*} duration - thời gian di chuyển
+	 * @param {*} onComplete 
+	 * @returns 
+	 */
     moveV2(duration = 2000, onComplete) {
 		if (!this.targetFormation) return;
 
@@ -848,7 +877,7 @@ class FormationV2 {
 
 		const used = this._lastUsed;
     	if (!used || !used.length) return;
-		
+		console.log("quét màu")
 		
   
 
@@ -1137,75 +1166,75 @@ class FormationMovement {
 	}
 
 	moveMagnetic(drones, targets, duration = 1200, onComplete) {
-  if (!targets || targets.length === 0) return;
+		if (!targets || targets.length === 0) return;
 
-  const { used, unused } = this.mapNearest(drones, targets);
+		const { used, unused } = this.mapNearest(drones, targets);
 
-  const start = new Map();
-  drones.forEach(d => start.set(d, { x: d.x, y: d.y }));
+		const start = new Map();
+		drones.forEach(d => start.set(d, { x: d.x, y: d.y }));
 
-  const maxDist = Math.max(...used.map(u => u.dist)) || 1;
+		const maxDist = Math.max(...used.map(u => u.dist)) || 1;
 
-  const px = stageW / 2;
-  const py = stageH / 2;
-  const t0 = performance.now();
+		const px = stageW / 2;
+		const py = stageH / 2;
+		const t0 = performance.now();
 
-  let finished = false;
+		let finished = false;
 
-  const animate = (now) => {
-    const elapsed = now - t0;
+		const animate = (now) => {
+			const elapsed = now - t0;
 
-    // 🧲 USED → magnetic pull
-    used.forEach(u => {
-      const s = start.get(u.drone);
+			// 🧲 USED → magnetic pull
+			used.forEach(u => {
+			const s = start.get(u.drone);
 
-      const weight = u.dist / maxDist; // xa → nhanh
-      const localT = Math.min(
-        elapsed / (duration * (0.4 + 0.6 * weight)),
-        1
-      );
-      const t = this.easeInOut(localT);
+			const weight = u.dist / maxDist; // xa → nhanh
+			const localT = Math.min(
+				elapsed / (duration * (0.4 + 0.6 * weight)),
+				1
+			);
+			const t = this.easeInOut(localT);
 
-      u.drone.x = s.x + (u.target.x - s.x) * t;
-      u.drone.y = s.y + (u.target.y - s.y) * t;
-    });
+			u.drone.x = s.x + (u.target.x - s.x) * t;
+			u.drone.y = s.y + (u.target.y - s.y) * t;
+			});
 
-    // 🚫 UNUSED → bay về tâm + tắt
-    unused.forEach(drone => {
-    const s = start.get(drone);
-	const t = Math.min(elapsed / duration, 1);
-    // 🔍 tìm used gần nhất
-    let nearest = null;
-    let min = Infinity;
+			// 🚫 UNUSED → bay về tâm + tắt
+			unused.forEach(drone => {
+			const s = start.get(drone);
+			const t = Math.min(elapsed / duration, 1);
+			// 🔍 tìm used gần nhất
+			let nearest = null;
+			let min = Infinity;
 
-    used.forEach(({ target }) => {
-        const d = Math.hypot(s.x - target.x, s.y - target.y);
-        if (d < min) {
-            min = d;
-            nearest = target;
-        }
-    });
+			used.forEach(({ target }) => {
+				const d = Math.hypot(s.x - target.x, s.y - target.y);
+				if (d < min) {
+					min = d;
+					nearest = target;
+				}
+			});
 
-    if (!nearest) return;
+			if (!nearest) return;
 
-    drone.x = s.x + (nearest.x - s.x) * t;
-    drone.y = s.y + (nearest.y - s.y) * t;
+			drone.x = s.x + (nearest.x - s.x) * t;
+			drone.y = s.y + (nearest.y - s.y) * t;
 
-    drone.color = 'rgba(0,0,0,0)';
-    drone.pistilColor = 'rgba(0,0,0,0)';
-});
+			drone.color = 'rgba(0,0,0,0)';
+			drone.pistilColor = 'rgba(0,0,0,0)';
+		});
 
-    if (elapsed < duration) {
-      requestAnimationFrame(animate);
-    } else if (!finished) {
-      finished = true;
-      // ✅ y hệt moveByNearest
-      onComplete?.(used, unused);
-    }
-  };
+			if (elapsed < duration) {
+			requestAnimationFrame(animate);
+			} else if (!finished) {
+			finished = true;
+			// ✅ y hệt moveByNearest
+			onComplete?.(used, unused);
+			}
+		};
 
-  requestAnimationFrame(animate);
-}
+		requestAnimationFrame(animate);
+	}
 
     mapNearest(drones, targets) {
 		const freeTargets = [...targets];
@@ -1242,36 +1271,42 @@ class FormationMovement {
 		};
 	}
 
-    moveByIndex(drones, targets, duration) {
-        if (!targets) return;
+    moveByIndex(drones, targets, duration = 1000, onComplete) {
+		if (!Array.isArray(targets)) return;
 
-        const start = drones.map(d => ({ x: d.x, y: d.y }));
-        const t0 = performance.now();
+		const start = drones.map(d => ({ x: d.x, y: d.y }));
+		const t0 = performance.now();
+		let finished = false;
 
-        const px = stageW / 2;
-        const py = stageH / 2;
+		const animate = (now) => {
+			const raw = Math.min((now - t0) / duration, 1);
+			const t = this.easeInOut(raw);
 
-        const animate = (now) => {
-            const t = Math.min((now - t0) / duration, 1);
+			drones.forEach((d, i) => {
+			const s = start[i];
+			const tg = targets[i];
 
-            drones.forEach((d, i) => {
-                const s = start[i];
-                const tg = targets[i] ?? { x: px, y: py };
+			if (!tg) {
+				// 🚫 không có target → tắt drone
+				d.color = 'black';
+				d.pistilColor = 'rgba(0,0,0,0)';
+				return;
+			}
 
-                d.x = s.x + (tg.x - s.x) * t;
-                d.y = s.y + (tg.y - s.y) * t;
+			d.x = s.x + (tg.x - s.x) * t;
+			d.y = s.y + (tg.y - s.y) * t;
+			});
 
-                if (!targets[i]) {
-                    d.color = 'black';
-                    d.pistilColor = 'rgba(0,0,0,0)';
-                }
-            });
+			if (raw < 1) {
+			requestAnimationFrame(animate);
+			} else if (!finished) {
+			finished = true;
+			onComplete?.();
+			}
+		};
 
-            if (t < 1) requestAnimationFrame(animate);
-        };
-
-        requestAnimationFrame(animate);
-    }
+		requestAnimationFrame(animate);
+		}
 
     moveByNearest(drones, targets, duration, onComplete) {
     if (!targets || targets.length === 0) return;
@@ -1844,6 +1879,62 @@ class FormationPattern {
 			})
 		);
 	}
+	/**
+	 * @param {*} n :số lượng
+	 * 
+	 * @param {*} cx : vị trí
+	 * @param {*} cy : vị trí
+	 * @param {*} r : Bán kính
+	 * @param {*} tiltX :NGhiêng Cúi/ngửa
+	 * @param {*} tiltY: nghiêng trái/phải
+	 * 
+	 * @returns 
+	 */
+	static circleWithAxis({
+		n,
+		cx = 0,
+		cy = 0,
+		r = 100,
+		tiltX = 0,
+		tiltY = 0,
+		swapAxis = false
+	}) {
+		const points = [];
+		// console.log('Circle')
+		const cosX = Math.cos(tiltX);
+		const sinX = Math.sin(tiltX);
+		const cosY = Math.cos(tiltY);
+		const sinY = Math.sin(tiltY);
+
+		for (let i = 0; i < n; i++) {
+			const a = (i / n) * Math.PI * 2;
+
+			// vòng tròn gốc
+			let x = Math.cos(a) * r;
+			let y = Math.sin(a) * r;
+			let z = 0;
+
+			// rotate X
+			let y1 = y * cosX - z * sinX;
+			let z1 = y * sinX + z * cosX;
+
+			// rotate Y
+			let x2 = x * cosY + z1 * sinY;
+			let y2 = y1;
+
+			const finalX = swapAxis ? y2 : x2;
+			const finalY = swapAxis ? x2 : y2;
+
+			points.push(
+			this.makePoint({
+				x: cx + finalX,
+				y: cy + finalY
+			})
+			);
+		}
+
+		return points;
+		}
 
     static circle(n, cx, cy, r) {
 		return Array.from({ length: n }, (_, i) => {
@@ -1915,7 +2006,7 @@ class FormationPattern {
 		cx = (minX + maxX) / 2;
 		cy = (minY + maxY) / 2;
 	}
-
+ 
 	// 🔥 MAP RA TARGET (ĐẢO Y)
 	return points.map(p => ({
 		id: p.id,
@@ -1947,6 +2038,68 @@ class FormationAnimator {
         this.running = false;
         if (this.rafId) cancelAnimationFrame(this.rafId);
     }
+	rotateFormation({
+		speed = 0.0015,     // tốc độ xoay
+		tiltX = 0,          // nghiêng theo trục X
+		tiltY = 0,          // nghiêng theo trục Y
+		follow = 0.08       // độ bám theo target
+	} = {}) {
+		this.stop();
+		this.snapshot();
+
+		const drones = this.formation.drones;
+		const cx = this.getCenterX();
+		const cy = this.getCenterY();
+
+		const cosX = Math.cos(tiltX);
+		const sinX = Math.sin(tiltX);
+		const cosY = Math.cos(tiltY);
+		const sinY = Math.sin(tiltY);
+
+		this.running = true;
+		const start = performance.now();
+
+		const animate = (now) => {
+			if (!this.running) return;
+
+			const t = (now - start) * speed;
+			const cosT = Math.cos(t);
+			const sinT = Math.sin(t);
+
+			drones.forEach((drone, i) => {
+				const base = this.basePositions[i];
+
+				// --- vector từ tâm ---
+				const dx = base.x - cx;
+				const dy = base.y - cy;
+				let dz = 0;
+
+				// --- xoay phẳng ---
+				let x = dx * cosT - dy * sinT;
+				let y = dx * sinT + dy * cosT;
+				let z = dz;
+
+				// --- rotate X ---
+				let y1 = y * cosX - z * sinX;
+				let z1 = y * sinX + z * cosX;
+
+				// --- rotate Y ---
+				let x2 = x * cosY + z1 * sinY;
+				let y2 = y1;
+
+				const targetX = cx + x2;
+				const targetY = cy + y2;
+
+				// --- FOLLOW mượt ---
+				drone.x += (targetX - drone.x) * follow;
+				drone.y += (targetY - drone.y) * follow;
+			});
+
+			this.rafId = requestAnimationFrame(animate);
+		};
+
+		animate(performance.now());
+	}
 	rotateAroundCenter({
 		speed = 0.001,
 		tilt = 0,
@@ -3519,7 +3672,7 @@ function makePistilColor(shellColor) {
 // Unique shell types
 const crysanthemumShell = (size = 1) => {
 	const glitter = Math.random() < 0.25;
-	const singleColor = Math.random() < 0.72;
+	const singleColor = Math.random() < 0.72;//0/72
 	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
 	const pistil = singleColor && Math.random() < 0.42;
 	const pistilColor = pistil && makePistilColor(color);
@@ -3600,6 +3753,32 @@ const catShell = (size = 1) => {
 		pistilColor,
 	
 		cat:true
+	};
+};
+const ovalShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 1;
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = singleColor && Math.random() < 0.42;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		pistil:false,
+		pistilColor,
+	
+		oval:true
 	};
 };
 const snowShell = (size = 1) => {
@@ -3936,6 +4115,20 @@ const crossetteShell = (size = 1) => {
 		pistilColor: makePistilColor(color)
 	};
 };
+const crossetteShellV2 = (size = 1) => {
+	const color = randomColor({ limitWhite: true });
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 750 + size * 160,
+		starLifeVariation: 0.4,
+		starDensity: 0.85,
+		color,
+		crossetteV2: true,
+		pistil: Math.random() < 0.5,
+		pistilColor: makePistilColor(color)
+	};
+};
 
 const floralShell = (size = 1) => ({
 	shellSize: size,
@@ -4054,6 +4247,7 @@ const shellTypes = {
 	'Random': randomShell,
 	'Crackle': crackleShell,
 	'Crossette': crossetteShell,
+	'CrossetteV2': crossetteShellV2,
 	'Crysanthemum': crysanthemumShell,
 	'Flower':flowerShell,
 	'Hearth':hearthShell,
@@ -4073,6 +4267,7 @@ const shellTypes = {
 	'Ring': ringShell,
 	'Strobe': strobeShell,
 	'Willow': willowShell,
+	'Oval': ovalShell,
 
 };
 
@@ -4202,6 +4397,7 @@ function seqRandomShell() {
 	let extraDelay = shell.starLife;
 	if (shell.fallingLeaves) {
 		extraDelay = 4600;
+
 	}
 
 	return 900 + Math.random() * 600 + extraDelay;
@@ -4976,7 +5172,12 @@ async function seqShellShortRightToLeft(count, position, time) {
 		lastShell.launch(0.5, 0.5)
 	}, timen - 15);
 }
-
+function seqShellType(shell){
+	shell.launch(0.3,-0.5,1)
+	shell.launch(0.4,-0.5,1)
+	shell.launch(0.5,-0.5,1)
+	shell.launch(0.6,-0.5,1)
+}
 function seqShellMidHeight(time,cout=5) {
 	seqShellHeightRightToLeft(cout, 0.66, time)
 	seqShellHeightLeftToRight(cout, 1 - 0.64, time)
@@ -5292,7 +5493,7 @@ async function seqSparkHalfLeft(position, height1, count, time=50) {
 		timen += 80 * 0.05;
 	}
 }
-function creatFiveShell(left, right,shell,color,hight=-0.3) {
+function creatFiveShell(left, right,shell,color,hight=-0.2) {
 
 	let spread = Math.abs(right - left) / 5;
 	while (left <= right) {
@@ -6565,36 +6766,49 @@ function createBurstv2(count, particleFactory, startAngle = 0, width = 10, heigh
 	}
 }
 
-function createHeartBurst(count, particleFactory, startAngle = 0, arcLength = Math.PI * 2) {
-    // Tạo một góc ngẫu nhiên để xoay hình trái tim
-    const randomRotation = Math.random() * Math.PI * 2; // Góc ngẫu nhiên từ 0 đến 2pi
+function createHeartBurst(
+	count,
+	particleFactory,
+	startAngle = 0,
+	arcLength = Math.PI * 2
+) {
+	const positions = [];
 
-    const positions = [];
+	// random góc xoay 3 trục
+	const rotX = (Math.random() - 0.5) * Math.PI;
+	const rotY = (Math.random() - 0.5) * Math.PI;
+	const rotZ = Math.random() * Math.PI * 2;
 
-    // Sinh các vị trí theo hình trái tim
-    for (let i = 0; i < count; i++) {
-        const t = Math.random() * Math.PI * 2;  // Tạo giá trị ngẫu nhiên cho góc
+	for (let i = 0; i < count; i++) {
+		const t = Math.random() * Math.PI * 2;
 
-        // Phương trình hình trái tim
-        let x = 16 * Math.pow(Math.sin(t), 3);
-        let y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+		// Phương trình trái tim
+		let x = 16 * Math.pow(Math.sin(t), 3);
+		let y =
+			13 * Math.cos(t)
+			- 5 * Math.cos(2 * t)
+			- 2 * Math.cos(3 * t)
+			- Math.cos(4 * t);
 
-        // Xoay hình trái tim bằng cách xoay các tọa độ theo góc random
-        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
-        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+		let z = 0;
 
-        positions.push({ x: xRotated, y: yRotated });
-    }
+		// XOAY 3 TRỤC
+		const p = rotate3D(x, y, z, rotX, rotY, rotZ);
+		positions.push(p);
+	}
 
-    // Tính toán và tạo các hạt từ các vị trí đã tính toán
-    for (const { x, y } of positions) {
-        // Tính toán góc và kích thước của hạt
-        const angle = Math.atan2(y, x) + startAngle;
-        const size = Math.sqrt(x * x + y * y) / 20; // Quy mô độ lớn của các hạt
+	for (const { x, y, z } of positions) {
+		// góc bay
+		const angle = Math.atan2(y, x) + startAngle;
 
-        // Gọi hàm tạo hạt
-        particleFactory(angle, size);
-    }
+		// fake chiều sâu
+		const depth = 1 + z * 0.05;
+
+		// lực bay
+		const size = (Math.sqrt(x * x + y * y) / 20) * depth;
+
+		particleFactory(angle, size);
+	}
 }
 /**
  * tạo hình lốc xoáy
@@ -6893,71 +7107,120 @@ function createFishBurst(count, particleFactory, scale =20, randomness = 0.7) {
     }
 }
 function createCatBurst(count, particleFactory, scale = 10, randomness = 0.1) {
-    const randomRotation = Math.random() * Math.PI * 2; // Xoay toàn bộ mèo ngẫu nhiên
-    const positions = [];
+	const positions = [];
 
-    // Tạo phần đầu mèo (hình tròn)
-    for (let i = 0; i < count * 0.6; i++) {
-        const t = (i / (count * 0.6)) * Math.PI * 2; // Góc từ 0 đến 2π
-        const x = scale * Math.cos(t); // Tọa độ x
-        const y = scale * Math.sin(t); // Tọa độ y
+	// random xoay 3 trục
+	const rotX = (Math.random() - 0.5) * Math.PI;
+	const rotY = (Math.random() - 0.5) * Math.PI;
+	const rotZ = Math.random() * Math.PI * 2;
 
-        // Thêm độ ngẫu nhiên
-        const randomX = x + (Math.random() - 0.5) * randomness * scale;
-        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+	// =========================
+	// ĐẦU MÈO (HÌNH TRÒN)
+	// =========================
+	for (let i = 0; i < count * 0.6; i++) {
+		const t = (i / (count * 0.6)) * Math.PI * 2;
+		let x = scale * Math.cos(t);
+		let y = scale * Math.sin(t);
+		let z = 0;
 
-        positions.push({ x: randomX, y: randomY });
-    }
+		x += (Math.random() - 0.5) * randomness * scale;
+		y += (Math.random() - 0.5) * randomness * scale;
 
-    // Tạo hai tai mèo (hai tam giác trên đầu)
-    for (let i = 0; i < count * 0.2; i++) {
-        const t = Math.random(); // Giá trị ngẫu nhiên để tạo độ rộng tam giác
-        const x = -scale * 0.8 + t * scale * 0.5; // Tai trái
-        const y = -scale - t * scale * 0.8;
+		positions.push(rotate3D(x, y, z, rotX, rotY, rotZ));
+	}
 
-        const randomX = x + (Math.random() - 0.5) * randomness * scale;
-        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+	// =========================
+	// TAI TRÁI
+	// =========================
+	for (let i = 0; i < count * 0.2; i++) {
+		const t = Math.random();
+		let x = -scale * 0.8 + t * scale * 0.5;
+		let y = -scale - t * scale * 0.8;
+		let z = 0;
 
-        positions.push({ x: randomX, y: randomY });
-    }
+		x += (Math.random() - 0.5) * randomness * scale;
+		y += (Math.random() - 0.5) * randomness * scale;
 
-    for (let i = 0; i < count * 0.2; i++) {
-        const t = Math.random(); // Giá trị ngẫu nhiên để tạo độ rộng tam giác
-        const x = scale * 0.8 - t * scale * 0.5; // Tai phải
-        const y = -scale - t * scale * 0.8;
+		positions.push(rotate3D(x, y, z, rotX, rotY, rotZ));
+	}
 
-        const randomX = x + (Math.random() - 0.5) * randomness * scale;
-        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+	// =========================
+	// TAI PHẢI
+	// =========================
+	for (let i = 0; i < count * 0.2; i++) {
+		const t = Math.random();
+		let x = scale * 0.8 - t * scale * 0.5;
+		let y = -scale - t * scale * 0.8;
+		let z = 0;
 
-        positions.push({ x: randomX, y: randomY });
-    }
+		x += (Math.random() - 0.5) * randomness * scale;
+		y += (Math.random() - 0.5) * randomness * scale;
 
-    // Tạo hai mắt mèo (hai hình elip nhỏ)
-    for (let i = 0; i < count * 0.1; i++) {
-        const x = -scale * 0.3 + (Math.random() - 0.5) * randomness * scale; // Mắt trái
-        const y = scale * 0.2 + (Math.random() - 0.5) * randomness * scale;
+		positions.push(rotate3D(x, y, z, rotX, rotY, rotZ));
+	}
 
-        positions.push({ x, y });
-    }
+	// =========================
+	// MẮT TRÁI
+	// =========================
+	for (let i = 0; i < count * 0.1; i++) {
+		let x = -scale * 0.3;
+		let y = scale * 0.2;
+		let z = 0;
 
-    for (let i = 0; i < count * 0.1; i++) {
-        const x = scale * 0.3 + (Math.random() - 0.5) * randomness * scale; // Mắt phải
-        const y = scale * 0.2 + (Math.random() - 0.5) * randomness * scale;
+		x += (Math.random() - 0.5) * randomness * scale;
+		y += (Math.random() - 0.5) * randomness * scale;
 
-        positions.push({ x, y });
-    }
+		positions.push(rotate3D(x, y, z, rotX, rotY, rotZ));
+	}
 
-    // Chuyển đổi vị trí thành hạt và xoay mèo
-    for (const { x, y } of positions) {
-        // Xoay tọa độ
-        const xRotated = x * Math.cos(randomRotation) - y * Math.sin(randomRotation);
-        const yRotated = x * Math.sin(randomRotation) + y * Math.cos(randomRotation);
+	// =========================
+	// MẮT PHẢI
+	// =========================
+	for (let i = 0; i < count * 0.1; i++) {
+		let x = scale * 0.3;
+		let y = scale * 0.2;
+		let z = 0;
 
-        // Tạo hạt
-        const angle = Math.atan2(yRotated, xRotated);
-        const size = Math.sqrt(xRotated * xRotated + yRotated * yRotated) / scale;
-        particleFactory(angle, size);
-    }
+		x += (Math.random() - 0.5) * randomness * scale;
+		y += (Math.random() - 0.5) * randomness * scale;
+
+		positions.push(rotate3D(x, y, z, rotX, rotY, rotZ));
+	}
+
+	// =========================
+	// TẠO HẠT
+	// =========================
+	for (const { x, y, z } of positions) {
+		const angle = Math.atan2(y, x);
+
+		// fake chiều sâu
+		const depth = 1 + z * 0.05;
+
+		const size = (Math.sqrt(x * x + y * y) / scale) * depth;
+		particleFactory(angle, size);
+	}
+}
+function createOvalBurst(count, particleFactory, rx = 10, ry = 14, randomness = 0.2) {
+	const positions = [];
+
+	for (let i = 0; i < count; i++) {
+		const t = Math.random() * Math.PI * 2;
+
+		let x = rx * Math.cos(t);
+		let y = ry * Math.sin(t);
+
+		// méo tự nhiên
+		x += (Math.random() - 0.5) * randomness * rx;
+		y += (Math.random() - 0.5) * randomness * ry;
+
+		positions.push({ x, y });
+	}
+
+	for (const { x, y } of positions) {
+		const angle = Math.atan2(y, x);
+		const size = Math.sqrt(x * x + y * y) / Math.max(rx, ry);
+		particleFactory(angle, size);
+	}
 }
 
 function createStarBurst(count,particleFactory, arms = 5) {
@@ -7002,27 +7265,61 @@ function createBurstRectangle(count, particleFactory, width = 10, height = 5, st
 		particleFactory(angle, size);
 	}
 }
-function createBirdBurst(count, particleFactory, scale = 5, randomness = 0.3) {
-    const positions = [];
-	randomness*=Math.random()
-	scale*=Math.random()
-    for (let i = 0; i < count; i++) {
-        const t = (i / count) * Math.PI; // Góc từ 0 đến π
-        const x = scale * Math.sin(t); // Tạo cánh chim
-        const y = scale * Math.sin(t) * Math.sin(t); // Độ cong của cánh
+function rotate3D(x, y, z, rx, ry, rz) {
+	// X axis
+	let cy = Math.cos(rx), sy = Math.sin(rx);
+	let y1 = y * cy - z * sy;
+	let z1 = y * sy + z * cy;
 
-        // Thêm độ ngẫu nhiên
-        const randomX = x + (Math.random() - 0.5) * randomness * scale;
-        const randomY = y + (Math.random() - 0.5) * randomness * scale;
+	// Y axis
+	let cx = Math.cos(ry), sx = Math.sin(ry);
+	let x2 = x * cx + z1 * sx;
+	let z2 = -x * sx + z1 * cx;
 
-        positions.push({ x: randomX, y: randomY });
-    }
+	// Z axis
+	let cz = Math.cos(rz), sz = Math.sin(rz);
+	let x3 = x2 * cz - y1 * sz;
+	let y3 = x2 * sz + y1 * cz;
 
-    for (const { x, y } of positions) {
-        const angle = Math.atan2(y, x);
-        const size = Math.sqrt(x * x + y * y) / scale;
-        particleFactory(angle, size);
-    }
+	return { x: x3, y: y3, z: z2 };
+}
+function createBirdBurst(count, particleFactory,scale = 5,randomness = 0.3) {
+	const positions = [];
+
+	randomness *= Math.random();
+	scale *= Math.random();
+
+	// random góc xoay 3 trục
+	const rotX = Math.random() * Math.PI * 2;
+	const rotY = Math.random() * Math.PI * 2;
+	const rotZ = Math.random() * Math.PI * 2;
+
+	for (let i = 0; i < count; i++) {
+		const t = (i / count) * Math.PI;
+
+		let x = scale * Math.sin(t);
+		let y = scale * Math.sin(t) * Math.sin(t);
+		let z = 0;
+
+		// random méo
+		x += (Math.random() - 0.5) * randomness * scale;
+		y += (Math.random() - 0.5) * randomness * scale;
+		z += (Math.random() - 0.5) * randomness * scale * 0.3;
+
+		// XOAY 3 TRỤC
+		const p = rotate3D(x, y, z, rotX, rotY, rotZ);
+		positions.push(p);
+	}
+
+	for (const { x, y, z } of positions) {
+		const angle = Math.atan2(y, x);
+
+		// có z → cảm giác xa gần
+		const depth = 1 + z * 0.15;
+		const size = Math.sqrt(x * x + y * y) / scale * depth;
+
+		particleFactory(angle, size);
+	}
 }
 function createLotusBurst(count, particleFactory, scale = 5, petalCount = 7, randomness = 0.1) {
     const positions = [];
@@ -7110,6 +7407,34 @@ function crossetteEffect(star) {
 		);
 	});
 }
+
+function crossetteEffectV2(star) {
+	const startAngle = Math.random() * PI_2;
+
+	createParticleArc(startAngle, PI_2,  3, 0.8, (angle) => {
+		const child = Star.add(
+			star.x,
+			star.y,
+			star.color,
+			angle,
+			Math.random() * 1.4 + 1.2, // bay mạnh hơn
+			1000 // sống lâu hơn
+		);
+
+		// ÍT BỊ RƠI
+		child.heavy = true;
+
+		// tắt gravity nếu engine cho phép
+		child.gravity = 0; // nếu có
+
+		// bay loạn thêm
+		child.spinRadius = Math.random() * 0.6 + 0.2;
+
+		// spark nhẹ để thấy hướng bay
+		child.sparkFreq = 40;
+		child.sparkLife = 400;
+	});
+}
 //tạo hinh tròn bo
 function floralEffectV2(star) {
 	const count = 12 + 6 * quality;
@@ -7169,7 +7494,7 @@ function floralEffect(star) {
 
 // Floral burst with willow stars
 function fallingLeavesEffect(star) {
-	airDrag = 1//sửa
+	// airDrag = 1//sửa
 	createBurst(7, (angle, speedMult) => {
 		const newStar = Star.add(
 			star.x,
@@ -7247,7 +7572,7 @@ class Shell {
 		}
 	}
 
-	launch(position, launchHeight, thisNgieng = 0 ) {
+	launch(position, launchHeight, thisNgieng = 1 ) {
 		const width = stageW;
 		const height = stageH;
 		// Distance from sides of screen to keep shells.
@@ -7264,7 +7589,7 @@ class Shell {
 		const burstY = minHeight - (launchHeight * (minHeight - vpad));
 		// const launchDistance = launchY - burstY;
 		const rand = Math.random()
-		const positionX =thisNgieng *(rand < 0.5 ? -0.7 * rand : 0.7 * rand) 
+		const positionX =thisNgieng *(rand < 0.5 ? -1 * rand : 1 * rand) 
 		// console.log(positionX)
 		const launchDistance = launchY - burstY ;
 		// Using a custom power curve to approximate Vi needed to reach launchDistance under gravity and air drag.
@@ -7281,18 +7606,21 @@ class Shell {
 			launchVelocity * (this.horsetail ? 100 : 400),
 			positionX,
 		);
-
+		
+		
 		// making comet "heavy" limits air drag
 		comet.heavy = true;
 		// comet spark trail
-		comet.spinRadius = MyMath.random(0.32, 0.85);
+		comet.spinRadius = MyMath.random(0.42, 0.65);
 		comet.sparkFreq = 32 / quality;
 		if (isHighQuality) comet.sparkFreq = 8;
-		comet.sparkLife = 320;
-		comet.sparkLifeVariation = 3;
+
+		comet.sparkLife = 320;//320
+		comet.sparkLifeVariation = 5;//3
+
 		if (this.glitter === 'willow' || this.fallingLeaves) {
 			comet.sparkFreq = 20 / quality;
-			comet.sparkSpeed = 0.5;
+			comet.sparkSpeed = 1.1;//0.5
 			comet.sparkLife = 500;
 		}
 		if (this.color === INVISIBLE) {
@@ -7309,7 +7637,7 @@ class Shell {
 		comet.onDeath = comet => this.burst(comet.x, comet.y);
 		if(this.fallingLeaves){
 			
-			airDrag = 1
+			// airDrag = 1
 			
 		}else if(this.floral){
 			setTimeout(() => {
@@ -7512,6 +7840,13 @@ class Shell {
 			}
 			crossetteEffect(star);
 		}
+		if (this.crossetteV2) onDeath = (star) => {
+			if (!playedDeathSound) {
+				soundManager.playSound('crackleSmall');
+				playedDeathSound = false;
+			}
+			crossetteEffectV2(star);
+		}
 		if (this.crackle) onDeath = (star) => {
 			if (!playedDeathSound) {
 				soundManager.playSound('crackle');
@@ -7590,6 +7925,7 @@ class Shell {
 				star.transitionTime = this.starLife * (Math.random() * 0.05 + 0.32);
 				star.secondColor = this.secondColor;
 			}
+			star.strobeGroup = Math.floor(Math.random() * 4);
 
 			if (this.strobe) {
 				star.transitionTime = this.starLife * (Math.random() * 0.08 + 0.46);
@@ -7601,6 +7937,34 @@ class Shell {
 					star.secondColor = this.strobeColor;
 				}
 			}
+			// if (this.strobe) {
+			// 	star.transitionTime = this.starLife * 0.4;
+			// 	star.strobe = true;
+
+			// 	// mỗi mảng lệch pha strobe
+			// 	star.strobeFreq = 50;
+			// 	star.strobeOffset = star.strobeGroup * 20;
+
+			// 	if (this.strobeColor) {
+			// 		star.secondColor = this.strobeColor;
+			// 	}
+			// }
+			// star.onUpdate = () => {
+			// 	if (!star.strobe) return;
+
+			// 	const time = star.age + star.strobeOffset;
+
+			// 	// on : off : off
+			// 	const phase = Math.floor(time / star.strobeFreq) % 3;
+
+			// 	star.visible = phase === 0;
+			// };
+
+			// if(this.randomStrobe){
+				
+			// }
+
+
 
 			star.onDeath = onDeath;
 
@@ -7659,6 +8023,10 @@ class Shell {
 				createHeartBurst(this.starCount, starFactory)
 				check =0;
 			}
+			if(this.oval){
+				createOvalBurst(this.starCount, starFactory)
+				check = 0;
+			}
 			if(this.flower){
 				createFlowerBurst(this.starCount, starFactory);
 				check =0;
@@ -7706,6 +8074,11 @@ class Shell {
 				createBirdBurst(this.starCount, starFactory)
 				check =0;
 			}
+			if(this.half){
+				createBurst(this.starCount, starFactory,0,PI_2/2)
+				check = 0;
+			}
+			
 			else{
 				if(check == 1){
 					createBurst(this.starCount, starFactory)
@@ -10041,11 +10414,61 @@ async function seqDroneHappyNewYear2026(x = stageH/2, y=stageW/2){
 
 
 }
+async function seqDroneTest(x=stageW/2,y=stageH/2) {
+	const droneFormat = new FormationV2()
 
-seqDroneHappyNewYear2026(stageW/2+50,stageH/2-100)
+
+	droneFormat.addDrones(600)
+
+	
+	let sleep = (ms) => new Promise(res => setTimeout(res, ms));
+	const target = await FormationPattern.fromCSVUrl(
+		'draw/pictu/hoguom.csv',
+		{
+			offsetX:x-70,
+			offsetY:y-80,
+			scale:14
+		}
+	)
+	const target2 = FormationPattern.circleWithAxis({n:50,r:200,cx:500,cy:400,tiltX:PI/2.13})
+	
+
+	droneFormat.setTargetFormation(target)	
+	droneFormat.setRandomColorV2({duration:10000})
+	droneFormat.moveV2(10000,()=>{
+		droneFormat.applyTargetColor()
+	})
+	await sleep(15000)
+	droneFormat.setTargetFormation(target2)
+	droneFormat.setRandomColorV2({duration:5000})
+	await sleep(5000)
+	droneFormat.setColor(COLOR.Blue)
+	droneFormat.moveV2(10000)
+	const animator = new FormationAnimator(droneFormat)
+	await sleep(12000)
+	animator.rotateAroundCenter()
+	// await sleep(5000)
+	// animator.stop()
+
+
+	// ngua1.setTargetFormation(target_n2)
+	// ngua1.moveV3(5000,()=>{
+	// 	ngua1.applyTargetColor()
+	// })
+	
+
+
+}
+// seqDroneHappyNewYear2026(stageW/2+50,stageH/2-100)
 // nguaFormation2()
 
 // nguaFormation2(stageW/2+600,stageH/2);
+// seqDroneTest()
+
+let shell = new Shell({...shellTypes['Crysanthemum'](0.5),crackle:true,secondColor:COLOR.Yellow})
+
+
+creatFiveShell(0.2,0.8,shell)
 
 
 
@@ -10057,6 +10480,8 @@ seqDroneHappyNewYear2026(stageW/2+50,stageH/2-100)
 //     )
 // );
 // formation.setColor
+
+
 
 
 

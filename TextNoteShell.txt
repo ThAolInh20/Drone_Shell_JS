@@ -3,6 +3,7 @@
 
 	'Crackle': crackleShell,
 	'Crossette': crossetteShell,
+	'CrossetteV2': crossetteShellV2,
 	'Crysanthemum': crysanthemumShell,
 	'Falling Leaves': fallingLeavesShell, // đã cập nhật để rơi thêm đẹp hơn
 	'Floral': floralShell,
@@ -44,6 +45,7 @@
  * floral: //hiệu ứng nổ các pháo nhỏ nhiều màu hoa
  * crackle: //hiệu ứng nổ các pháo nhỏ lili 1 màu vàngg
 * strobe: //hiệu ứng lấp lánh
+* half: //pháo nổ có 1 nửa
 *smiley: //tạo mặt cười
 *hearth: //hiệu ứng trái tim
 *snow
@@ -80,7 +82,7 @@ shell=new Shell(........) Phải khai báo hàng thật đấy
 
  	seqShellAllInOne(left, right,shell, count=3,time=50) banứ ngẫu nhiên vị trí 
 	
-	reatFiveShell(left, right,shell)
+	creatFiveShell(left, right,shell)
 
 creatFiveShellV2(x,y,shell,cout=10,color) bắn bắt đàu từ x(0->1), độ cao y(0->maxH)
 -------------------------------------------------------
@@ -180,4 +182,24 @@ drawWidth: 3,// kích cỡ
 
 add(add(x, y, color, angle, speed, life, speedOffX, speedOffY)//thêm hạt theo hình tròn
 addV2(add(x, y, color, angle, speed, life, speedOffX, speedOffY)//thêm hạt theo dường chéo
+}
+
+//xoay 3d
+function rotate3D(x, y, z, rx, ry, rz) {
+	// X axis
+	let cy = Math.cos(rx), sy = Math.sin(rx);
+	let y1 = y * cy - z * sy;
+	let z1 = y * sy + z * cy;
+
+	// Y axis
+	let cx = Math.cos(ry), sx = Math.sin(ry);
+	let x2 = x * cx + z1 * sx;
+	let z2 = -x * sx + z1 * cx;
+
+	// Z axis
+	let cz = Math.cos(rz), sz = Math.sin(rz);
+	let x3 = x2 * cz - y1 * sz;
+	let y3 = x2 * sz + y1 * cz;
+
+	return { x: x3, y: y3, z: z2 };
 }
