@@ -5,6 +5,7 @@
 	'Crossette': crossetteShell,
 	'CrossetteV2': crossetteShellV2,
 	'Crysanthemum': crysanthemumShell,
+	'Rumble': rumbleShell,  //này là có nhân tròn và 1 nửa hình trònở ngoài
 	'Falling Leaves': fallingLeavesShell, // đã cập nhật để rơi thêm đẹp hơn
 	'Floral': floralShell,
 	'Ghost': ghostShell,
@@ -24,6 +25,8 @@
 	'Bird':birdShell, //bắn đường rẽ xuống
 	'Lotus':lotusShell,
 	'Butterfly':butterflyShell,
+
+	'Oval': ovalShell,
 --------------------------------------------------
 
 /**
@@ -82,7 +85,10 @@ shell=new Shell(........) Phải khai báo hàng thật đấy
 
  	seqShellAllInOne(left, right,shell, count=3,time=50) banứ ngẫu nhiên vị trí 
 	
-	creatFiveShell(left, right,shell)
+	creatFiveShell(left, right, shell, color, hight = -0.2) //ban 5 quar
+
+	seqShellFiveShell(x,y,shell,color,count=3,interval=1300,hight=-0.2) //bắn 5 quả với số count trong phạm vi x, y
+
 
 creatFiveShellV2(x,y,shell,cout=10,color) bắn bắt đàu từ x(0->1), độ cao y(0->maxH)
 -------------------------------------------------------
@@ -203,3 +209,6 @@ function rotate3D(x, y, z, rx, ry, rz) {
 
 	return { x: x3, y: y3, z: z2 };
 }
+
+------------------------------
+BurstFlash.add(x,y,r) //tạo chớp trắng tại vị trí x, y, bán kính r (x, y kích cỡ màn hình)

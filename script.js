@@ -3682,6 +3682,7 @@ const crysanthemumShell = (size = 1) => {
 	let starDensity = glitter ? 1.1 : 1.25;
 	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
 	if (isHighQuality) starDensity = 1.2;
+
 	return {
 		shellSize: size,
 		spreadSize: 300 + size * 100,
@@ -3698,9 +3699,37 @@ const crysanthemumShell = (size = 1) => {
 		,smiley:false //tạo mặt cười
 		,hearth:false //hiệu ứng trái tim
 		,star:false
-		
-		
-		
+		,doubleRing:false
+			
+	};
+};
+const rumbleShell = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+	const singleColor = Math.random() < 0.72;//0/72
+	const color = singleColor ? randomColor({ limitWhite: true }) : [randomColor(), randomColor({ notSame: true })];
+	const pistil = true;
+	const pistilColor = pistil && makePistilColor(color);
+	const secondColor = singleColor && (Math.random() < 0.2 || color === COLOR.White) ? pistilColor || randomColor({ notColor: color, limitWhite: true }) : null;
+	const streamers = !pistil && color !== COLOR.White && Math.random() < 0.42;
+	
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8; getRandomShellSize()
+	if (isHighQuality) starDensity = 1.2;
+
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 900 + size * 200,
+		starDensity,
+		color,
+		secondColor,
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+		pistil,
+		pistilColor,
+		streamers,
+		half:true
+			
 	};
 };
 const flowerShell = (size = 1) => {
@@ -3753,6 +3782,41 @@ const catShell = (size = 1) => {
 		pistilColor,
 	
 		cat:true
+	};
+};
+const ringShellV2 = (size = 1) => {
+	const glitter = Math.random() < 0.25;
+
+	const palette = [
+		COLOR.Red,
+		COLOR.Gold,
+		COLOR.White,
+		COLOR.Blue
+	];
+
+	let starDensity = glitter ? 1.1 : 1.25;
+	if (isLowQuality) starDensity *= 0.8;
+	if (isHighQuality) starDensity = 1.2;
+
+	return {
+		shellSize: size,
+		spreadSize: 300 + size * 100,
+		starLife: 1900 + size * 200,
+		starDensity,
+
+		// 🔥 màu gốc (fallback)
+		color: randomColor({ limitWhite: true }),
+
+		// ✨ BẬT đổi màu theo vòng
+		ringColorMode: 'sequential', // 'sequential' | 'gradient'
+		ringPalette: palette,        // mảng màu
+		ringColorSpeed: 1,           // tốc độ đổi (1 = mỗi điểm 1 màu)
+		ringLoop: false,             // có quay vòng không
+
+		glitter: glitter ? 'light' : '',
+		glitterColor: whiteOrGold(),
+
+		doubleRing: true
 	};
 };
 const ovalShell = (size = 1) => {
@@ -4055,6 +4119,23 @@ const strobeShell = (size = 1) => {
 		pistilColor: makePistilColor(color),
 	};
 };
+const strobev2Shell = (size = 1) => {
+	const color = randomColor({ limitWhite: true });
+	return {
+		shellSize: size,
+		spreadSize: 280 + size * 92,
+		starLife: 1100 + size * 200,
+		starLifeVariation: 0.40,
+		starDensity: 1.1,
+		color,
+		glitter: 'light',
+		glitterColor: COLOR.White,
+		strobev2: true,
+		strobeColor: Math.random() < 0.5 ? COLOR.White : null,
+		pistil: Math.random() < 0.5,
+		pistilColor: makePistilColor(color),
+	};
+};
 
 
 const palmShell = (size = 1) => {
@@ -4249,25 +4330,29 @@ const shellTypes = {
 	'Crossette': crossetteShell,
 	'CrossetteV2': crossetteShellV2,
 	'Crysanthemum': crysanthemumShell,
+	'Rumble': rumbleShell,
 	'Flower':flowerShell,
 	'Hearth':hearthShell,
-	'Wave':waveShell,
-	'Smiley':smileyShell,
-	'Cat':catShell,
-	'Fish':fishShell,
-	'Snow':snowShell,
-	'Bird':birdShell,
-	'Lotus':lotusShell,
-	'Butterfly':butterflyShell,
+
+	// 'Wave':waveShell,
+	// 'Smiley':smileyShell,
+	// 'Cat':catShell,
+	// 'Fish':fishShell,
+	// 'Snow':snowShell,
+	// 'Bird':birdShell,
+	// 'Lotus':lotusShell,
+	// 'Butterfly':butterflyShell,
 	'Falling Leaves': fallingLeavesShell,
 	'Floral': floralShell,
 	'Ghost': ghostShell,
 	'Horse Tail': horsetailShell,
 	'Palm': palmShell,
 	'Ring': ringShell,
+	'RingV2': ringShellV2,
 	'Strobe': strobeShell,
+	'StrobeV2': strobev2Shell,
 	'Willow': willowShell,
-	'Oval': ovalShell,
+	// 'Oval': ovalShell,
 
 };
 
@@ -5481,29 +5566,114 @@ async function seqSparkHalfLeft(position, height1, count, time=50) {
 		await new Promise(resolve => setTimeout(resolve, timen));
 		shell1.launchV2(position, height, Math.floor(positionLast))
 		positionLast += 1;
-		height += 0.05;
-		timen += 80 * 0.05;
+		// height += 0.05;
+		// timen += 80 * 0.05;
 	}
 	height += 0.53 * position * 2
 	while (positionLast < count + 1) {
 		await new Promise(resolve => setTimeout(resolve, timen));
 		shell1.launchV2(position, height, positionLast)
 		positionLast += 1;
-		height -= 0.05;
-		timen += 80 * 0.05;
+		// height -= 0.05;
+		// timen += 80 * 0.05;
 	}
 }
-function creatFiveShell(left, right,shell,color,hight=-0.2) {
+async function seqSparkHalfArc(x , height, count,color=COLOR.Gold, model = 2,delay=0) {
+	let shell = new Shell({...shellTypes['Crysanthemum'](3), streamers:true,color:color});
+	if(model == 1){
+		shell = new Shell(shellTypes['Falling Leaves'](3));
+	} 
+	let i = 0;
+	let posX = 0;
+	let height2 = height;
+	
+	while (i < count) {
+		
+		shell.launchV2(x, height2  , posX + i * 0.2);
+		i++;
+		posX += 0.1;
+		height2 -= 0.05;
+		
+	}
+	i = 0;
+	posX = 0;
+	height2 = height;
+	
+	while (i < count) {
+		
+		shell.launchV2(x, height2 , posX - i * 0.2);
+		i++;
+		posX -= 0.1;
+		height2 -= 0.05;
+		
+	}
 
-	let spread = Math.abs(right - left) / 5;
-	while (left <= right) {
-		let number = 0.01 + Math.random() * 0.01
-		shell=shell??getRandomShell()
-		shell.color=color??getRandomColor();
-		shell.launch(left + number, hight + number)
-		left += spread;
+
+	
+}
+function creatFiveShell(left, right, shell, color, hight = -0.2) {
+	const count = 5;
+	const range = right - left;
+	const step = range / count;
+	if(!shell){
+		shell = getRandomShell();
+	}
+
+	for (let i = 0; i < count; i++) {
+		// random vị trí nhưng vẫn nằm trong từng ô
+		const pos =
+			left +
+			i * step +
+			Math.random() * step * 0.9; // không sát mép ô
+
+		// random độ cao
+		const launchHeight = hight + (Math.random() - 0.5) * 0.05;
+
+		// random delay launch
+		const delay = Math.random() * 600; // ms
+
+		const s = shell ?? getRandomShell();
+		s.color = color ?? getRandomColor();
+
+		setTimeout(() => {
+			s.launch(pos, launchHeight);
+		}, delay);
 	}
 }
+function seqShellFiveShell(x,y,shell,color,count=3,interval=1300,hight=-0.2){
+
+	const heightRandom = 0.05
+	for (let i = 0; i < count; i++) {
+		const delay = i * interval + Math.random() * interval * 0.3;
+
+		setTimeout(() => {
+			creatFiveShell(
+				x,
+				y,
+				shell,
+				color,
+				hight + (Math.random() - 0.5) * heightRandom
+			);
+		}, delay);
+	}
+}
+function seqLaunchShell(x, y, shells,nghieng=0, delay = 0) {
+	// đảm bảo shells luôn là mảng
+	if (!Array.isArray(shells)) {
+		shells = [shells];
+	}
+
+	shells.forEach((shell, index) => {
+		setTimeout(() => {
+			if (!shell) return;
+
+			// gọi launch cho từng shell
+			shell.launch(x, y,nghieng);
+		}, index * delay);
+	});
+}
+
+
 /**
  * Bắn liên tục cùng lúc 1 loại pháo 
  * @param {*} left 
@@ -6304,79 +6474,88 @@ function update(frameTime, lag) {
 	
 	const gAcc = timeStep / 1000 * GRAVITY;
 	COLOR_CODES_W_INVIS.forEach(color => {
-	// Stars
-	const stars = Star.active[color];
-	for (let i=stars.length-1; i>=0; i=i-1) {
-		const star = stars[i];
-		// Only update each star once per frame. Since color can change, it's possible a star could update twice without this, leading to a "jump".
-		if (star.updateFrame === currentFrame) {
-			continue;
-		}
-		star.updateFrame = currentFrame;
-		
-		star.life -= timeStep;
-		if (star.life <= 0) {
-			stars.splice(i, 1);
-			Star.returnInstance(star);
-		} else {
-			const burnRate = Math.pow(star.life / star.fullLife, 0.5);
-			const burnRateInverse = 1 - burnRate;
+		// Stars
+		const stars = Star.active[color];
+		for (let i=stars.length-1; i>=0; i=i-1) {
+			const star = stars[i];
+			// Only update each star once per frame. Since color can change, it's possible a star could update twice without this, leading to a "jump".
+			if (star.updateFrame === currentFrame) {
+				continue;
+			}
+			star.updateFrame = currentFrame;
+			
+			star.life -= timeStep;
+			if (star.life <= 0) {
+				stars.splice(i, 1);
+				Star.returnInstance(star);
+			} else {
+				const burnRate = Math.pow(star.life / star.fullLife, 0.5);
+				const burnRateInverse = 1 - burnRate;
 
-			star.prevX = star.x;
-			star.prevY = star.y;
-			star.x += star.speedX * speed;
-			star.y += star.speedY * speed;
-			// Apply air drag if star isn't "heavy". The heavy property is used for the shell comets.
-			if (!star.heavy) {
-				star.speedX *= starDrag;
-				star.speedY *= starDrag;
-			}
-			else {
-				star.speedX *= starDragHeavy;
-				star.speedY *= starDragHeavy;
-			}
-			star.speedY += gAcc;
-			
-			if (star.spinRadius) {
-				star.spinAngle += star.spinSpeed * speed;
-				star.x += Math.sin(star.spinAngle) * star.spinRadius * speed;
-				star.y += Math.cos(star.spinAngle) * star.spinRadius * speed;
-			}
-			
-			if (star.sparkFreq) {
-				star.sparkTimer -= timeStep;
-				while (star.sparkTimer < 0) {
-					star.sparkTimer += star.sparkFreq * 0.75 + star.sparkFreq * burnRateInverse * 4;
-					Spark.add(
-						star.x,
-						star.y,
-						star.sparkColor,
-						Math.random() * PI_2,
-						Math.random() * star.sparkSpeed * burnRate,
-						star.sparkLife * 0.8 + Math.random() * star.sparkLifeVariation * star.sparkLife
-					);
+				star.prevX = star.x;
+				star.prevY = star.y;
+				star.x += star.speedX * speed;
+				star.y += star.speedY * speed;
+
+				// 🔥 THÊM onUpdate Ở ĐÂY
+				// if (star.onUpdate) star.onUpdate();
+
+				// Apply air drag if star isn't "heavy". The heavy property is used for the shell comets.
+				if (!star.heavy) {
+					star.speedX *= starDrag;
+					star.speedY *= starDrag;
 				}
-			}
-			
-			// Handle star transitions
-			if (star.life < star.transitionTime) {
-				if (star.secondColor && !star.colorChanged) {
-					star.colorChanged = true;
-					star.color = star.secondColor;
-					stars.splice(i, 1);
-					Star.active[star.secondColor].push(star);
-					if (star.secondColor === INVISIBLE) {
-						star.sparkFreq = 0;
+				else {
+					star.speedX *= starDragHeavy;
+					star.speedY *= starDragHeavy;
+				}
+				star.speedY += gAcc;
+				
+				if (star.spinRadius) {
+					star.spinAngle += star.spinSpeed * speed;
+					star.x += Math.sin(star.spinAngle) * star.spinRadius * speed;
+					star.y += Math.cos(star.spinAngle) * star.spinRadius * speed;
+				}
+				
+				if (star.sparkFreq) {
+					star.sparkTimer -= timeStep;
+					while (star.sparkTimer < 0) {
+						star.sparkTimer += star.sparkFreq * 0.75 + star.sparkFreq * burnRateInverse * 4;
+						Spark.add(
+							star.x,
+							star.y,
+							star.sparkColor,
+							Math.random() * PI_2,
+							Math.random() * star.sparkSpeed * burnRate,
+							star.sparkLife * 0.8 + Math.random() * star.sparkLifeVariation * star.sparkLife
+						);
 					}
 				}
 				
-				if (star.strobe) {
-					// Strobes in the following pattern: on:off:off:on:off:off in increments of `strobeFreq` ms.
-					star.visible = Math.floor(star.life / star.strobeFreq) % 3 === 0;
+				// Handle star transitions
+				if (star.life < star.transitionTime) {
+					if (star.secondColor && !star.colorChanged) {
+						star.colorChanged = true;
+						star.color = star.secondColor;
+						stars.splice(i, 1);
+						Star.active[star.secondColor].push(star);
+						if (star.secondColor === INVISIBLE) {
+							star.sparkFreq = 0;
+						}
+					}
+					
+					if (star.strobe) {
+						// Strobes in the following pattern: on:off:off:on:off:off in increments of `strobeFreq` ms.
+						// star.strobeFreq = 220;
+						star.visible = Math.floor(star.life / star.strobeFreq) % 3 === 0;
+					}
+					// if (star.strobev2){
+					// 	star.strobeFreq = 220;
+					// 	star.visible = Math.floor(star.life / star.strobeFreq) % 3 === 0;
+					// }
 				}
 			}
 		}
-	}
 											
 		// Sparks
 		const sparks = Spark.active[color];
@@ -6458,6 +6637,7 @@ function render(speed) {
 	// Remaining drawing on trails canvas will use 'lighten' blend mode
 	trailsCtx.globalCompositeOperation = 'lighten';
 	
+	const k = 2.5;
 	// Draw stars
 	trailsCtx.lineWidth = Star.drawWidth;
 	trailsCtx.lineCap = isLowQuality ? 'square' : 'round';
@@ -6471,7 +6651,7 @@ function render(speed) {
 			stars.forEach(star => {
 				if (star.visible) {
 					trailsCtx.moveTo(star.x, star.y);
-					trailsCtx.lineTo(star.prevX, star.prevY);
+					trailsCtx.lineTo(star.x - star.speedX * k, star.y - star.speedY * k);
 					mainCtx.moveTo(star.x, star.y);
 					mainCtx.lineTo(star.x - star.speedX * 1.6, star.y - star.speedY * 1.6);
 				}
@@ -6720,6 +6900,41 @@ function createStarBurst(centerX, centerY, R_outer, R_inner, points, count, rand
 		}
 	}
 }
+// Half spherical burst with RANDOM orientation
+function createHalfBurst(count, particleFactory) {
+	// 🔥 random hướng của cả bán cầu
+	const baseRotation = Math.random() * PI_2;
+
+	const arcLength = PI_2 / 2; // nửa vòng
+
+	const R = 0.5 * Math.sqrt(count / Math.PI);
+	const C = 2 * R * Math.PI;
+	const C_HALF = C / 2;
+
+	for (let i = 0; i <= C_HALF; i++) {
+		const ringAngle = (i / C_HALF) * PI_HALF;
+		const ringSize = Math.cos(ringAngle);
+
+		const partsPerFullRing = C * ringSize;
+		const partsPerArc = partsPerFullRing * (arcLength / PI_2);
+
+		const angleInc = PI_2 / partsPerFullRing;
+		const maxRandomAngleOffset = angleInc * 0.33;
+
+		for (let j = 0; j < partsPerArc; j++) {
+			const randomOffset =
+				(Math.random() - 0.5) * maxRandomAngleOffset;
+
+			// 🔥 góc cuối cùng = nửa vòng + xoay ngẫu nhiên
+			const angle =
+				baseRotation +
+				j * angleInc +
+				randomOffset;
+
+			particleFactory(angle, ringSize);
+		}
+	}
+}
 // Helper used to create a spherical burst of particles
 function createBurst(count, particleFactory, startAngle = 0, arcLength = PI_2) {
 	// Assuming sphere with surface area of `count`, calculate various
@@ -6765,7 +6980,89 @@ function createBurstv2(count, particleFactory, startAngle = 0, width = 10, heigh
 		}
 	}
 }
+// function createDoubleRingBurst(
+// 	count,
+// 	particleFactory,
+// 	startAngle = 0,
+// 	arcLength = Math.PI * 2
+// ) {
+// 	const positions = [];
 
+// 	// xoay 3 trục cho cả cụm
+// 	const rotX = (Math.random() - 0.5) * Math.PI;
+// 	const rotY = (Math.random() - 0.5) * Math.PI;
+// 	const rotZ = Math.random() * Math.PI * 2;
+
+// 	const ran = 0.7 + Math.random() * 0.6; // ~0.7 → 1.3
+// 	const radius = 12* ran;
+// 	const zGap = 6 *ran;
+
+// 	const rings = [
+// 		{ zOffset: -zGap / 2 },
+// 		{ zOffset:  zGap / 2 }
+// 	];
+
+// 	const perRing = Math.floor(count / 2);
+// 	const angleStep = arcLength / perRing;
+
+// 	rings.forEach(ring => {
+// 		for (let i = 0; i < perRing; i++) {
+// 			// 🔥 GÓC ĐỀU
+// 			const t =
+// 				startAngle +
+// 				i * angleStep +
+// 				(Math.random() - 0.5) * angleStep * 0.05; // nhiễu rất nhỏ
+
+// 			const x = radius * Math.cos(t);
+// 			const y = radius * Math.sin(t);
+// 			const z = ring.zOffset;
+
+// 			const p = rotate3D(x, y, z, rotX, rotY, rotZ);
+// 			positions.push(p);
+// 		}
+// 	});
+
+// 	for (const { x, y } of positions) {
+// 		const angle = Math.atan2(y, x);
+
+// 		// giữ song song → không scale theo z
+// 		const size = Math.sqrt(x * x + y * y) / radius;
+
+// 		particleFactory(angle, size);
+// 	}
+// }
+function createDoubleRingBurst(count, particleFactory) {
+	const rotX = (Math.random() - 0.5) * Math.PI;
+	const rotY = (Math.random() - 0.5) * Math.PI;
+	const rotZ = Math.random() * Math.PI * 2;
+
+	const ran = 0.8 + Math.random() * 0.4;
+	const radius = 12 * ran;
+	const zGap = 6 * ran;
+
+	const perRing = Math.floor(count / 2);
+	const total = perRing * 2;
+	const step = (Math.PI * 2) / perRing;
+
+	let index = 0;
+
+	[-zGap / 2, zGap / 2].forEach(z => {
+		for (let i = 0; i < perRing; i++) {
+			const t = i * step;
+
+			const x = radius * Math.cos(t);
+			const y = radius * Math.sin(t);
+
+			const p = rotate3D(x, y, z, rotX, rotY, rotZ);
+
+			const angle = Math.atan2(p.y, p.x);
+			const size = Math.sqrt(p.x * p.x + p.y * p.y) / radius;
+
+			particleFactory(angle, size, index, total);
+			index++;
+		}
+	});
+}
 function createHeartBurst(
 	count,
 	particleFactory,
@@ -7611,16 +7908,17 @@ class Shell {
 		// making comet "heavy" limits air drag
 		comet.heavy = true;
 		// comet spark trail
-		comet.spinRadius = MyMath.random(0.42, 0.65);
+		comet.spinRadius = MyMath.random(0.35, 0.7);
 		comet.sparkFreq = 32 / quality;
 		if (isHighQuality) comet.sparkFreq = 8;
 
 		comet.sparkLife = 320;//320
 		comet.sparkLifeVariation = 5;//3
+		comet.sparkSpeed = 1.6;//1.6
 
 		if (this.glitter === 'willow' || this.fallingLeaves) {
 			comet.sparkFreq = 20 / quality;
-			comet.sparkSpeed = 1.1;//0.5
+			comet.sparkSpeed = 3.1;//0.5
 			comet.sparkLife = 500;
 		}
 		if (this.color === INVISIBLE) {
@@ -7661,7 +7959,12 @@ class Shell {
 		const launchX = position * (width - hpad * 2) + hpad;
 		const launchY = height;
 		const burstY = minHeight - (launchHeight * (minHeight - vpad));
-		const launchDistance = launchY - burstY + 250 * (positionX > 0 ? -position : position);
+		const sideBias = position - 0.5; // [-0.5 → +0.5]
+
+		const launchDistance =
+			launchY - burstY
+			+ 250 * (positionX > 0 ? -sideBias : sideBias);
+		// const launchDistance = launchY - burstY ;
 		// Using a custom power curve to approximate Vi needed to reach launchDistance under gravity and air drag.
 		// Magic numbers came from testing.
 		const launchVelocity = Math.pow(launchDistance * 0.04, 0.64);
@@ -7925,44 +8228,67 @@ class Shell {
 				star.transitionTime = this.starLife * (Math.random() * 0.05 + 0.32);
 				star.secondColor = this.secondColor;
 			}
+
 			star.strobeGroup = Math.floor(Math.random() * 4);
 
+			
 			if (this.strobe) {
+				// thời điểm bắt đầu strobe (giữa vòng đời)
+				star.starLife *= 1.2;
 				star.transitionTime = this.starLife * (Math.random() * 0.08 + 0.46);
 				star.strobe = true;
-				// How many milliseconds between switch of strobe state "tick". Note that the strobe pattern
-				// is on:off:off, so this is the "on" duration, while the "off" duration is twice as long.
+
+				// nhịp strobe cơ bản
 				star.strobeFreq = Math.random() * 20 + 40;
+
+				// lệch pha theo mảng
+				star.strobeOffset = star.strobeGroup * 25;
+
 				if (this.strobeColor) {
 					star.secondColor = this.strobeColor;
 				}
+
+				// xử lý nhấp nháy theo thời gian
+				star.onUpdate = () => {
+					if (!star.strobe) return;
+					if (star.age < star.transitionTime) return;
+
+					const time = star.age + star.strobeOffset;
+
+					// pattern: on : off : off
+					const phase = Math.floor(time / star.strobeFreq) % 3;
+					star.visible = phase === 0;
+				};
 			}
-			// if (this.strobe) {
-			// 	star.transitionTime = this.starLife * 0.4;
-			// 	star.strobe = true;
+			if (this.strobev2) {
+				// thời điểm bắt đầu strobe (giữa vòng đời)
+				star.starLife *= 1.9;
+				star.transitionTime = this.starLife * (Math.random() * 0.08 + 0.46);
+				star.strobe = true;
+				star.strobeFreq = 220;
 
-			// 	// mỗi mảng lệch pha strobe
-			// 	star.strobeFreq = 50;
-			// 	star.strobeOffset = star.strobeGroup * 20;
+				// nhịp strobe cơ bản
+				// star.strobeFreq = Math.random() * 20 + 40;
 
-			// 	if (this.strobeColor) {
-			// 		star.secondColor = this.strobeColor;
-			// 	}
-			// }
-			// star.onUpdate = () => {
-			// 	if (!star.strobe) return;
+				// lệch pha theo mảng
+				// star.strobeOffset = star.strobeGroup * 25;
 
-			// 	const time = star.age + star.strobeOffset;
+				if (this.strobeColor) {
+					star.secondColor = this.strobeColor;
+				}
 
-			// 	// on : off : off
-			// 	const phase = Math.floor(time / star.strobeFreq) % 3;
+				// xử lý nhấp nháy theo thời gian
+				// star.onUpdate = () => {
+				// 	if (!star.strobe) return;
+				// 	if (star.age < star.transitionTime) return;
 
-			// 	star.visible = phase === 0;
-			// };
+				// 	const time = star.age + star.strobeOffset;
 
-			// if(this.randomStrobe){
-				
-			// }
+				// 	// pattern: on : off : off
+				// 	const phase = Math.floor(time / star.strobeFreq) % 3;
+				// 	star.visible = phase === 0;
+				// };
+			}
 
 
 
@@ -8018,6 +8344,7 @@ class Shell {
 					}
 				});
 			}
+			
 			let check = 1;
 			if(this.hearth){
 				createHeartBurst(this.starCount, starFactory)
@@ -8027,55 +8354,59 @@ class Shell {
 				createOvalBurst(this.starCount, starFactory)
 				check = 0;
 			}
-			if(this.flower){
-				createFlowerBurst(this.starCount, starFactory);
-				check =0;
+			if(this.doubleRing){
+				createDoubleRingBurst(this.starCount, starFactory)
+				check = 0;
 			}
-			if(this.spiral){
-				createSpiralBurst(this.starCount, starFactory)
-				check =0;
-			}
-			if(this.wave){
-				createWaveBurst(this.starCount, starFactory)
-				check =0;
-			}
-			if(this.smiley){
-				createSmileyBurst(this.starCount, starFactory)
-				check =0;
-			}
+			// if(this.flower){
+			// 	createFlowerBurst(this.starCount, starFactory);
+			// 	check =0;
+			// }
+			// if(this.spiral){
+			// 	createSpiralBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.wave){
+			// 	createWaveBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.smiley){
+			// 	createSmileyBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
 			
-			if(this.snow){
-				createSnowflakeBurst(this.starCount, starFactory)
-				check =0;
-			}
-			if(this.star){
-				createStarBurst(this.starCount, starFactory)
-				check =0;
-			}
-			if(this.fish){
-				createFishBurst(this.starCount, starFactory)
-				check =0;
-			}
-			if(this.cat){
-				createCatBurst(this.starCount, starFactory)
-				check =0;
-			}
-			if(this.butterfly){
-				createButterflyBurst(this.starCount, starFactory)
-				check =0;
+			// if(this.snow){
+			// 	createSnowflakeBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.star){
+			// 	createStarBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.fish){
+			// 	createFishBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.cat){
+			// 	createCatBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.butterfly){
+			// 	createButterflyBurst(this.starCount, starFactory)
+			// 	check =0;
 
-			}
-			if(this.lotus){
-				createLotusBurst(this.starCount, starFactory)
-				check =0;
+			// }
+			// if(this.lotus){
+			// 	createLotusBurst(this.starCount, starFactory)
+			// 	check =0;
 
-			}
-			if(this.bird){
-				createBirdBurst(this.starCount, starFactory)
-				check =0;
-			}
+			// }
+			// if(this.bird){
+			// 	createBirdBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
 			if(this.half){
-				createBurst(this.starCount, starFactory,0,PI_2/2)
+				createHalfBurst(this.starCount, starFactory)
 				check = 0;
 			}
 			
@@ -8151,6 +8482,9 @@ class Shell {
 			soundManager.playSound('burst', soundScale);
 		}
 	}
+
+	
+
 	
 }
 
@@ -8222,8 +8556,8 @@ const Star = {
 		instance.color = color;
 		instance.speedX = Math.sin(angle) * speed + (speedOffX || 0);;
 		instance.speedY = Math.cos(angle) * speed + (speedOffY || 0);//góc bay theo chiều y
-		instance.life = life;
-		instance.fullLife = life;
+		instance.life = life ;
+		instance.fullLife = life ;
 		instance.spinAngle = Math.random() * PI_2;
 		instance.spinSpeed = 0.8;
 		instance.spinRadius = 0;
@@ -8231,9 +8565,11 @@ const Star = {
 		instance.sparkSpeed = 1;
 		instance.sparkTimer = 0;
 		instance.sparkColor = color;
-		instance.sparkLife = 750;
+		instance.sparkLife = 750 ;
 		instance.sparkLifeVariation = 0.25;
 		instance.strobe = false;
+
+		
 
 		this.active[color].push(instance);
 		return instance;
@@ -8248,7 +8584,7 @@ const Star = {
 		instance.prevY = y;
 		instance.color = color;
 		 instance.speedX = (speedOffX || 0) ;//góc bay theo chiều x
-		console.log(speedOffX);
+		// console.log(speedOffX);
 		instance.speedY = Math.cos(angle) * speed + (speedOffY || 0);//góc bay theo chiều y
 		instance.life = life;
 		instance.fullLife = life;
@@ -10465,13 +10801,27 @@ async function seqDroneTest(x=stageW/2,y=stageH/2) {
 // nguaFormation2(stageW/2+600,stageH/2);
 // seqDroneTest()
 
-let shell = new Shell({...shellTypes['Crysanthemum'](0.5),crackle:true,secondColor:COLOR.Yellow})
+let shell = new Shell({...shellTypes['Crysanthemum'](3),color: COLOR.Red,pistil:true, secondColor:COLOR.Blue,half:true})
+// let shell2 = new Shell({...shellTypes['Oval'](3)})
+
+let shell3 = new Shell({...shellTypes['Crysanthemum'](3),color: COLOR.Red, secondColor:COLOR.Blue,half:true})
 
 
-creatFiveShell(0.2,0.8,shell)
+
+// seqLaunchShell(0.5,0.5,[shell,shell2,shell3],1,1000)
+// seqShellFiveShell
+
+seqSparkHalfArc(0.5,-0.3,6)
 
 
+// seqShellFiveShell(0.1,0.9,null,null,10,2200)
 
+
+// let shell2 = new Shell({...shellTypes['RingV2'](1),strobe:true,doubleRing:true})
+// shell.launch(0.5,0,1)
+
+
+// BurstFlash.add(200, 200, 46);
 
 // formation.setTargetFormation(
 //     FormationPattern.fromMatrix(
