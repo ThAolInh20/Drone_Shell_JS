@@ -3214,7 +3214,7 @@ const store = {
 	state: {
 		// will be unpaused in init()
 		paused: true,
-		soundEnabled: false,
+		soundEnabled: true,
 		menuOpen: false,
 		openHelpTopic: null,
 		fullscreen: isFullscreen(),
@@ -4299,7 +4299,7 @@ function shellFromConfig(size) {
 // Get a random shell, not including processing intensive varients
 // Note this is only random when "Random" shell is selected in config.
 // Also, this does not create the shell, only returns the factory function.
-const fastShellBlacklist = ['Falling Leaves', 'Floral', 'Willow'];
+const fastShellBlacklist = ['Falling Leaves', 'Floral', 'Willow','RingV2','CrossetteV2'];
 function randomFastShell() {
 	const isRandom = shellNameSelector() === 'Random';
 	let shellName = isRandom ? randomShellName() : shellNameSelector();
@@ -5148,7 +5148,7 @@ function seqTripleRingShell(x, height, size=6) {
 	const shell3 = new Shell(shellTypes['Ring'](size * 1.12));
 	shell3.launch(x, height);
 }
-async function seqShellHeightLeftToRight(count, time) {
+async function seqShellLeft(count, time) {
 	const size = getRandomShellSize();
 	let sizeh = 0.1;
 	let timen = time * 0.05;
@@ -5205,7 +5205,7 @@ async function seqShellShortLeftToRight(count, position, time) {
 		lastShell.launch(0.5, 0.5)
 	}, timen - 15);
 }
-async function seqShellHeightRightToLeft(count, time) {
+async function seqShellRight(count, time) {
 	const size = getRandomShellSize();
 	let sizeh = 0.1;
 	let timen = time * 0.05;
@@ -5295,18 +5295,94 @@ function seqShellRight(time) {
 		seqTripleRingShell(0.5, 0.3, size.size * 1.9)
 	}, time * 0.00005);
 }
-async function seqSparkLeft(left, right, height, count_shell=15) {
-	const shell = new Shell(shellTypes['Crysanthemum'](6))
+
+async function seqBurstRight(left, right, height, count_shell=15, shell, delay=5) {
+	if (!shell) {
+		shell = getRandomShell();
+		shell.size = 1;
+	}
+
+	let spread = (right - left) /  count_shell;
+	let time = 50;
+	while (right >= left) {
+		await new Promise(resolve => setTimeout(resolve, 50));
+		shell.burstV2(right, height);
+		height += 0.0
+		time += delay;
+		right -= spread;
+	}
+}
+async function seqBurstLeft(left, right, height, count_shell=15, shell, delay=5) {
+	if (!shell) {
+		shell = getRandomShell();
+		shell.size = 1;
+	}
+
 	let spread = Math.abs(right - left) / count_shell;
 	let time = 50;
 	while (left <= right) {
 		await new Promise(resolve => setTimeout(resolve, 50));
-		shell.launchV2(left, height, 0.5);
-		height += 0.05
-		time += 5;
+		shell.burstV2(left, height);
+		height += 0.0
+		time += delay;
 		left += spread;
 	}
 }
+
+async function seqShellRight(left, right, height, count_shell=15, shell, delay=5) {
+	if (!shell) {
+		shell = getRandomShell();
+		shell.size = 1;
+	}
+
+	let spread = (right - left) /  count_shell;
+	let time = 50;
+	while (right >= left) {
+		await new Promise(resolve => setTimeout(resolve, 50));
+		shell.launch(right, height);
+		height += 0.0
+		time += delay;
+		right -= spread;
+	}
+}
+async function seqShellLeft(left, right, height, count_shell=15, shell, delay=5) {
+	if (!shell) {
+		shell = getRandomShell();
+		shell.size = 1;
+	}
+
+	let spread = Math.abs(right - left) / count_shell;
+	let time = 50;
+	while (left <= right) {
+		await new Promise(resolve => setTimeout(resolve, 50));
+		shell.launch(left, height);
+		height += 0.0
+		time += delay;
+		left += spread;
+	}
+}
+async function seqShellSpam(left, right, height, time = 1000,interval = 10,shell) {
+	
+	const start = Date.now();
+	if(!shell){
+		let shell = getRandomShell()
+		shell.size = 1;
+	}
+
+
+	while (Date.now() - start < time) {
+		
+		// random vị trí trong khoảng left → right
+		const x = left + Math.random() * (right - left);
+		shell.launch(x, height);
+		// âm thanh phụ thuộc vào kích thước pháo
+
+		await new Promise(r => setTimeout(r, interval));
+	}
+	
+}
+
+
 async function seqSpark(left, right,height=0,posistionX=0,countSpark =10,huong=1,time = 10){
 	var i = 0;
 	let hs = (right-left)/countSpark;
@@ -5373,11 +5449,25 @@ async function seqSparkRight(left, right, height, count_shell=15) {
 	while (right >= left) {
 		await new Promise(resolve => setTimeout(resolve, 50));
 		shell.launchV2(right, height, -0.5);
-		height += 0.05
+		height += 0.03
 		time += 5;
 		right -= spread;
 	}
 }
+async function seqSparkLeft(left, right, height, count_shell=15) {
+	const shell = new Shell(shellTypes['Crysanthemum'](6))
+	let spread = Math.abs(right - left) / count_shell;
+	let time = 50;
+	while (left <= right) {
+		await new Promise(resolve => setTimeout(resolve, 50));
+		shell.launchV2(left, height, 0.5);
+		height += 0.03
+		time += 5;
+		left += spread;
+	}
+}
+
+
 
 async function seqSparkFull(left, right,count=2, wait = 900, count_shell = 20) {
 	let i = 0
@@ -5385,15 +5475,139 @@ async function seqSparkFull(left, right,count=2, wait = 900, count_shell = 20) {
 	while (i < count) {
 		await new Promise(resolve => setTimeout(resolve, time));
 		setTimeout(() => {
-			seqSparkLeft(left, right, -0.3, count_shell)
+			seqSparkLeft(left, right, -0.4, count_shell)
 		}, time);
 		setTimeout(() => {
-			seqSparkRight(left, right, -0.7, count_shell)
+			seqSparkRight(left, right, -0.4, count_shell)
 		}, time + wait);
 		time += wait;
 		i++;
 	}
 }
+async function seqSparkLeftV2(left, right, height, count_shell=15,count_half=5) {
+	
+	let spread = Math.abs(right - left) / count_shell;
+	let time = 50;
+	while (left <= right) {
+		await new Promise(resolve => setTimeout(resolve, time));
+		seqSparkHalfArc(left, height, count_half)
+		height += 0.03
+		time += 50;
+		left += spread;
+	}
+}
+async function seqSparkRightV2(left, right, height, count_shell=15,count_half=5) {
+
+	let spread = (right - left) /  count_shell;
+	let time = 50;
+	while (right >= left) {
+		await new Promise(resolve => setTimeout(resolve, time));
+		seqSparkHalfArc(right, height,count_half)
+		height += 0.03
+		time += 50;
+		right -= spread;
+	}
+}
+async function seqFlashLeft(left, right, height,delay=50, count_shell=15) {
+	
+	let spread = Math.abs(right - left) / count_shell;
+	let time = delay;
+	while (left <= right) {
+		await new Promise(resolve => setTimeout(resolve, time));
+		seqFlashSpam(left,left+spread, height,delay)
+		height += 0
+		// time += delay;
+		left += spread;
+	}
+}
+async function seqFlashRight(left, right, height,delay=50, count_shell=15) {
+
+	let spread = (right - left) /  count_shell;
+	let time = delay;
+	while (right >= left) {
+		await new Promise(resolve => setTimeout(resolve, time));
+		seqFlashSpam(right,right-spread, height,delay)
+		height +=0
+		// time += 50;
+		right -= spread;
+	}
+}
+async function seqSparkSpam(left, right, height, time = 1000,color=COLOR.White,interval = 10) {
+	let shell = new Shell({...shellTypes['Crysanthemum'](3),color:color})
+	const start = Date.now();
+
+	while (Date.now() - start < time) {
+		// random vị trí trong khoảng left → right
+		const x = left + Math.random() * (right - left);
+
+		shell.launchV2(
+			x,
+			height + (Math.random() * 0.2 - 0.1), // lệch cao nhẹ
+			(Math.random() * - 0.9 + 0.3)          // lệch ngang nhẹ
+		);
+
+		await new Promise(r => setTimeout(r, interval));
+	}
+	
+}
+async function seqFlashSpam(left, right, height, time = 1000,interval = 10,radius=40) {
+	
+	const start = Date.now();
+
+	while (Date.now() - start < time) {
+		// random vị trí trong khoảng left → right
+		const x = left + Math.random() * (right - left);
+
+		BurstFlash.addV2(
+			x,
+			height + (Math.random() * 0.2 - 0.1), // lệch cao nhẹ
+			radius + Math.random()*20          // lệch ngang nhẹ
+		);
+
+		await new Promise(r => setTimeout(r, interval));
+	}
+	
+}
+
+async function seqBurstSpam(left, right, height, time = 1000,interval = 10,shell) {
+	
+	const start = Date.now();
+	
+	if(!shell){
+		shell = getRandomShell()
+		shell.size = 1;
+	}
+
+
+	while (Date.now() - start < time) {
+		
+		// random vị trí trong khoảng left → right
+		const x = left + Math.random() * (right - left);
+		BurstFlash.addV2(
+					x,
+					0 + (Math.random() * 0.2 - 0.1), // lệch cao nhẹ
+				  	100 + Math.random()*20         
+				);
+		shell.burstV2(
+			x,
+			height + (Math.random() * 0.2 - 0.1) // lệch cao nhẹ
+		);
+		// âm thanh phụ thuộc vào kích thước pháo
+
+		const maxDiff = 2;
+		const sizeDifferenceFromMaxSize = Math.min(maxDiff, shellSizeSelector() - shell.shellSize);
+		const soundScale = (1 - sizeDifferenceFromMaxSize / maxDiff) * 0.3 + 0.7;
+		if(Math.random()<0.3){
+			soundManager.playSound('burst', soundScale);
+
+		}
+
+		await new Promise(r => setTimeout(r, interval));
+	}
+	
+}
+
+
 
 function seqFiveShell(position, height) {
 	let vt = position - 0.1;
@@ -5419,6 +5633,21 @@ async function seqShellFastFull(position, height) {
 		time += 300
 	}
 
+
+}
+function seqShellBurstDouble(x,y,shell1){
+	if(!shell1){
+		shell1=getRandomShell()
+	}
+
+	
+	shell1.burst(x , y)
+	soundManager.playSound('burst', 6);
+	// shell2.burst(x , y + 100 )
+	setTimeout(() => {
+		shell1.burst(maxW - x , y)
+		soundManager.playSound('burst', 6);
+	}, 300);
 
 }
 function seqDoubleCrysanthemum(x, y) {
@@ -5548,37 +5777,45 @@ function seqQuarRandomShell(x, height) {
 	// Launch the first shell
 }
 /**
- * tạo các tia lửa theo vòng cung từ trái qua phải
- * @param {tâm} position 
- * @param {độ cao} height1 
- * @param {số lần} count 
- * @param {khoảng thời gian mỗi lần} time 
+ * 
+ * @param {*} x : vị trí bắn
+ * @param {*} height : độ cao
+ * @param {*} count : số lượng
+ * @param {*} delay : độ trễ từng spark
+ * @param {*} makeTimen : độ delay tăng dần mỗi spark
+ * @param {*} color 
+ * @param {*} model 
  */
-async function seqSparkHalfLeft(position, height1, count, time=50) {
-	let height = -height1 + 0.58 * position * 2;
-	count = count;
-	let positionLast = -Math.floor(count);
-	const size = getRandomShellSize();
-	const shell1 = new Shell(shellTypes['Ring'](size.size));
-	let timen = time * 0.05;
+async function seqSparkHalfLeft(x , height, count,delay = 350,makeTimen=0,color=COLOR.Gold, model = 2) {
+	let shell = new Shell({ ...shellTypes['Crysanthemum'](3), streamers: true, color });
+	if (model == 1) {
+		shell = new Shell(shellTypes['Falling Leaves'](3));
+	}
 
-	while (positionLast <= 0) {
-		await new Promise(resolve => setTimeout(resolve, timen));
-		shell1.launchV2(position, height, Math.floor(positionLast))
-		positionLast += 1;
-		// height += 0.05;
-		// timen += 80 * 0.05;
-	}
-	height += 0.53 * position * 2
-	while (positionLast < count + 1) {
-		await new Promise(resolve => setTimeout(resolve, timen));
-		shell1.launchV2(position, height, positionLast)
-		positionLast += 1;
-		// height -= 0.05;
-		// timen += 80 * 0.05;
-	}
+	let half = Math.floor(count / 2); // tâm
+	let offX = - half * 0.2;                // độ mở ngang
+	let height2 = height ;                  // độ cong (tăng = cong mạnh)
+
+	let timen = delay;
+
+	// bắn từ trái (-half) → phải (+half)
+	for (let i = -half; i <= half; i++) {
+		await new Promise(r => setTimeout(r, timen));
+		shell.launchV2(
+			x,
+			height2,
+			offX + i * 0.2
+		);
+		if(	i < 0 ){
+			height2 += 0.05;
+		}else{
+			height2 -= 0.05;
+		}
+		offX += 0.2;
+		timen += makeTimen;	
+	}	
 }
-async function seqSparkHalfArc(x , height, count,color=COLOR.Gold, model = 2,delay=0) {
+async function seqSparkHalfArc(x , height, count,color=COLOR.Gold, model = 2) {
 	let shell = new Shell({...shellTypes['Crysanthemum'](3), streamers:true,color:color});
 	if(model == 1){
 		shell = new Shell(shellTypes['Falling Leaves'](3));
@@ -5589,7 +5826,7 @@ async function seqSparkHalfArc(x , height, count,color=COLOR.Gold, model = 2,del
 	
 	while (i < count) {
 		
-		shell.launchV2(x, height2  , posX + i * 0.2);
+		shell.launchV2(x, height2 , posX + i * 0.2);
 		i++;
 		posX += 0.1;
 		height2 -= 0.05;
@@ -5693,31 +5930,54 @@ async function seqShellAllInOne(left, right,shell,color, count=3,time=50,hight=-
 		i++
 	}
 }
-async function seqSparkHalfRight(position, height1, count, time) {
-	let height = -height1 + 0.58 * position * 2;
-	count = count;
-	let positionLast = Math.floor(count);
-	const size = getRandomShellSize();
-	const shell1 = new Shell(shellTypes['Ring'](size.size));
-	let timen = time * 0.05;
-
-	while (positionLast > 0) {
-		await new Promise(resolve => setTimeout(resolve, timen));
-		shell1.launchV2(position, height, Math.floor(positionLast));
-		positionLast -= 1;
-		height += 0.05;
-		timen += 80 * 0.05;
+async function seqSparkHalfRight(x , height, count,delay = 350,makeTimen = 0,color=COLOR.Gold, model = 2) {
+	let shell = new Shell({ ...shellTypes['Crysanthemum'](3), streamers: true, color });
+	if (model == 1) {
+		shell = new Shell(shellTypes['Falling Leaves'](3));
 	}
 
-	height -= 0.58 * position * 2;
-	while (positionLast > -count - 1) {
-		await new Promise(resolve => setTimeout(resolve, timen));
-		shell1.launchV2(position, height, positionLast);
-		positionLast -= 1;
-		height -= 0.05;
-		timen += 80 * 0.05;
+	let half = Math.floor(count / 2); // tâm
+	let offX =   half * 0.2;                // độ mở ngang
+	let height2 = height ;                  // độ cong (tăng = cong mạnh)
+
+	let timen = delay;
+
+	// bắn từ trái (-half) → phải (+half)
+	for (let i = -half; i <= half; i++) {
+		await new Promise(r => setTimeout(r, timen));
+		shell.launchV2(
+			x,
+			height2,
+			offX - i * 0.2
+		);
+		if(	i < 0 ){
+			height2 += 0.05;
+		}else{
+			height2 -= 0.05;
+		}
+		offX -= 0.2;
+		timen += makeTimen;	
+	}	
+}
+/**
+ * 
+ * @param {*} x - vị trí bắn
+ * @param {*} height - độ cao
+ * @param {*} count - số lượng
+ * @param {*} type - 1 bên trái , khác =  bên phải
+ * @param {*} delay - độ trễ từng spark
+ * @param {*} makeTimen - độ delay tăng dần mỗi spark
+ * @param {*} color - màu sắc
+ * @param {*} model - 1 lá rơi , 2 thường
+ */
+async function seqSparkHalf(x , height, count, type = 1,delay = 0,makeTimen = 0,color=COLOR.Gold, model = 2) {
+	if (type == 1) {
+		seqSparkHalfLeft(x, height, count, delay, makeTimen,color, model);
+	} else {
+		seqSparkHalfRight(x, height, count, delay, makeTimen,color, model);
 	}
 }
+
 function seqSparkHalfMid(position, height, count, time) {
 	seqSparkHalfLeft(position, height, count, time)
 	seqSparkHalfRight(position, height, count, time)
@@ -5979,6 +6239,306 @@ async function seqShellRandomForTime(count=5,hight=0.4, shell,color){
 		i++
 		
 	}
+}
+function seqDrumAll(){
+	// playMusic("Music/drum_all2.mp3");
+	let shell = getRandomShell()
+	
+	
+	setTimeout(() => {
+		seqSparkHalfArc(0.3,-0.4,5)
+	}, 1500);
+	setTimeout(() => {
+		seqSparkHalfArc(0.4,-0.4,5)
+		
+	}, 5000);
+	setTimeout(() => {
+		seqSparkHalfArc(0.6,-0.4,5)
+	}, 8700);
+	setTimeout(() => {
+		seqSparkHalfArc(0.7,-0.4,5)
+		
+	}, 11000);
+
+	//---------
+	setTimeout(() => {
+		seqDoubleShell(0.2,0)
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Ring'](1), pistil:true})
+			seqDoubleShell(0.25,0,shell)
+		}, 1000);
+		seqSparkHalf(0.2,-0.4,10,1,100)
+		seqSparkHalf(0.8,-0.4,10,2,100)
+		
+	}, 14500);
+	setTimeout(() => {
+		seqDoubleShell(0.25,0)
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Hearth'](1), pistil:true})
+			seqDoubleShell(0.25,0,shell)
+		}, 1000);
+		seqSparkHalf(0.7,-0.4,10,1,100)
+		seqSparkHalf(0.3,-0.4,10,2,100)
+		
+	}, 18500);
+	setTimeout(() => {
+		seqDoubleShell(0.3,0)
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Crysanthemum'](3), strobev2:true})
+			seqDoubleShell(0.35,0,shell)
+		}, 1000);
+		seqSparkHalf(0.4,-0.4,10,1,100)
+		seqSparkHalf(0.6,-0.4,10,2,100)
+		
+	}, 22500);
+	setTimeout(() => {
+		seqDoubleShell(0.45,0)
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Strobe'](1), color:COLOR.White})
+			let midShell = new Shell({...shellTypes['Hearth'](3),crackle:true})
+			seqTripleShell(0.3,0,shell,midShell,midShell)
+			shell.launch(0.6,0)
+		}, 1000);
+		
+	}, 26000);
+	
+	//---- nhịp spark -----
+	setTimeout(() => {
+		setTimeout(() => {
+			seqSparkLeft(0,0.7,-0.8,20);
+			seqSparkLeft(0,0.7,-0.8,20);
+		}, 2000);
+		setTimeout(() => {
+			seqSparkRight(0.3,1,-0.8,20);
+			seqSparkRight(0.3,1,-0.8,20);
+		}, 4000);
+		setTimeout(() => {
+			seqSparkRight(0,0.7,-0.8,20);
+			seqSparkLeft(0.3,1,-0.8,20);
+			seqSparkRight(0,0.7,-0.8,20);
+			seqSparkLeft(0.3,1,-0.8,20);
+			
+		}, 6000);
+		setTimeout(() => {
+			seqSparkLeft(0,0.6,-0.8,20);
+			seqSparkRight(0.4,1,-0.8,20);
+			seqSparkLeft(0,0.6,-0.8,20);
+			seqSparkRight(0.6,1,-0.8,20);
+			
+		}, 7000);
+		setTimeout(() => {
+			seqSparkLeftV2(0,0.5,-0.4,5);
+			
+		}, 9000);
+		setTimeout(() => {
+			seqSparkRightV2(0.5,1,-0.4,5);
+			
+		}, 11000);
+		setTimeout(() => {
+			seqSparkRightV2(0,0.4,-0.4,5);
+			seqSparkLeftV2(0.6,1,-0.4,5);
+
+		}, 12000);
+		setTimeout(() => {
+			seqSparkLeftV2(0,0.4,-0.4,5);
+			seqSparkRightV2(0.6,1,-0.4,5);
+			
+		}, 14000);
+
+	}, 30000);
+	//---------------------
+	setTimeout(() => {
+		seqSparkFull(0,0.5,3,500)
+		seqSparkFull(0,0.5,3,500)
+		
+		setTimeout(() => {
+			seqSparkHalfArc(0.5,-0.45,40)
+			setTimeout(() => {
+				seqSparkHalfArc(0.45,-0.35,30)
+				seqSparkHalfArc(0.55,-0.35,30)
+			}, 1000);
+			setTimeout(() => {
+				seqSparkHalfArc(0.4,-0.3,30)
+				seqSparkHalfArc(0.6,-0.3,30)
+				seqSparkHalfArc(0.3,-0.3,20)
+				seqSparkHalfArc(0.7,-0.3,20)
+				
+			}, 2000);
+			setTimeout(() => {
+				seqSparkHalfArc(0.35,-0.15,30)
+				seqSparkHalfArc(0.65,-0.15,30)
+				seqSparkHalfArc(0.25,-0.15,20)
+				seqSparkHalfArc(0.75,-0.15,20)
+				seqSparkHalfArc(0.1,-0.15,10)
+				seqSparkHalfArc(0.9,-0.15,10)
+			}, 3000);
+		}, 3000);
+		setTimeout(() => {
+			seqSparkSpam(0.2,0.3,-0.4,4000)
+			setTimeout(() => {
+				seqSparkSpam(0.3,0.4,-0.2,3000,COLOR.Gold)
+				
+			}, 1000);
+			setTimeout(() => {
+				seqSparkSpam(0.4,0.5,-0.1,2000,COLOR.Blue)
+			}, 2000);
+			setTimeout(() => {
+				seqSparkSpam(0.5,0.6,0.1,1000,COLOR.Red)
+			}, 3000);
+		}, 6500);
+		setTimeout(() => {
+			seqSparkSpam(0.4,0.6,-0.2,3000)
+			setTimeout(() => {
+				seqSparkRight(0,0.4,-0.3,20)
+				seqSparkLeft(0.6,1,-0.3,20)
+				seqSparkRight(0,0.4,-0.3,20)
+				seqSparkLeft(0.6,1,-0.3,20)
+				seqSparkRight(0,0.4,-0.3,20)
+				seqSparkLeft(0.6,1,-0.3,20)
+			}, 1000);
+			setTimeout(() => {
+				seqSparkRightV2(0,0.4,-0.3,5)
+				seqSparkLeftV2(0.6,1,-0.3,5)
+			}, 2000);
+		}, 10000);
+	}, 46000);
+	setTimeout(() => {
+		setTimeout(() => {
+			seqTripleShell(0.5,0)
+			setTimeout(() => {
+				let shell = new Shell({...shellTypes['StrobeV2'](0.5), starLife:2000, pistil:true})
+				seqBurstLeft(0.2,0.7,0.2,10,shell)
+			}, 1000);
+		}, 0);
+		setTimeout(() => {
+			seqTripleShell(0.5,0)
+			seqTripleShell(0.2,0)
+			seqTripleShell(0.8,0)
+			let shell = new Shell({...shellTypes['StrobeV2'](0.5), starLife:2000,pistil:true})
+			seqBurstRight(0.3,0.8,0.2,10,shell)
+		}, 3000);
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['CrossetteV2'](0.5), starLife:3000,color:COLOR.Gold})
+			seqTripleShell(0.2,0,shell)
+			seqTripleShell(0.3,0.3,shell)
+			seqTripleShell(0.4,0.3,shell)
+			seqTripleShell(0.5,0.4,shell)
+			seqTripleShell(0.6,0.4,shell)
+		},5000);
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Strobe'](1), color:COLOR.White})
+			let midShell = new Shell({...shellTypes['Hearth'](3),crackle:true})
+			seqTripleShell(0.3,0,shell,midShell,midShell)
+			shell.launch(0.6,0)
+		}, 8000);
+		setTimeout(() => {
+			seqFlashLeft(0,1,0,90)
+			seqFlashRight(0,1,0,90)
+		}, 13000);
+	}, 60000);
+	setTimeout(() => {
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Crysanthemum'](1), color:COLOR.Gold})
+			let shell2 = new Shell({...shellTypes['Crysanthemum'](1), color:COLOR.Gold})
+			seqTripleShell(0.15,0.5)
+			seqBurstSpam(0,0.3,0.3,5000,600,shell)
+			seqBurstSpam(0,0.3,0.3,5000,600,shell2)
+
+		}, 0);
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Crysanthemum'](1), color:COLOR.Red})
+			let shell2 = new Shell({...shellTypes['Crysanthemum'](1), color:COLOR.Red})
+			seqTripleShell(0.85,0.5)
+			seqBurstSpam(0.7,1,0.3,5000,300,shell)
+			seqBurstSpam(0.7,1,0.3,5000,300,shell2)
+		}, 3000);
+		setTimeout(() => {
+			let shell = new Shell({...shellTypes['Crysanthemum'](1), color:COLOR.Gold})
+			let shell2 = new Shell({...shellTypes['Crysanthemum'](1), color:COLOR.Gold})
+			seqTripleShell(0.45,0.5)
+			seqBurstSpam(0.3,0.6,0.3,4000,150,shell)
+			seqBurstSpam(0.3,0.6,0.3,4000,150,shell2	)
+		}, 7000);
+		setTimeout(() => {
+			seqTripleShell(0.65,0.5)
+			seqBurstSpam(0.4,0.7,0.3,4000,150)
+		}, 10000);
+	}, 60000 + 15000);
+	setTimeout(() => {
+			
+		let shell = new Shell({...shellTypes['StrobeV2'](1), color:COLOR.Gold, starLife:2500,secondColor:COLOR.White})
+		
+		seqShellLeft(0,0.3,-0.3,3,shell)
+			setTimeout(() => {
+				let shell1 = new Shell({...shellTypes['Ring'](1), starLife:1500,crackle:true,color:COLOR.Blue})
+			
+				seqShellRight(0.3,0.6,0.1,3,shell1)
+			}, 350);
+			setTimeout(() => {
+				
+				seqShellLeft(0.6,1,-0.3,3,shell)
+				
+			}, 600);
+	
+		setTimeout(() => {
+
+			
+			setTimeout(() => {
+				let shell = new Shell({...shellTypes['StrobeV2'](1), color:COLOR.Gold, starLife:2500,secondColor:COLOR.White})
+		
+				seqShellRight(0.6,1,-0.3,3,shell)
+				setTimeout(() => {
+				
+					let shell1 = new Shell({...shellTypes['Hearth'](1), starLife:1500,crackle:true,color:COLOR.Blue})
+				
+					seqShellLeft(0.3,0.6,0.1,3,shell1)
+				}, 350);
+				setTimeout(() => {
+					
+					seqShellRight(0,0.3,0-0.3,3,shell)
+					
+				}, 600);
+			}, 1000);
+			setTimeout(() => {
+				let shell = new Shell({...shellTypes['Ring'](1), starLife:2500,strobev2:true,color:COLOR.Blue})
+		
+				seqShellLeft(0,0.3,0-0.3,3,shell)
+				setTimeout(() => {
+				    let shell1 = new Shell({...shellTypes['CrossetteV2'](1), starLife:1500,crackle:true,color:COLOR.Blue})
+					
+					seqShellRight(0.3,0.6,0.1,3,shell1)
+				}, 350);
+				setTimeout(() => {
+					
+					seqShellLeft(0.6,1,-0.3,3,shell)
+					
+				}, 600);
+				
+			}, 4000);
+			setTimeout(() => {
+				let shell = new Shell({...shellTypes['RingV2'](1), starLife:2500,secondColor:COLOR.White, strobe:true})
+		
+				seqShellLeft(0,0.3,0-0.3,3,shell)
+				setTimeout(() => {
+			        let shell1 = new Shell({...shellTypes['Ring'](1), starLife:1500,crackle:true,color:COLOR.Blue})
+				
+					seqShellRight(0.3,0.6,0.1,3,shell1)
+				}, 350);
+				setTimeout(() => {
+					
+					seqShellLeft(0.6,1,-0.3,3,shell)
+					
+				}, 600);
+			}, 7000);
+		}, 3000);
+	
+		
+		setTimeout(() => {
+			seqShellLeft(0.4,0.6,0.5,10,new Shell({...shellTypes['Willow'](3)}))
+			
+		}, 10000);
+	}, 60000+29000);
+	
 }
 
 function monodySeq(){
@@ -7944,7 +8504,7 @@ class Shell {
 		}
 		soundManager.playSound('lift')
 	}
-	launchV2(position, launchHeight, positionX = 0.5) {
+	launchV2(position, launchHeight, positionX = 0.5, color=COLOR.Gold) {
 		const width = stageW;
 		const height = stageH + 50;
 		// Distance from sides of screen to keep shells.
@@ -7959,27 +8519,27 @@ class Shell {
 		const launchX = position * (width - hpad * 2) + hpad;
 		const launchY = height;
 		const burstY = minHeight - (launchHeight * (minHeight - vpad));
-		const sideBias = position - 0.5; // [-0.5 → +0.5]
+		// const sideBias = position - 0.5; // [-0.5 → +0.5]
 
 		const launchDistance =
 			launchY - burstY
-			+ 250 * (positionX > 0 ? -sideBias : sideBias);
+			
 		// const launchDistance = launchY - burstY ;
 		// Using a custom power curve to approximate Vi needed to reach launchDistance under gravity and air drag.
 		// Magic numbers came from testing.
 		const launchVelocity = Math.pow(launchDistance * 0.04, 0.64);
 
 		const comet = this.comet = Star.addV2(
-			launchX,
-			launchY,
+			launchX,//x
+			launchY,//y
 			typeof this.color === 'string' && this.color !== 'random' ? this.color : COLOR.White,
-			Math.PI,
-			launchVelocity * (this.horsetail ? 1.2 : 1),
+			Math.PI,//angle
+			launchVelocity * (this.horsetail ? 1.2 : 1),//speed
 			// Hang time is derived linearly from Vi; exact number came from testing
-			launchVelocity * (this.horsetail ? 100 : 400),
-			positionX,
+			launchVelocity * (this.horsetail ? 100 : 400),//life
+			positionX,//speedOffX
 		);
-
+		const lifeTime = launchVelocity * (this.horsetail ? 100 : 400);
 		// making comet "heavy" limits air drag
 		comet.heavy = true;
 		// comet spark trail
@@ -7996,6 +8556,13 @@ class Shell {
 		if (this.color === INVISIBLE) {
 			comet.sparkColor = COLOR.Gold;
 		}
+		const changeColorTime = Math.max(0, lifeTime - 1000);
+
+		setTimeout(() => {
+			if (comet && !comet.dead) {
+				comet.color = color;
+			}
+		}, changeColorTime);
 
 		// Randomly make comet "burn out" a bit early.
 		// This is disabled for horsetail shells, due to their very short airtime.
@@ -8470,17 +9037,378 @@ class Shell {
 		// Play sound, but only for "original" shell, the one that was launched.
 		// We don't want multiple sounds from pistil or streamer "sub-shells".
 		// This can be detected by the presence of a comet.
-		if (this.comet) {
+		
 			// Scale explosion sound based on current shell size and selected (max) shell size.
 			// Shooting selected shell size will always sound the same no matter the selected size,
 			// but when smaller shells are auto-fired, they will sound smaller. It doesn't sound great
 			// when a value too small is given though, so instead of basing it on proportions, we just
 			// look at the difference in size and map it to a range known to sound good.
+		if(this.comet){
 			const maxDiff = 2;
 			const sizeDifferenceFromMaxSize = Math.min(maxDiff, shellSizeSelector() - this.shellSize);
 			const soundScale = (1 - sizeDifferenceFromMaxSize / maxDiff) * 0.3 + 0.7;
 			soundManager.playSound('burst', soundScale);
 		}
+		
+	}
+	burstV2(x1, y1) {
+		let x =  x1 * maxW;
+		let y =  maxH - y1 * maxH;
+		// Set burst speed so overall burst grows to set size. This specific formula was derived from testing, and is affected by simulated air drag.
+		const speed = this.spreadSize / 96;
+
+		let color, onDeath, sparkFreq, sparkSpeed, sparkLife;
+		let sparkLifeVariation = 0.25;
+		// Some death effects, like crackle, play a sound, but should only be played once.
+		let playedDeathSound = true;
+
+		if (this.crossette) onDeath = (star) => {
+			if (!playedDeathSound) {
+				soundManager.playSound('crackleSmall');
+				playedDeathSound = false;
+			}
+			crossetteEffect(star);
+		}
+		if (this.crossetteV2) onDeath = (star) => {
+			if (!playedDeathSound) {
+				soundManager.playSound('crackleSmall');
+				playedDeathSound = false;
+			}
+			crossetteEffectV2(star);
+		}
+		if (this.crackle) onDeath = (star) => {
+			if (!playedDeathSound) {
+				soundManager.playSound('crackle');
+				playedDeathSound = true;
+			}
+			crackleEffect(star);
+		}
+		const number = Math.random();
+		if (this.floral) onDeath = floralEffect;
+		if (this.fallingLeaves) {
+			
+			onDeath = fallingLeavesEffect;
+
+		}
+		if (this.glitter === 'light') {
+			sparkFreq = 400;
+			sparkSpeed = 0.3;
+			sparkLife = 300;
+			sparkLifeVariation = 2;
+		}
+		else if (this.glitter === 'medium') {
+			sparkFreq = 200;
+			sparkSpeed = 0.44;
+			sparkLife = 700;
+			sparkLifeVariation = 2;
+		}
+		else if (this.glitter === 'heavy') {
+			sparkFreq = 80;
+			sparkSpeed = 0.8;
+			sparkLife = 1400;
+			sparkLifeVariation = 2;
+		}
+		else if (this.glitter === 'thick') {
+			sparkFreq = 16;
+			sparkSpeed = isHighQuality ? 1.65 : 1.5;
+			sparkLife = 1400;
+			sparkLifeVariation = 3;
+		}
+		else if (this.glitter === 'streamer') {
+			sparkFreq = 32;
+			sparkSpeed = 1.05;
+			sparkLife = 620;
+			sparkLifeVariation = 2;
+		}
+		else if (this.glitter === 'willow') {
+			sparkFreq = 120;
+			sparkSpeed = 0.34;
+			sparkLife = 1400;
+			sparkLifeVariation = 3.8;
+		}
+
+		// Apply quality to spark count
+		sparkFreq = sparkFreq / quality;
+
+		// Star factory for primary burst, pistils, and streamers.
+		let firstStar = true;
+		const starFactory = (angle, speedMult) => {
+			// For non-horsetail shells, compute an initial vertical speed to add to star burst.
+			// The magic number comes from testing what looks best. The ideal is that all shell
+			// bursts appear visually centered for the majority of the star life (excl. willows etc.)
+			const standardInitialSpeed = this.spreadSize / 1800;
+
+			const star = Star.add(
+				x,
+				y,
+				color || randomColor(),
+				angle,
+				speedMult * speed,
+				// add minor variation to star life
+				this.starLife + Math.random() * this.starLife * this.starLifeVariation,
+				this.horsetail ? this.comet && this.comet.speedX : 0,
+				this.horsetail ? this.comet && this.comet.speedY : -standardInitialSpeed
+			);
+
+			if (this.secondColor) {
+				star.transitionTime = this.starLife * (Math.random() * 0.05 + 0.32);
+				star.secondColor = this.secondColor;
+			}
+
+			star.strobeGroup = Math.floor(Math.random() * 4);
+
+			
+			if (this.strobe) {
+				// thời điểm bắt đầu strobe (giữa vòng đời)
+				star.starLife *= 1.2;
+				star.transitionTime = this.starLife * (Math.random() * 0.08 + 0.46);
+				star.strobe = true;
+
+				// nhịp strobe cơ bản
+				star.strobeFreq = Math.random() * 20 + 40;
+
+				// lệch pha theo mảng
+				star.strobeOffset = star.strobeGroup * 25;
+
+				if (this.strobeColor) {
+					star.secondColor = this.strobeColor;
+				}
+
+				// xử lý nhấp nháy theo thời gian
+				star.onUpdate = () => {
+					if (!star.strobe) return;
+					if (star.age < star.transitionTime) return;
+
+					const time = star.age + star.strobeOffset;
+
+					// pattern: on : off : off
+					const phase = Math.floor(time / star.strobeFreq) % 3;
+					star.visible = phase === 0;
+				};
+			}
+			if (this.strobev2) {
+				// thời điểm bắt đầu strobe (giữa vòng đời)
+				star.starLife *= 1.9;
+				star.transitionTime = this.starLife * (Math.random() * 0.08 + 0.46);
+				star.strobe = true;
+				star.strobeFreq = 220;
+
+				// nhịp strobe cơ bản
+				// star.strobeFreq = Math.random() * 20 + 40;
+
+				// lệch pha theo mảng
+				// star.strobeOffset = star.strobeGroup * 25;
+
+				if (this.strobeColor) {
+					star.secondColor = this.strobeColor;
+				}
+
+				// xử lý nhấp nháy theo thời gian
+				// star.onUpdate = () => {
+				// 	if (!star.strobe) return;
+				// 	if (star.age < star.transitionTime) return;
+
+				// 	const time = star.age + star.strobeOffset;
+
+				// 	// pattern: on : off : off
+				// 	const phase = Math.floor(time / star.strobeFreq) % 3;
+				// 	star.visible = phase === 0;
+				// };
+			}
+
+
+
+			star.onDeath = onDeath;
+
+			if (this.glitter) {
+				star.sparkFreq = sparkFreq;
+				star.sparkSpeed = sparkSpeed;
+				star.sparkLife = sparkLife;
+				star.sparkLifeVariation = sparkLifeVariation;
+				star.sparkColor = this.glitterColor;
+				star.sparkTimer = Math.random() * star.sparkFreq;
+			}
+		};
+
+
+		if (typeof this.color === 'string') {
+			if (this.color === 'random') {
+				color = null; // falsey value creates random color in starFactory
+			} else {
+				color = this.color;
+			}
+
+			// Rings have positional randomness, but are rotated randomly
+			if (this.ring) {
+				const ringStartAngle = Math.random() * Math.PI;
+				const ringSquash = Math.pow(Math.random(), 2) * 0.85 + 0.15;;
+				createParticleArc(0, PI_2, this.starCount, 0, angle => {
+					// Create a ring, squashed horizontally
+					const initSpeedX = Math.sin(angle) * speed * ringSquash;
+					const initSpeedY = Math.cos(angle) * speed;
+					// Rotate ring
+					const newSpeed = MyMath.pointDist(0, 0, initSpeedX, initSpeedY);
+					const newAngle = MyMath.pointAngle(0, 0, initSpeedX, initSpeedY) + ringStartAngle;
+					const star = Star.add(
+						x,
+						y,
+						color,
+						newAngle,
+						// apply near cubic falloff to speed (places more particles towards outside)
+						newSpeed,//speed,
+						// add minor variation to star life
+						this.starLife + Math.random() * this.starLife * this.starLifeVariation
+					);
+
+					if (this.glitter) {
+						star.sparkFreq = sparkFreq;
+						star.sparkSpeed = sparkSpeed;
+						star.sparkLife = sparkLife;
+						star.sparkLifeVariation = sparkLifeVariation;
+						star.sparkColor = this.glitterColor;
+						star.sparkTimer = Math.random() * star.sparkFreq;
+					}
+				});
+			}
+			
+			let check = 1;
+			if(this.hearth){
+				createHeartBurst(this.starCount, starFactory)
+				check =0;
+			}
+			if(this.oval){
+				createOvalBurst(this.starCount, starFactory)
+				check = 0;
+			}
+			if(this.doubleRing){
+				createDoubleRingBurst(this.starCount, starFactory)
+				check = 0;
+			}
+			// if(this.flower){
+			// 	createFlowerBurst(this.starCount, starFactory);
+			// 	check =0;
+			// }
+			// if(this.spiral){
+			// 	createSpiralBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.wave){
+			// 	createWaveBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.smiley){
+			// 	createSmileyBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			
+			// if(this.snow){
+			// 	createSnowflakeBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.star){
+			// 	createStarBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.fish){
+			// 	createFishBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.cat){
+			// 	createCatBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			// if(this.butterfly){
+			// 	createButterflyBurst(this.starCount, starFactory)
+			// 	check =0;
+
+			// }
+			// if(this.lotus){
+			// 	createLotusBurst(this.starCount, starFactory)
+			// 	check =0;
+
+			// }
+			// if(this.bird){
+			// 	createBirdBurst(this.starCount, starFactory)
+			// 	check =0;
+			// }
+			if(this.half){
+				createHalfBurst(this.starCount, starFactory)
+				check = 0;
+			}
+			
+			else{
+				if(check == 1){
+					createBurst(this.starCount, starFactory)
+				}
+				// createQuestionMarkBurst(this.starCount, starFactory)
+				
+			}
+		}
+		else if (Array.isArray(this.color)) {
+			if (Math.random() < 0.5) {
+				const start = Math.random() * Math.PI;
+				const start2 = start + Math.PI;
+				const arc = Math.PI;
+				color = this.color[0];
+				// Not creating a full arc automatically reduces star count.
+				createBurst(this.starCount, starFactory, start, arc);
+				color = this.color[1];
+				createBurst(this.starCount, starFactory, start2, arc);
+			} else {
+				color = this.color[0];
+				createBurst(this.starCount / 2, starFactory);
+				color = this.color[1];
+				createBurst(this.starCount / 2, starFactory);
+			}
+		}
+		else {
+			throw new Error('Invalid shell color. Expected string or array of strings, but got: ' + this.color);
+		}
+
+		if (this.pistil) {
+			const innerShell = new Shell({
+				spreadSize: this.spreadSize * 0.5,
+				starLife: this.starLife * 0.6,
+				starLifeVariation: this.starLifeVariation,
+				starDensity: 1.4,
+				color: this.pistilColor,
+				glitter: 'light',
+				glitterColor: this.pistilColor === COLOR.Gold ? COLOR.Gold : COLOR.White
+			});
+			innerShell.burst(x, y);
+		}
+
+		if (this.streamers) {
+			const innerShell = new Shell({
+				spreadSize: this.spreadSize * 0.9,
+				starLife: this.starLife * 0.8,
+				starLifeVariation: this.starLifeVariation,
+				starCount: Math.floor(Math.max(6, this.spreadSize / 45)),
+				color: COLOR.White,
+				glitter: 'streamer'
+			});
+			innerShell.burst(x, y);
+		}
+
+		// Queue burst flash render
+		BurstFlash.add(x, y, this.spreadSize / 4);
+
+		// Play sound, but only for "original" shell, the one that was launched.
+		// We don't want multiple sounds from pistil or streamer "sub-shells".
+		// This can be detected by the presence of a comet.
+		
+			// Scale explosion sound based on current shell size and selected (max) shell size.
+			// Shooting selected shell size will always sound the same no matter the selected size,
+			// but when smaller shells are auto-fired, they will sound smaller. It doesn't sound great
+			// when a value too small is given though, so instead of basing it on proportions, we just
+			// look at the difference in size and map it to a range known to sound good.
+		if(this.comet){
+			const maxDiff = 2;
+			const sizeDifferenceFromMaxSize = Math.min(maxDiff, shellSizeSelector() - this.shellSize);
+			const soundScale = (1 - sizeDifferenceFromMaxSize / maxDiff) * 0.3 + 0.7;
+			soundManager.playSound('burst', soundScale);
+		}
+		
 	}
 
 	
@@ -8503,6 +9431,16 @@ const BurstFlash = {
 
 		instance.x = x;
 		instance.y = y;
+		instance.radius = radius;
+
+		this.active.push(instance);
+		return instance;
+	},
+	addV2(x, y, radius) {
+		const instance = this._pool.pop() || this._new();
+
+		instance.x = x * maxW;
+		instance.y = maxH - y * maxH;
 		instance.radius = radius;
 
 		this.active.push(instance);
@@ -8583,7 +9521,8 @@ const Star = {
 		instance.prevX = x;
 		instance.prevY = y;
 		instance.color = color;
-		 instance.speedX = (speedOffX || 0) ;//góc bay theo chiều x
+		//  instance.speedX = (speedOffX || 0) ;//góc bay theo chiều x
+		 instance.speedX =  Math.sin(angle) * speed + (speedOffX || 0)
 		// console.log(speedOffX);
 		instance.speedY = Math.cos(angle) * speed + (speedOffY || 0);//góc bay theo chiều y
 		instance.life = life;
@@ -10801,17 +11740,52 @@ async function seqDroneTest(x=stageW/2,y=stageH/2) {
 // nguaFormation2(stageW/2+600,stageH/2);
 // seqDroneTest()
 
-let shell = new Shell({...shellTypes['Crysanthemum'](3),color: COLOR.Red,pistil:true, secondColor:COLOR.Blue,half:true})
-// let shell2 = new Shell({...shellTypes['Oval'](3)})
-
-let shell3 = new Shell({...shellTypes['Crysanthemum'](3),color: COLOR.Red, secondColor:COLOR.Blue,half:true})
+// seqFlashSpam(0.2,0.5,0.1,2000,20,20)
 
 
 
 // seqLaunchShell(0.5,0.5,[shell,shell2,shell3],1,1000)
 // seqShellFiveShell
 
-seqSparkHalfArc(0.5,-0.3,6)
+setTimeout(() => {
+	seqDrumAll()
+}, 4000);
+// seqFlashLeft(0,1,0)
+// seqFlashRight(0,1,0)
+// seqFlashLeft(0,1,0,90)
+// 			seqFlashRight(0,1,0,90)
+
+
+
+
+	
+			
+
+
+			
+			
+			
+
+
+
+
+// let shell = new Shell({...shellTypes['Strobe'](0.3),star:true})
+// seqShellBurstLeft(0.2,0.8,0.5,7,shell)
+
+
+// seqSparkSpam(0.2,0.4,-0.3,5000,10)
+// seqSparkSpam(0.2,0.4,-0.4,5000)
+// seqSparkSpam(0.2,0.4,-0.5,5000)
+
+
+
+
+
+
+
+
+
+
 
 
 // seqShellFiveShell(0.1,0.9,null,null,10,2200)

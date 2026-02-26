@@ -12,7 +12,8 @@
 	'Horse Tail': horsetailShell,
 	'Palm': palmShell,
 	'Ring': ringShell, ->>kết thúc airdrag =1
-	'Strobe': strobeShell,>>kết thúc airdrag =1 hãy chỉnh starlife +2000 và starLife+0.4 nếu muốn nó nhấp nháy lâu hơn và có thể chỉnh strobe color	
+	'Strobe': strobeShell,>>kết thúc airdrag =1 hãy chỉnh starlife + 2000 và starLife+0.4 nếu muốn nó nhấp nháy lâu hơn và có thể chỉnh strobe color
+	'Strobev2' :strobev2Shell >> 	
 	'Willow': willowShell
 
 	Flower':flowerShell, hình hoa
@@ -105,24 +106,39 @@ creatFiveShellV2(x,y,shell,cout=10,color) bắn bắt đàu từ x(0->1), độ 
 	seqshellmidheight(time)//2 bên tăng dần vào giữa
 -------------------------------------------------------
 	//>>position là vị trí bắt đầu 
-	seqShellShortLeftToRight(count,position, time)// thấp dần từ trái sang phải và bắt đầu bên trái //
-	seqShellShortRightToLeft(count,position, time)//Thấp dần từ phải sang trái và bắt đầu từ bên phải
+	seqShellLeft(count,position, time)// thấp dần từ trái sang phải và bắt đầu bên trái //
+	seqShellRight(count,position, time)//Thấp dần từ phải sang trái và bắt đầu từ bên phải
 	seqshellmidshort(time)//2 bên giảm dần vào giữa
 -------------------------------------------------------
 	///>>position càng cao thị vị trí bắn càng thấp
-	seqSparkHalfLeft(position,height,count, time)//tạo các tia lửa theo vòng cung từ trái qua phải ..//vị trí tâm,vị trí dừng, số lượng tia trong nửa hình tròn, tần suất bắn)
-	seqSparkHalfRightt(position,height,count, time)
+
+	seqSparkHalf(x , height, count, type = 1,delay = 0,makeTimen = 0,color=COLOR.Gold, model = 2)////
+	tạo các tia lửa theo vòng cung  ..//vị trí tâm,vị trí dừng, số lượng tia trong nửa hình tròn, tần suất bắn)
+		
+		--seqSparkHalfLeft(x , height, count,delay = 350,makeTimen=0,color=COLOR.Gold, model = 2)
+		--seqSparkHalfRightt(position,height,count, time)
+
+		--seqSparkHalfArc(x , height, count,color=COLOR.Gold, model = 2,delay=0) bắn vong cung cung lúc model = 1 thiì Falling
 
 	seqSparkHalfMid(position,height,count, time)//mix halfleft và right và chọn vị trí Position, height khuyến khích 0.9
 -------------------------------------------------------
 	seqSparkHalfTrip(position,time)//bắn 3 tia xong 1 viên ở giữa 
 	seqSparkHalfTripTwo(time) //bắn 3tia 2 bên vị trí 0.2, 0.8  
 -------------------------------------------------------
+	
+--------------------------------------------------------
 	seqSparkWithShellRight(time)//baắn các tia xong sẽ nổ 1 shell ở giữa (nghiêng sang phải_
 	seqSparkWithShellLeft(time)//baắn các tia xong sẽ nổ 1 shell ở giữa (nghiêng sang tráii_
 -------------------------------------------------------
-	seqSparkLeft(left, right,height)//bắn các tia từ trái sang phải và nghiêng sang phải//height -0.3 là độ cao 
-	seqSparkRight(left, right,height)//bắn các tia từ phải sang trái và nghiêng sang trái //height -0.7
+	count ->>>>>là số luong
+	count_half ->>>>> so luong mỗi chùm
+
+	seqSparkLeft(left, right,height,count)//bắn các tia từ trái sang phải và nghiêng sang phải//height -0.3 là độ cao 
+	seqSparkRight(left, right,height,count)//bắn các tia từ phải sang trái và nghiêng sang trái //height -0.3
+	
+	 seqSparkLeftV2(left, right,height,count,count_half)// bắn các chùm từ trái sang phải
+	seqSparkRightV2(left, right,height,count,count_half)// bắn các chùm từ phải sang trái
+
 	seqSparkFull(left, right,count=2, wait = 900) //bắn tia từ left->right với count lần và mỗi lần cách nhau wait
 	
 	seqSparkMidLeftWithRight(count=1) bắn các tia sang 2 bên lấy 0.5 làm giữa
@@ -138,14 +154,18 @@ creatFiveShellV2(x,y,shell,cout=10,color) bắn bắt đàu từ x(0->1), độ 
 	left,right hight cơ số maxW, maxH tạo spark rơi xuống 
 	seqSparkDownAll(left, right, hight,coutShell=10,time=100) tạo 1 lần  dãy spark trong khoảng left, right,trong khoảng 0 -> maxW, hight(maxH)
 	seqSparkDown(left, right, hight,cout=10,time=1000) tạo spark liên tục với cout lần, mỗi lần 1000s
+
+	seqSparkSpam(left, right, height, time = 1000,interval = 10, color=COLOR.White,) //spam spark duoi leen tren trong khoang time
 ------------------------------------------------------ 
 	VietNamFlagRandom(a,b) //bắn liên tục từ vị trí a tới b
 	VietNamFlagFrame(right, left)// bắn 1 lần để tạo 1 hình chữ nhật màu đỏ
 	VietNamFlagShell(a,b,count)//bắn với khung chữ nhật và count lần
 	
 	VietNamFlag()//hoạt ảnh cờ việt nam
+------------------------------------------------------ 
 
-
+seqFlashLeft(left, right, height,delay=50, count_shell=15) taoj flash tu x->y
+seqFlashRight(left, right, height,delay=50, count_shell=15)
 
  -------------------------------------------------
 createParticleCollection() hàm tạo các đổi tượng để lưu trữ
@@ -162,6 +182,9 @@ size{ size//kích cỡ,
   ----------------------------------------------------
 shell.{
 busrt(x, y) //x>>min0->
+
+burstV2(x,y) bắn tại x,y (x,y: 0->>1)
+
 launch(position, launchHeight,thisNghieng=0) vị trí và độ cao giữa màn hình là 0, thisNghieng =1 thi nghieng rando
 
 launchV2(position, launchHeight,PositionX(góc nghiêng bắn) -1 ->1
