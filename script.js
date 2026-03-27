@@ -3223,6 +3223,7 @@ const store = {
 		config: {
 			quality: String(IS_HIGH_END_DEVICE ? QUALITY_HIGH : QUALITY_NORMAL), // will be mirrored to a global variable named `quality` in `configDidUpdate`, for perf.
 			shell: 'Random',
+			seq: 'DrumAll',
 			size: IS_DESKTOP
 				? '3' // Desktop default
 				: IS_HEADER
@@ -3272,6 +3273,13 @@ const store = {
 					config.skyLighting = data.skyLighting;
 					config.scaleFactor = data.scaleFactor;
 					break;
+				case '1.3':
+					config.quality = data.quality;
+					config.size = data.size;
+					config.seq = data.seq || config.seq;
+					config.skyLighting = data.skyLighting;
+					config.scaleFactor = data.scaleFactor;
+					break;
 				default:
 					throw new Error('version switch should be exhaustive');
 			}
@@ -3301,10 +3309,11 @@ const store = {
 	persist() {
 		const config = this.state.config;
 		localStorage.setItem('cm_fireworks_data', JSON.stringify({
-			schemaVersion: '1.2',
+			schemaVersion: '1.3',
 			data: {
 				quality: config.quality,
 				size: config.size,
+				seq: config.seq,
 				skyLighting: config.skyLighting,
 				scaleFactor: config.scaleFactor
 			}
@@ -3463,9 +3472,13 @@ const appNodes = {
 	pauseBtnSVG: '.pause-btn use',
 	soundBtn: '.sound-btn',
 	soundBtnSVG: '.sound-btn use',
+	settingsBtn: '.settings-btn',
+	closeMenuBtn: '.close-menu-btn',
 	shellType: '.shell-type',
 	shellTypeLabel: '.shell-type-label',
 	shellSize: '.shell-size',
+	seqTypeLabel: '.seq-type-label',
+	seqType: '.seq-type',
 	shellSizeLabel: '.shell-size-label',
 	quality: '.quality-ui',
 	qualityLabel: '.quality-ui-label',
@@ -3520,6 +3533,9 @@ function renderApp(state) {
 	appNodes.quality.value = state.config.quality;
 	appNodes.shellType.value = state.config.shell;
 	appNodes.shellSize.value = state.config.size;
+
+	appNodes.seqType.value = state.config.seq;
+
 	appNodes.autoLaunch.checked = state.config.autoLaunch;
 	appNodes.finaleMode.checked = state.config.finale;
 	appNodes.skyLighting.value = state.config.skyLighting;
@@ -3551,6 +3567,18 @@ function handleStateChange(state, prevState) {
 			soundManager.pauseAll();
 		}
 	}
+
+	if (prevState.menuOpen && !state.menuOpen) {
+		const selectedSeq = state.config.seq;
+		if (selectedSeq && seqTypes[selectedSeq]) {
+			console.log(`Menu đóng, chạy sequence: ${selectedSeq}`);
+			try {
+				seqTypes[selectedSeq]();
+			} catch (err) {
+				console.error('Lỗi khi chạy seqType:', err);
+			}
+		}
+	}
 }
 
 store.subscribe(handleStateChange);
@@ -3561,6 +3589,7 @@ function getConfigFromDOM() {
 		quality: appNodes.quality.value,
 		shell: appNodes.shellType.value,
 		size: appNodes.shellSize.value,
+		seq: appNodes.seqType.value,
 		autoLaunch: appNodes.autoLaunch.checked,
 		finale: appNodes.finaleMode.checked,
 		skyLighting: appNodes.skyLighting.value,
@@ -3574,6 +3603,15 @@ function getConfigFromDOM() {
 const updateConfigNoEvent = () => updateConfig();
 appNodes.quality.addEventListener('input', updateConfigNoEvent);
 appNodes.shellType.addEventListener('input', updateConfigNoEvent);
+appNodes.seqType.addEventListener('input', updateConfigNoEvent);
+appNodes.seqType.addEventListener('change', event => {
+	updateConfig();
+	if (seqTypes[event.target.value]) {
+		// Chạy sequence đã chọn khi đóng menu (logic trong handleStateChange).
+		// Nếu muốn chạy ngay, uncomment dòng dưới.
+		// seqTypes[event.target.value]();
+	}
+});
 appNodes.shellSize.addEventListener('input', updateConfigNoEvent);
 appNodes.autoLaunch.addEventListener('click', () => setTimeout(updateConfig, 0));
 appNodes.finaleMode.addEventListener('click', () => setTimeout(updateConfig, 0));
@@ -3586,6 +3624,13 @@ appNodes.scaleFactor.addEventListener('input', () => {
 	updateConfig();
 	handleResize();
 });
+
+if (appNodes.settingsBtn) {
+	appNodes.settingsBtn.addEventListener('click', () => toggleMenu(true));
+}
+if (appNodes.closeMenuBtn) {
+	appNodes.closeMenuBtn.addEventListener('click', () => toggleMenu(false));
+}
 
 Object.keys(nodeKeyToHelpKey).forEach(nodeKey => {
 	const helpKey = nodeKeyToHelpKey[nodeKey];
@@ -4322,7 +4367,10 @@ function getRandomShell(){
 	let shell = new Shell({...shellTypes[shellName](1)})
 	return shell;
 }
-
+const seqTypes = {
+	'DrumAll': seqDrumAll,
+	
+}
 
 const shellTypes = {
 	'Random': randomShell,
@@ -4358,6 +4406,7 @@ const shellTypes = {
 
 
 const shellNames = Object.keys(shellTypes);
+const seqNames = Object.keys(seqTypes);
 function init() {
 	// Remove loading state
 	document.querySelector('.loading-init').remove();
@@ -4373,9 +4422,15 @@ function init() {
 	shellNames.forEach(opt => options += `<option value="${opt}">${opt}</option>`);
 	appNodes.shellType.innerHTML = options;
 	// shell size
+	
 	options = '';
 	['3"', '4"', '6"', '8"', '12"', '16"'].forEach((opt, i) => options += `<option value="${i}">${opt}</option>`);
 	appNodes.shellSize.innerHTML = options;
+
+	// sequence type
+	options = '';
+	seqNames.forEach(opt => options += `<option value="${opt}">${opt}</option>`);
+	appNodes.seqType.innerHTML = options;
 
 	setOptionsForSelect(appNodes.quality, [
 		{ label: 'Low', value: QUALITY_LOW },
@@ -6241,10 +6296,8 @@ async function seqShellRandomForTime(count=5,hight=0.4, shell,color){
 	}
 }
 function seqDrumAll(){
-	// playMusic("Music/drum_all2.mp3");
+	playMusic("https://shellsound.s3.ap-southeast-2.amazonaws.com/music/drum_all2.mp3");
 	let shell = getRandomShell()
-	
-	
 	setTimeout(() => {
 		seqSparkHalfArc(0.3,-0.4,5)
 	}, 1500);
@@ -6778,12 +6831,15 @@ const sequences = [
 	vietNamV1Seq,
 
 ];
+function playMusic(url) {
+    const audio = new Audio(url);
 
-function playMusic(path) {
-	// Lấy đối tượng audio
-	const audio = new Audio(path); // Thay đổi 'ten_bai_nhac.mp3' bằng đường dẫn tới tệp nhạc của bạn
-	// Phát nhạc
-	audio.play();
+    // optional: giúp load nhanh hơn
+    audio.crossOrigin = "anonymous";
+
+    audio.play().catch(err => {
+        console.error("Không phát được nhạc:", err);
+    });
 }
 let isFirstSeq = true;
 const finaleCount = 32;
@@ -9645,7 +9701,7 @@ const soundManager = {
 			playbackRateMin: 1,
 			playbackRateMax: 1,
 			fileNames: ['crackle-sm-1.mp3']
-		}
+		},
 	},
 
 	preload() {
@@ -11747,46 +11803,25 @@ async function seqDroneTest(x=stageW/2,y=stageH/2) {
 // seqLaunchShell(0.5,0.5,[shell,shell2,shell3],1,1000)
 // seqShellFiveShell
 
-setTimeout(() => {
-	seqDrumAll()
-}, 4000);
+// setTimeout(() => {
+// 	seqDrumAll()
+// }, 2000);
+
+
 // seqFlashLeft(0,1,0)
 // seqFlashRight(0,1,0)
 // seqFlashLeft(0,1,0,90)
 // 			seqFlashRight(0,1,0,90)
-
-
-
-
-	
-			
-
-
-			
-			
-			
-
-
-
+// document.getElementById("btn").addEventListener("click", () => {
+//     seqDrumAll();
+// });
 
 // let shell = new Shell({...shellTypes['Strobe'](0.3),star:true})
 // seqShellBurstLeft(0.2,0.8,0.5,7,shell)
 
-
 // seqSparkSpam(0.2,0.4,-0.3,5000,10)
 // seqSparkSpam(0.2,0.4,-0.4,5000)
 // seqSparkSpam(0.2,0.4,-0.5,5000)
-
-
-
-
-
-
-
-
-
-
-
 
 // seqShellFiveShell(0.1,0.9,null,null,10,2200)
 

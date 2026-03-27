@@ -24,3 +24,7 @@ config.json
 .DS_Store
 Thumbs.db
 
+# Bỏ qua thư mục IDE
+.idea/
+.vscode/
+
