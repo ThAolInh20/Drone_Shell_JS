@@ -101,13 +101,13 @@ creatFiveShellV2(x,y,shell,cout=10,color) bắn bắt đàu từ x(0->1), độ 
 	seqshellmidshort(time)//2 bên giảm dần vào giữa
 -------------------------------------------------------
 	vị trí đầu mặc định là 0.1 và 0.9
-	seqShellHeightLeftToRight(count, time)//cao dàn từ trái sang phải và bắt đầu bên trái
-	seqShellHeightRightToLeft(count, time)//cao dần từ phải sang trái và bắt đầu từ bên phải
+	seqShellLeft(count, time)//cao dàn từ trái sang phải và bắt đầu bên trái
+	seqShellHRight(count, time)//cao dần từ phải sang trái và bắt đầu từ bên phải
 	seqshellmidheight(time)//2 bên tăng dần vào giữa
 -------------------------------------------------------
 	//>>position là vị trí bắt đầu 
-	seqShellLeft(count,position, time)// thấp dần từ trái sang phải và bắt đầu bên trái //
-	seqShellRight(count,position, time)//Thấp dần từ phải sang trái và bắt đầu từ bên phải
+	seqShellShortLeftToRight(count,position, time)// thấp dần từ trái sang phải và bắt đầu bên trái //
+	seqShellShortRightToLeft(count,position, time)//Thấp dần từ phải sang trái và bắt đầu từ bên phải
 	seqshellmidshort(time)//2 bên giảm dần vào giữa
 -------------------------------------------------------
 	///>>position càng cao thị vị trí bắn càng thấp
